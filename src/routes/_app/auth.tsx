@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { LogIn, UserPlus, Eye } from "lucide-react";
@@ -53,11 +54,16 @@ function AuthPage() {
   };
 
   const google = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
     });
-    if (error) toast.error(error.message);
+    if (result.error) {
+      toast.error(result.error.message ?? "تعذّر الدخول بحساب Google");
+      return;
+    }
+    if (result.redirected) return;
+    toast.success("أهلاً بعودتك");
+    navigate({ to: "/" });
   };
 
   return (
