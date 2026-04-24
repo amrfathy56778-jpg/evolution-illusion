@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, MessageSquare, PenLine } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const NAV = [
   { to: "/", label: "الرئيسية", icon: Home, color: "var(--c-home)" },
@@ -20,8 +21,7 @@ export default function Layout() {
       <header className="sticky top-0 z-30 glass-strong border-b border-white/10">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-9 w-9 rounded-xl glass glow-emerald grid place-items-center text-lg">🧬</div>
-            <span className="font-bold text-lg text-gradient-emerald">وهم التطور</span>
+            <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
           </Link>
 
           <div className="flex items-center gap-2">
