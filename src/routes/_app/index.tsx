@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
+import { AISearchButton } from "@/components/AISearchDialog";
 
 export const Route = createFileRoute("/_app/")({
   component: Home,
@@ -144,9 +145,12 @@ function Home() {
 
       {/* Latest posts */}
       <section className="space-y-4">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
-          📌 آخر المنشورات
-        </h2>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
+            📌 آخر المنشورات
+          </h2>
+          <AISearchButton />
+        </div>
         {latest.length === 0 ? (
           <div className="glass rounded-2xl p-8 text-center text-muted-foreground text-sm">
             لا توجد منشورات بعد. كن أول من يكتب!
