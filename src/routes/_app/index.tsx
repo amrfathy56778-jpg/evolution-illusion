@@ -31,6 +31,28 @@ function Home() {
   const { isStaff } = useAuth();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
+  const TYPED_TEXT = "الدفاع عن الحقيقة في مواجهة الأوهام التطورية";
+  const [typed, setTyped] = useState("");
+
+  useEffect(() => {
+    let i = 0;
+    let timeout: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      i++;
+      setTyped(TYPED_TEXT.slice(0, i));
+      if (i < TYPED_TEXT.length) {
+        timeout = setTimeout(tick, 70);
+      } else {
+        timeout = setTimeout(() => {
+          i = 0;
+          setTyped("");
+          timeout = setTimeout(tick, 400);
+        }, 2400);
+      }
+    };
+    timeout = setTimeout(tick, 500);
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -50,17 +72,16 @@ function Home() {
         <div className="absolute inset-0 pointer-events-none opacity-70" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--c-critic) 18%, transparent), transparent 35%, color-mix(in oklab, var(--c-genetics) 12%, transparent) 100%)" }} />
         <div className="relative space-y-4">
           <p className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-[11px] font-bold tracking-wide text-primary">
-            ✦ نقد علمي رصين · تجربة بصرية جديدة ✦
+            ◈ تحليل علمي ◈ نقد منهجي ◈ حقيقة موثقة ◈
           </p>
           <h1 className="text-5xl sm:text-6xl font-black text-gradient-emerald leading-tight">
             وهم التطور
           </h1>
-          <p className="text-base text-muted-foreground max-w-xl mx-auto">
-            منصة تحليلية حديثة لنقد أطروحات التطور بمنهج علمي واضح ولغة قوية.
+          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto min-h-[1.75rem]" aria-label={TYPED_TEXT}>
+            <span>{typed}</span>
+            <span className="inline-block w-[2px] h-[1em] align-[-0.15em] mx-1 bg-primary animate-pulse" />
           </p>
-          <p className="text-sm text-foreground/80 max-w-2xl mx-auto leading-relaxed">
-            ناقش، اقرأ، وانشر ضمن واجهة liquid glass أخفّ وأكثر وضوحاً، مع إدارة كاملة للموقع وصلاحيات دائمة تعود بمجرد تسجيل الدخول.
-          </p>
+          <div className="mx-auto h-[2px] w-40 rounded-full" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)", boxShadow: "0 0 18px var(--primary)" }} />
         </div>
       </section>
 
