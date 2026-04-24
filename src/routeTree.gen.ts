@@ -18,6 +18,7 @@ import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
 import { Route as AppCriticRouteImport } from './routes/_app/critic'
 import { Route as AppCreationRouteImport } from './routes/_app/creation'
 import { Route as AppAuthRouteImport } from './routes/_app/auth'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppPostIdRouteImport } from './routes/_app/post.$id'
 
 const AppRoute = AppRouteImport.update({
@@ -64,6 +65,11 @@ const AppAuthRoute = AppAuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPostIdRoute = AppPostIdRouteImport.update({
   id: '/post/$id',
   path: '/post/$id',
@@ -72,6 +78,7 @@ const AppPostIdRoute = AppPostIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/admin': typeof AppAdminRoute
   '/auth': typeof AppAuthRoute
   '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesByTo {
+  '/admin': typeof AppAdminRoute
   '/auth': typeof AppAuthRoute
   '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/admin': typeof AppAdminRoute
   '/_app/auth': typeof AppAuthRoute
   '/_app/creation': typeof AppCreationRoute
   '/_app/critic': typeof AppCriticRoute
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/creation'
     | '/critic'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/admin'
     | '/auth'
     | '/creation'
     | '/critic'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/_app/admin'
     | '/_app/auth'
     | '/_app/creation'
     | '/_app/critic'
@@ -211,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/post/$id': {
       id: '/_app/post/$id'
       path: '/post/$id'
@@ -222,6 +241,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAuthRoute: typeof AppAuthRoute
   AppCreationRoute: typeof AppCreationRoute
   AppCriticRoute: typeof AppCriticRoute
@@ -234,6 +254,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAuthRoute: AppAuthRoute,
   AppCreationRoute: AppCreationRoute,
   AppCriticRoute: AppCriticRoute,
