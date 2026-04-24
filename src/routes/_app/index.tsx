@@ -149,6 +149,30 @@ function Home() {
         </Link>
       </section>
 
+      {/* Mission card with Basmala (matches reference video) */}
+      <section className="glass-strong rounded-[2rem] p-6 sm:p-8 text-center space-y-5 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-60"
+             style={{ background: "radial-gradient(ellipse at top, color-mix(in oklab, var(--primary) 18%, transparent), transparent 65%)" }} />
+        <div className="relative space-y-4">
+          <p
+            className="text-xl sm:text-2xl font-bold"
+            style={{
+              fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
+              color: "oklch(0.78 0.14 175)",
+              textShadow: "0 0 18px oklch(0.78 0.14 175 / 0.45)",
+            }}
+          >
+            بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+          </p>
+          <h2 className="text-lg sm:text-2xl font-black leading-relaxed max-w-2xl mx-auto">
+            الدفاع عن الحقيقة العلمية ونقد الأوهام التطورية بحدة وصرامة
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            منصة علمية تحليلية تتناول نظرية التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحةً بأداة ذكاء اصطناعي متخصصة.
+          </p>
+        </div>
+      </section>
+
       {/* Latest posts */}
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
