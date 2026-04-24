@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
+import { RichEditor } from "@/components/RichEditor";
 
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 
@@ -23,7 +24,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (t.trim().length < 3 || c.trim().length < 20) { toast.error("العنوان والمحتوى قصيران"); return; }
+    const plain = c.replace(/<[^>]+>/g, "").trim();
+    if (t.trim().length < 3 || plain.length < 20) { toast.error("العنوان والمحتوى قصيران"); return; }
     setBusy(true);
     const { error } = await supabase.from("posts").insert({
       title: t.trim(), content: c.trim(), category,
@@ -55,8 +57,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
         <form onSubmit={create} className="glass rounded-3xl p-5 space-y-3">
           <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none" placeholder="العنوان"
             value={t} onChange={e=>setT(e.target.value)} maxLength={200}/>
-          <textarea rows={8} className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none leading-relaxed"
-            placeholder="المحتوى" value={c} onChange={e=>setC(e.target.value)} maxLength={10000}/>
+          <RichEditor value={c} onChange={setC} placeholder="اكتب المحتوى هنا… يمكنك إضافة صور وفيديوهات وروابط وتنسيق النص"/>
           <button type="submit" disabled={busy} className="w-full rounded-xl py-2.5 font-bold text-sm disabled:opacity-50"
             style={{ background: color, color: "oklch(0.15 0.05 200)" }}>
             {busy ? "جارٍ النشر…" : "نشر"}
@@ -73,7 +74,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               className="block glass rounded-2xl p-5 hover:bg-white/5 transition"
               style={{ borderColor: `color-mix(in oklab, ${color} 25%, transparent)` }}>
               <h3 className="font-bold mb-1.5">{p.title}</h3>
-              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{p.content.slice(0, 200)}…</p>
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                {p.content.replace(/<[^>]+>/g, " ").slice(0, 200)}…
+              </p>
               <div className="text-[10px] text-muted-foreground mt-3">
                 {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
               </div>
