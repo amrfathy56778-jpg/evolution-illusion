@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, PenLine, Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_app/")({
   component: Home,
@@ -27,6 +28,7 @@ const CAT_COLOR: Record<string, string> = {
 };
 
 function Home() {
+  const { isStaff } = useAuth();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
 
@@ -44,20 +46,22 @@ function Home() {
 
   return (
     <div className="space-y-8">
-      {/* Hero */}
-      <section className="text-center space-y-4 py-6">
-        <p className="text-xs font-semibold tracking-widest text-primary/80">
-          ✦ تحليل علمي · نقد منهجي · حقيقة موثقة ✦
-        </p>
-        <h1 className="text-5xl sm:text-6xl font-black text-gradient-emerald leading-tight">
-          وهم التطور
-        </h1>
-        <p className="text-base text-muted-foreground max-w-xl mx-auto">
-          الدفاع عن الحقيقة العلمية ونقد الأوهام التطورية بحدّة وصرامة
-        </p>
-        <p className="text-sm text-foreground/80 max-w-2xl mx-auto leading-relaxed pt-2">
-          منصة علمية تحليلية تتناول نظرية التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة.
-        </p>
+      <section className="relative overflow-hidden rounded-[2rem] glass-strong px-5 py-8 sm:px-8 sm:py-10 text-center space-y-5">
+        <div className="absolute inset-0 pointer-events-none opacity-70" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--c-critic) 18%, transparent), transparent 35%, color-mix(in oklab, var(--c-genetics) 12%, transparent) 100%)" }} />
+        <div className="relative space-y-4">
+          <p className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-[11px] font-bold tracking-wide text-primary">
+            ✦ نقد علمي رصين · تجربة بصرية جديدة ✦
+          </p>
+          <h1 className="text-5xl sm:text-6xl font-black text-gradient-emerald leading-tight">
+            وهم التطور
+          </h1>
+          <p className="text-base text-muted-foreground max-w-xl mx-auto">
+            منصة تحليلية حديثة لنقد أطروحات التطور بمنهج علمي واضح ولغة قوية.
+          </p>
+          <p className="text-sm text-foreground/80 max-w-2xl mx-auto leading-relaxed">
+            ناقش، اقرأ، وانشر ضمن واجهة liquid glass أخفّ وأكثر وضوحاً، مع إدارة كاملة للموقع وصلاحيات دائمة تعود بمجرد تسجيل الدخول.
+          </p>
+        </div>
       </section>
 
       {/* Stats */}
@@ -94,7 +98,7 @@ function Home() {
         </Link>
 
         <Link
-          to="/guest-post"
+          to={isStaff ? "/critique" : "/guest-post"}
           className="glass rounded-3xl p-6 group hover:scale-[1.02] transition-all relative overflow-hidden glow-warm"
           style={{ borderColor: "color-mix(in oklab, var(--c-guest) 40%, transparent)" }}
         >
@@ -105,13 +109,13 @@ function Home() {
               ✍️
             </div>
             <h3 className="text-xl font-bold" style={{ color: "var(--c-guest)" }}>
-              النشر كضيف
+              {isStaff ? "إضافة منشور" : "النشر كضيف"}
             </h3>
             <p className="text-xs text-muted-foreground">
-              شارك طرحك · يُعرض للمراجعة
+              {isStaff ? "انطلق إلى الأقسام وأضف منشوراً مباشراً" : "شارك طرحك · يُعرض للمراجعة"}
             </p>
             <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-guest)" }}>
-              أرسل منشورك <ArrowLeft className="h-3 w-3" />
+              {isStaff ? "افتح قسم النشر" : "أرسل منشورك"} <ArrowLeft className="h-3 w-3" />
             </span>
           </div>
         </Link>
