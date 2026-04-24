@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Brain, Send, Shield, Loader2, CheckCircle2 } from "lucide-react";
+import { Brain, Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 
@@ -85,27 +85,9 @@ function CriticPage() {
           }
         }
       }
-      // Auto verify
-      if (acc.trim()) verify(acc);
     } catch (e: any) {
       toast.error("فشل الاتصال بالذكاء الاصطناعي");
     } finally { setLoading(false); }
-  };
-
-  const verify = async (text: string) => {
-    setMessages((prev) => prev.map((m, i) => i === prev.length - 1 ? { ...m, verifying: true } : m));
-    try {
-      const r = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ verify: text }),
-      });
-      const d = await r.json();
-      setMessages((prev) => prev.map((m, i) => i === prev.length - 1 ? { ...m, verifying: false, verification: d.verification } : m));
-    } catch { /* ignore */ }
   };
 
   return (
@@ -139,22 +121,6 @@ function CriticPage() {
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
                 <ReactMarkdown>{m.content}</ReactMarkdown>
               </div>
-              {m.role === "assistant" && (m.verifying || m.verification) && (
-                <div className="mt-3 pt-3 border-t border-white/10">
-                  {m.verifying ? (
-                    <div className="text-[11px] flex items-center gap-1.5 text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" /> جارٍ التحقق العلمي…
-                    </div>
-                  ) : (
-                    <div className="text-[11px] glass-input rounded-lg p-2.5 space-y-1">
-                      <div className="flex items-center gap-1.5 font-bold" style={{ color: "var(--c-creation)" }}>
-                        <Shield className="h-3 w-3" /> تقرير التحقق العلمي
-                      </div>
-                      <div className="text-foreground/80 whitespace-pre-wrap">{m.verification}</div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         ))}
