@@ -203,3 +203,49 @@
     }
   }
 }
+
+/* === Rich content (TipTap output) === */
+@layer components {
+  .prose-content { color: var(--foreground); word-break: break-word; }
+  .prose-content h1 { font-size: 1.75rem; font-weight: 900; margin: 1rem 0 0.6rem; color: var(--primary); }
+  .prose-content h2 { font-size: 1.4rem; font-weight: 800; margin: 0.9rem 0 0.5rem; color: var(--primary); }
+  .prose-content h3 { font-size: 1.15rem; font-weight: 700; margin: 0.8rem 0 0.4rem; }
+  .prose-content p { margin: 0.55rem 0; }
+  .prose-content a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-content a:hover { opacity: 0.8; }
+  .prose-content strong { color: var(--foreground); font-weight: 800; }
+  .prose-content ul, .prose-content ol { padding-inline-start: 1.5rem; margin: 0.5rem 0; }
+  .prose-content ul { list-style: disc; }
+  .prose-content ol { list-style: decimal; }
+  .prose-content li { margin: 0.2rem 0; }
+  .prose-content blockquote {
+    border-inline-start: 3px solid var(--primary);
+    padding-inline-start: 0.9rem;
+    margin: 0.8rem 0;
+    color: var(--muted-foreground);
+    font-style: italic;
+    background: color-mix(in oklab, var(--primary) 6%, transparent);
+    border-radius: 0.5rem;
+    padding-block: 0.5rem;
+  }
+  .prose-content code {
+    background: color-mix(in oklab, var(--primary) 14%, transparent);
+    padding: 0.1rem 0.4rem; border-radius: 0.35rem; font-size: 0.85em;
+  }
+  .prose-content pre {
+    background: oklch(0.18 0.03 270); padding: 0.9rem; border-radius: 0.75rem;
+    overflow-x: auto; margin: 0.8rem 0;
+  }
+  .prose-content pre code { background: transparent; padding: 0; }
+  .prose-content hr { border: 0; border-top: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent); margin: 1.2rem 0; }
+  .prose-content img { border-radius: 0.85rem; margin: 0.8rem auto; max-width: 100%; height: auto; display: block; }
+  .prose-content iframe { border-radius: 0.85rem; margin: 0.8rem auto; max-width: 100%; display: block; aspect-ratio: 16/9; width: 100%; }
+  .prose-content[data-placeholder]:empty::before,
+  .prose-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--muted-foreground);
+    pointer-events: none;
+    float: right;
+    height: 0;
+  }
+}
