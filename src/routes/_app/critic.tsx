@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Brain, Send, Shield, Loader2, CheckCircle2 } from "lucide-react";
+import { Brain, Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 
@@ -121,22 +121,6 @@ function CriticPage() {
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
                 <ReactMarkdown>{m.content}</ReactMarkdown>
               </div>
-              {m.role === "assistant" && (m.verifying || m.verification) && (
-                <div className="mt-3 pt-3 border-t border-white/10">
-                  {m.verifying ? (
-                    <div className="text-[11px] flex items-center gap-1.5 text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" /> جارٍ التحقق العلمي…
-                    </div>
-                  ) : (
-                    <div className="text-[11px] glass-input rounded-lg p-2.5 space-y-1">
-                      <div className="flex items-center gap-1.5 font-bold" style={{ color: "var(--c-creation)" }}>
-                        <Shield className="h-3 w-3" /> تقرير التحقق العلمي
-                      </div>
-                      <div className="text-foreground/80 whitespace-pre-wrap">{m.verification}</div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         ))}
