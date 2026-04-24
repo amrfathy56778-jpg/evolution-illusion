@@ -75,7 +75,13 @@ function Home() {
           <p className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-[11px] font-bold tracking-wide text-primary">
             ◈ تحليل علمي ◈ نقد منهجي ◈ حقيقة موثقة ◈
           </p>
-          <h1 className="text-5xl sm:text-6xl font-black text-gradient-emerald leading-tight">
+          <h1
+            className="text-5xl sm:text-6xl font-black leading-tight"
+            style={{
+              color: "oklch(0.86 0.16 158)",
+              textShadow: "0 0 24px oklch(0.86 0.16 158 / 0.55), 0 0 8px oklch(0.86 0.16 158 / 0.4)",
+            }}
+          >
             وهم التطور
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto min-h-[1.75rem]" aria-label={TYPED_TEXT}>
