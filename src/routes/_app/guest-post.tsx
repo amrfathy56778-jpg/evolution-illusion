@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PenLine, Send, CheckCircle2 } from "lucide-react";
 
@@ -26,9 +27,30 @@ const CATEGORIES = [
 ] as const;
 
 function GuestPost() {
+  const { isStaff } = useAuth();
   const [form, setForm] = useState({ guest_name: "", guest_email: "", title: "", content: "", category: "critique" as const });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  if (isStaff) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-5 text-center">
+        <div className="glass rounded-3xl p-8 space-y-4">
+          <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-guest)" }}>
+            <PenLine className="h-3.5 w-3.5" /> إضافة منشور
+          </div>
+          <h1 className="text-3xl font-black text-gradient-emerald">هذه الصفحة مخصّصة للضيوف فقط</h1>
+          <p className="text-sm text-muted-foreground">بما أنك مشرف، أضف المنشورات مباشرةً من صفحات الأقسام.</p>
+          <div className="grid sm:grid-cols-2 gap-3 pt-2">
+            <Link to="/critique" className="glass-input rounded-2xl px-4 py-3 text-sm font-bold hover:bg-white/10 transition">نقد التطور</Link>
+            <Link to="/evolution" className="glass-input rounded-2xl px-4 py-3 text-sm font-bold hover:bg-white/10 transition">أساسيات التطور</Link>
+            <Link to="/genetics" className="glass-input rounded-2xl px-4 py-3 text-sm font-bold hover:bg-white/10 transition">علم الوراثة</Link>
+            <Link to="/creation" className="glass-input rounded-2xl px-4 py-3 text-sm font-bold hover:bg-white/10 transition">إبداع الخالق</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
