@@ -12,9 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
+import { Route as AppGeneticsRouteImport } from './routes/_app/genetics'
+import { Route as AppEvolutionRouteImport } from './routes/_app/evolution'
 import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
 import { Route as AppCriticRouteImport } from './routes/_app/critic'
+import { Route as AppCreationRouteImport } from './routes/_app/creation'
 import { Route as AppAuthRouteImport } from './routes/_app/auth'
+import { Route as AppPostIdRouteImport } from './routes/_app/post.$id'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -30,6 +34,16 @@ const AppGuestPostRoute = AppGuestPostRouteImport.update({
   path: '/guest-post',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGeneticsRoute = AppGeneticsRouteImport.update({
+  id: '/genetics',
+  path: '/genetics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEvolutionRoute = AppEvolutionRouteImport.update({
+  id: '/evolution',
+  path: '/evolution',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCritiqueRoute = AppCritiqueRouteImport.update({
   id: '/critique',
   path: '/critique',
@@ -40,48 +54,92 @@ const AppCriticRoute = AppCriticRouteImport.update({
   path: '/critic',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCreationRoute = AppCreationRouteImport.update({
+  id: '/creation',
+  path: '/creation',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAuthRoute = AppAuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPostIdRoute = AppPostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AppAuthRoute
+  '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
   '/critique': typeof AppCritiqueRoute
+  '/evolution': typeof AppEvolutionRoute
+  '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
+  '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AppAuthRoute
+  '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
   '/critique': typeof AppCritiqueRoute
+  '/evolution': typeof AppEvolutionRoute
+  '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
   '/': typeof AppIndexRoute
+  '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/auth': typeof AppAuthRoute
+  '/_app/creation': typeof AppCreationRoute
   '/_app/critic': typeof AppCriticRoute
   '/_app/critique': typeof AppCritiqueRoute
+  '/_app/evolution': typeof AppEvolutionRoute
+  '/_app/genetics': typeof AppGeneticsRoute
   '/_app/guest-post': typeof AppGuestPostRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/post/$id': typeof AppPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/critic' | '/critique' | '/guest-post'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/creation'
+    | '/critic'
+    | '/critique'
+    | '/evolution'
+    | '/genetics'
+    | '/guest-post'
+    | '/post/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/critic' | '/critique' | '/guest-post' | '/'
+  to:
+    | '/auth'
+    | '/creation'
+    | '/critic'
+    | '/critique'
+    | '/evolution'
+    | '/genetics'
+    | '/guest-post'
+    | '/'
+    | '/post/$id'
   id:
     | '__root__'
     | '/_app'
     | '/_app/auth'
+    | '/_app/creation'
     | '/_app/critic'
     | '/_app/critique'
+    | '/_app/evolution'
+    | '/_app/genetics'
     | '/_app/guest-post'
     | '/_app/'
+    | '/_app/post/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -111,6 +169,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGuestPostRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/genetics': {
+      id: '/_app/genetics'
+      path: '/genetics'
+      fullPath: '/genetics'
+      preLoaderRoute: typeof AppGeneticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/evolution': {
+      id: '/_app/evolution'
+      path: '/evolution'
+      fullPath: '/evolution'
+      preLoaderRoute: typeof AppEvolutionRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/critique': {
       id: '/_app/critique'
       path: '/critique'
@@ -125,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCriticRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/creation': {
+      id: '/_app/creation'
+      path: '/creation'
+      fullPath: '/creation'
+      preLoaderRoute: typeof AppCreationRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/auth': {
       id: '/_app/auth'
       path: '/auth'
@@ -132,23 +211,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/post/$id': {
+      id: '/_app/post/$id'
+      path: '/post/$id'
+      fullPath: '/post/$id'
+      preLoaderRoute: typeof AppPostIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppAuthRoute: typeof AppAuthRoute
+  AppCreationRoute: typeof AppCreationRoute
   AppCriticRoute: typeof AppCriticRoute
   AppCritiqueRoute: typeof AppCritiqueRoute
+  AppEvolutionRoute: typeof AppEvolutionRoute
+  AppGeneticsRoute: typeof AppGeneticsRoute
   AppGuestPostRoute: typeof AppGuestPostRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppPostIdRoute: typeof AppPostIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAuthRoute: AppAuthRoute,
+  AppCreationRoute: AppCreationRoute,
   AppCriticRoute: AppCriticRoute,
   AppCritiqueRoute: AppCritiqueRoute,
+  AppEvolutionRoute: AppEvolutionRoute,
+  AppGeneticsRoute: AppGeneticsRoute,
   AppGuestPostRoute: AppGuestPostRoute,
   AppIndexRoute: AppIndexRoute,
+  AppPostIdRoute: AppPostIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
