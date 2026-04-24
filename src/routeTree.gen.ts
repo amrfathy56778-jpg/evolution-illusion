@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
+import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
 import { Route as AppCriticRouteImport } from './routes/_app/critic'
 import { Route as AppAuthRouteImport } from './routes/_app/auth'
 
@@ -21,6 +23,16 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGuestPostRoute = AppGuestPostRouteImport.update({
+  id: '/guest-post',
+  path: '/guest-post',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCritiqueRoute = AppCritiqueRouteImport.update({
+  id: '/critique',
+  path: '/critique',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCriticRoute = AppCriticRouteImport.update({
@@ -38,10 +50,14 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AppAuthRoute
   '/critic': typeof AppCriticRoute
+  '/critique': typeof AppCritiqueRoute
+  '/guest-post': typeof AppGuestPostRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AppAuthRoute
   '/critic': typeof AppCriticRoute
+  '/critique': typeof AppCritiqueRoute
+  '/guest-post': typeof AppGuestPostRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -49,14 +65,23 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/auth': typeof AppAuthRoute
   '/_app/critic': typeof AppCriticRoute
+  '/_app/critique': typeof AppCritiqueRoute
+  '/_app/guest-post': typeof AppGuestPostRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/critic'
+  fullPaths: '/' | '/auth' | '/critic' | '/critique' | '/guest-post'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/critic' | '/'
-  id: '__root__' | '/_app' | '/_app/auth' | '/_app/critic' | '/_app/'
+  to: '/auth' | '/critic' | '/critique' | '/guest-post' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/auth'
+    | '/_app/critic'
+    | '/_app/critique'
+    | '/_app/guest-post'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -79,6 +104,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/guest-post': {
+      id: '/_app/guest-post'
+      path: '/guest-post'
+      fullPath: '/guest-post'
+      preLoaderRoute: typeof AppGuestPostRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/critique': {
+      id: '/_app/critique'
+      path: '/critique'
+      fullPath: '/critique'
+      preLoaderRoute: typeof AppCritiqueRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/critic': {
       id: '/_app/critic'
       path: '/critic'
@@ -99,12 +138,16 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAuthRoute: typeof AppAuthRoute
   AppCriticRoute: typeof AppCriticRoute
+  AppCritiqueRoute: typeof AppCritiqueRoute
+  AppGuestPostRoute: typeof AppGuestPostRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAuthRoute: AppAuthRoute,
   AppCriticRoute: AppCriticRoute,
+  AppCritiqueRoute: AppCritiqueRoute,
+  AppGuestPostRoute: AppGuestPostRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -116,3 +159,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
