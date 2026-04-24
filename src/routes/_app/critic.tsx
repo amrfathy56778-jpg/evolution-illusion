@@ -85,27 +85,9 @@ function CriticPage() {
           }
         }
       }
-      // Auto verify
-      if (acc.trim()) verify(acc);
     } catch (e: any) {
       toast.error("فشل الاتصال بالذكاء الاصطناعي");
     } finally { setLoading(false); }
-  };
-
-  const verify = async (text: string) => {
-    setMessages((prev) => prev.map((m, i) => i === prev.length - 1 ? { ...m, verifying: true } : m));
-    try {
-      const r = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ verify: text }),
-      });
-      const d = await r.json();
-      setMessages((prev) => prev.map((m, i) => i === prev.length - 1 ? { ...m, verifying: false, verification: d.verification } : m));
-    } catch { /* ignore */ }
   };
 
   return (
