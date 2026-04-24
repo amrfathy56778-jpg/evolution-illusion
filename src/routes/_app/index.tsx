@@ -78,8 +78,8 @@ function Home() {
           <h1
             className="text-5xl sm:text-6xl font-black leading-tight"
             style={{
-              color: "oklch(0.86 0.16 158)",
-              textShadow: "0 0 24px oklch(0.86 0.16 158 / 0.55), 0 0 8px oklch(0.86 0.16 158 / 0.4)",
+              color: "oklch(0.62 0.19 152)",
+              textShadow: "0 0 22px oklch(0.62 0.19 152 / 0.55), 0 0 8px oklch(0.62 0.19 152 / 0.4)",
             }}
           >
             وهم التطور
