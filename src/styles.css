@@ -89,7 +89,7 @@
   --c-guest: oklch(0.78 0.16 50);
 
   --glass-bg: oklch(0.28 0.05 200 / 0.45);
-  --glass-border: oklch(1 0 0 / 0.12);
+  --glass-border: oklch(1 0 0 / 0.28);
   --glass-highlight: oklch(1 0 0 / 0.08);
   --shadow-glow: 0 10px 40px -10px oklch(0.72 0.18 165 / 0.4);
   --shadow-glow-warm: 0 10px 40px -10px oklch(0.78 0.16 50 / 0.45);
@@ -144,9 +144,17 @@
     border: 1px solid var(--glass-border);
   }
   .glass-input {
-    background: oklch(1 0 0 / 0.06);
+    background: oklch(1 0 0 / 0.08);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    border: 1.5px solid oklch(1 0 0 / 0.35);
+    box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.1);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .glass-input:focus-within,
+  .glass-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px oklch(0.72 0.18 165 / 0.25);
+    outline: none;
   }
   .glow-emerald { box-shadow: 0 10px 40px -10px oklch(0.72 0.18 165 / 0.45); }
   .glow-warm { box-shadow: 0 10px 40px -10px oklch(0.78 0.16 50 / 0.45); }

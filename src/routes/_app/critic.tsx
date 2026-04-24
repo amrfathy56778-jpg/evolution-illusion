@@ -133,7 +133,7 @@ function CriticPage() {
         )}
       </div>
 
-      <form onSubmit={(e)=>{e.preventDefault(); send();}} className="glass rounded-2xl p-2 flex gap-2">
+      <form onSubmit={(e)=>{e.preventDefault(); send();}} className="glass-input rounded-2xl p-2 flex gap-2">
         <input
           value={input} onChange={(e)=>setInput(e.target.value)} disabled={loading}
           placeholder="اطرح سؤالك أو ادعاءً تطورياً للنقد…"
