@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCriticRouteImport } from './routes/_app/critic'
+import { Route as AppAuthRouteImport } from './routes/_app/auth'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -21,24 +23,40 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCriticRoute = AppCriticRouteImport.update({
+  id: '/critic',
+  path: '/critic',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuthRoute = AppAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/auth': typeof AppAuthRoute
+  '/critic': typeof AppCriticRoute
 }
 export interface FileRoutesByTo {
+  '/auth': typeof AppAuthRoute
+  '/critic': typeof AppCriticRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/auth': typeof AppAuthRoute
+  '/_app/critic': typeof AppCriticRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/auth' | '/critic'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_app' | '/_app/'
+  to: '/auth' | '/critic' | '/'
+  id: '__root__' | '/_app' | '/_app/auth' | '/_app/critic' | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,14 +79,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/critic': {
+      id: '/_app/critic'
+      path: '/critic'
+      fullPath: '/critic'
+      preLoaderRoute: typeof AppCriticRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/auth': {
+      id: '/_app/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AppAuthRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAuthRoute: typeof AppAuthRoute
+  AppCriticRoute: typeof AppCriticRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAuthRoute: AppAuthRoute,
+  AppCriticRoute: AppCriticRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
