@@ -1,0 +1,7 @@
+project_id = "zwindietzovcleiatfbr"
+
+[functions.evolution-critic]
+verify_jwt = false
+
+[functions.verify-critique]
+verify_jwt = false

@@ -1,0 +1,174 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Brain, PenLine, Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
+
+export const Route = createFileRoute("/_app/")({
+  component: Home,
+  head: () => ({
+    meta: [
+      { title: "وهم التطور — الرئيسية" },
+      { name: "description", content: "منصة علمية للنقد المنهجي لنظرية التطور، مدعومة بأحدث إصدارات Gemini." },
+    ],
+  }),
+});
+
+const CAT_LABEL: Record<string, string> = {
+  critique: "نقد التطور",
+  evolution_basics: "أساسيات التطور",
+  genetics: "علم الوراثة",
+  creation_marvels: "إبداع الخالق",
+};
+const CAT_COLOR: Record<string, string> = {
+  critique: "var(--c-critique)",
+  evolution_basics: "var(--c-evolution)",
+  genetics: "var(--c-genetics)",
+  creation_marvels: "var(--c-creation)",
+};
+
+function Home() {
+  const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
+  const [latest, setLatest] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ count: posts }, { count: supervisors }, { data: latestPosts }] = await Promise.all([
+        supabase.from("posts").select("*", { count: "exact", head: true }),
+        supabase.from("user_roles").select("*", { count: "exact", head: true }).in("role", ["owner", "moderator"]),
+        supabase.from("posts").select("*").order("created_at", { ascending: false }).limit(5),
+      ]);
+      setStats({ posts: posts ?? 0, supervisors: supervisors ?? 0, categories: 4 });
+      setLatest(latestPosts ?? []);
+    })();
+  }, []);
+
+  return (
+    <div className="space-y-8">
+      {/* Hero */}
+      <section className="text-center space-y-4 py-6">
+        <p className="text-xs font-semibold tracking-widest text-primary/80">
+          ✦ تحليل علمي · نقد منهجي · حقيقة موثقة ✦
+        </p>
+        <h1 className="text-5xl sm:text-6xl font-black text-gradient-emerald leading-tight">
+          وهم التطور
+        </h1>
+        <p className="text-base text-muted-foreground max-w-xl mx-auto">
+          الدفاع عن الحقيقة العلمية ونقد الأوهام التطورية بحدّة وصرامة
+        </p>
+        <p className="text-sm text-foreground/80 max-w-2xl mx-auto leading-relaxed pt-2">
+          منصة علمية تحليلية تتناول نظرية التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة.
+        </p>
+      </section>
+
+      {/* Stats */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard value={stats.posts} label="منشورات" icon={BookOpen} color="var(--c-evolution)" />
+        <StatCard value={stats.supervisors} label="مشرفون" icon={Users} color="var(--c-genetics)" />
+        <StatCard value={stats.categories} label="أقسام" icon={Sparkles} color="var(--c-creation)" />
+        <StatCard value="∞" label="نقاشات AI" icon={MessageCircle} color="var(--c-critic)" />
+      </section>
+
+      {/* Two main CTAs side by side */}
+      <section className="grid sm:grid-cols-2 gap-4">
+        <Link
+          to="/critic"
+          className="glass rounded-3xl p-6 group hover:scale-[1.02] transition-all relative overflow-hidden glow-emerald"
+          style={{ borderColor: "color-mix(in oklab, var(--c-critic) 40%, transparent)" }}
+        >
+          <div className="absolute inset-0 opacity-30 pointer-events-none"
+               style={{ background: "radial-gradient(ellipse at top, var(--c-critic), transparent 70%)" }} />
+          <div className="relative space-y-3 text-center">
+            <div className="mx-auto h-14 w-14 rounded-2xl glass-strong grid place-items-center text-2xl">
+              🧠
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: "var(--c-critic)" }}>
+              ناقد التطور الذكي
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              مدعوم بأحدث Gemini · تحقق علمي مزدوج
+            </p>
+            <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-critic)" }}>
+              ابدأ النقاش <ArrowLeft className="h-3 w-3" />
+            </span>
+          </div>
+        </Link>
+
+        <Link
+          to="/guest-post"
+          className="glass rounded-3xl p-6 group hover:scale-[1.02] transition-all relative overflow-hidden glow-warm"
+          style={{ borderColor: "color-mix(in oklab, var(--c-guest) 40%, transparent)" }}
+        >
+          <div className="absolute inset-0 opacity-30 pointer-events-none"
+               style={{ background: "radial-gradient(ellipse at top, var(--c-guest), transparent 70%)" }} />
+          <div className="relative space-y-3 text-center">
+            <div className="mx-auto h-14 w-14 rounded-2xl glass-strong grid place-items-center text-2xl">
+              ✍️
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: "var(--c-guest)" }}>
+              النشر كضيف
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              شارك طرحك · يُعرض للمراجعة
+            </p>
+            <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-guest)" }}>
+              أرسل منشورك <ArrowLeft className="h-3 w-3" />
+            </span>
+          </div>
+        </Link>
+      </section>
+
+      {/* Latest posts */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
+          📌 آخر المنشورات
+        </h2>
+        {latest.length === 0 ? (
+          <div className="glass rounded-2xl p-8 text-center text-muted-foreground text-sm">
+            لا توجد منشورات بعد. كن أول من يكتب!
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {latest.map((p) => (
+              <article key={p.id} className="glass rounded-2xl p-5 hover:bg-white/5 transition">
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                    style={{
+                      background: `color-mix(in oklab, ${CAT_COLOR[p.category]} 20%, transparent)`,
+                      color: CAT_COLOR[p.category],
+                      border: `1px solid color-mix(in oklab, ${CAT_COLOR[p.category]} 40%, transparent)`,
+                    }}
+                  >
+                    {CAT_LABEL[p.category]}
+                  </span>
+                </div>
+                <h3 className="font-bold text-base mb-1.5">{p.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                  {p.content.slice(0, 200)}...
+                </p>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10 text-[11px]">
+                  <span className="text-muted-foreground">
+                    {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
+                  </span>
+                  <Link to="/post/$id" params={{ id: p.id }} className="text-primary font-semibold hover:underline">
+                    اقرأ المزيد ←
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function StatCard({ value, label, icon: Icon, color }: any) {
+  return (
+    <div className="glass rounded-2xl p-4 text-center" style={{ borderColor: `color-mix(in oklab, ${color} 30%, transparent)` }}>
+      <Icon className="h-5 w-5 mx-auto mb-1.5" style={{ color }} />
+      <div className="text-2xl font-black" style={{ color }}>{value}</div>
+      <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
+    </div>
+  );
+}
