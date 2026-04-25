@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Shield, Check, X, UserPlus, Trash2, Mail } from "lucide-react";
+import { Shield, Check, X, UserPlus, Trash2, Mail, ShieldCheck } from "lucide-react";
+import { RichContent } from "@/components/RichEditor";
+import { AiReport } from "@/components/AiReport";
 
 export const Route = createFileRoute("/_app/admin")({
   component: Admin,
@@ -94,9 +96,26 @@ function Admin() {
             <div className="flex flex-wrap items-center gap-2 text-[11px]">
               <span className="px-2 py-0.5 rounded-full bg-white/10">{CAT[g.category]}</span>
               <span className="text-muted-foreground">{g.guest_name} · {g.guest_email}</span>
+              {g.ai_verdict && (
+                <span className="px-2 py-0.5 rounded-full font-bold flex items-center gap-1"
+                  style={{
+                    background: g.ai_verdict === "APPROVE" ? "color-mix(in oklab, var(--c-evolution) 25%, transparent)"
+                      : g.ai_verdict === "REJECT" ? "color-mix(in oklab, oklch(0.7 0.2 25) 25%, transparent)"
+                      : "color-mix(in oklab, var(--c-guest) 25%, transparent)",
+                    color: g.ai_verdict === "APPROVE" ? "var(--c-evolution)"
+                      : g.ai_verdict === "REJECT" ? "oklch(0.7 0.2 25)" : "var(--c-guest)",
+                  }}>
+                  <ShieldCheck className="h-3 w-3"/> AI: {g.ai_verdict}
+                </span>
+              )}
             </div>
             <h3 className="font-bold">{g.title}</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{g.content}</p>
+            <div className="text-xs text-muted-foreground leading-relaxed">
+              <RichContent html={g.content}/>
+            </div>
+            {g.ai_report && (
+              <AiReport report={g.ai_report} refs={g.ai_refs ?? []}/>
+            )}
             <div className="flex gap-2 pt-2 border-t border-white/10">
               <button onClick={()=>review(g.id, true)} className="flex-1 rounded-xl py-2 text-xs font-bold bg-primary text-primary-foreground flex items-center justify-center gap-1">
                 <Check className="h-3.5 w-3.5"/> قبول ونشر
