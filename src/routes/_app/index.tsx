@@ -150,7 +150,7 @@ function Home() {
       </section>
 
       {/* Mission card with Basmala (matches reference video) */}
-      <section className="glass-strong rounded-[2rem] p-6 sm:p-8 text-center space-y-5 relative overflow-hidden">
+      <section aria-label="آية قرآنية" className="glass-strong rounded-[2rem] p-6 sm:p-8 text-center space-y-5 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-60"
              style={{ background: "radial-gradient(ellipse at top, color-mix(in oklab, var(--primary) 18%, transparent), transparent 65%)" }} />
         <div className="relative space-y-4">
@@ -165,7 +165,7 @@ function Home() {
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
           </p>
           <p
-            className="text-base sm:text-xl leading-loose max-w-2xl mx-auto"
+            className="text-base sm:text-xl leading-loose max-w-2xl mx-auto px-1"
             style={{
               fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
               color: "oklch(0.82 0.12 165)",
