@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, Node, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -7,7 +7,6 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
-import { Node } from "@tiptap/core";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
@@ -31,7 +30,7 @@ const VideoNode = Node.create({
     };
   },
   parseHTML() { return [{ tag: "video" }]; },
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return ["video", { controls: "true", class: "rounded-xl my-3 mx-auto max-w-full", ...HTMLAttributes }];
   },
 });
