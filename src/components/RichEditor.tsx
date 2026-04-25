@@ -7,6 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
+import { Node } from "@tiptap/core";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
@@ -16,6 +17,24 @@ import {
 import { useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Minimal inline-video node so tiptap preserves <video controls src="...">
+const VideoNode = Node.create({
+  name: "video",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      src: { default: null },
+      controls: { default: true },
+    };
+  },
+  parseHTML() { return [{ tag: "video" }]; },
+  renderHTML({ HTMLAttributes }) {
+    return ["video", { controls: "true", class: "rounded-xl my-3 mx-auto max-w-full", ...HTMLAttributes }];
+  },
+});
 
 const COLORS = [
   "#ffffff", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#94a3b8",
@@ -145,6 +164,7 @@ export function RichEditor({ value, onChange, placeholder }:
       Image.configure({ HTMLAttributes: { class: "rounded-xl my-3 max-w-full mx-auto" } }),
       TextAlign.configure({ types: ["heading", "paragraph"], defaultAlignment: "right" }),
       Youtube.configure({ controls: true, nocookie: true, HTMLAttributes: { class: "rounded-xl my-3 mx-auto max-w-full" } }),
+      VideoNode,
     ],
     content: value || "",
     editorProps: {
