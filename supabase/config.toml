@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.ai-search]
 verify_jwt = false
+
+[functions.guest-post-review]
+verify_jwt = false
