@@ -11,8 +11,11 @@ import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
   AlignRight, AlignCenter, AlignLeft, AlignJustify, Undo2, Redo2, Minus, Palette,
+  Video, Upload,
 } from "lucide-react";
 import { useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const COLORS = [
   "#ffffff", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#94a3b8",
@@ -30,7 +33,8 @@ function Btn({ onClick, active, disabled, title, children }:
 }
 
 function Toolbar({ editor }: { editor: Editor }) {
-  const fileRef = useRef<HTMLInputElement>(null);
+  const imgRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
 
   const setLink = () => {
     const prev = editor.getAttributes("link").href as string | undefined;
@@ -50,16 +54,36 @@ function Toolbar({ editor }: { editor: Editor }) {
     if (url) editor.commands.setYoutubeVideo({ src: url, width: 560, height: 315 });
   };
 
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
+  const uploadToBucket = async (f: File) => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("post-media").upload(path, f, {
+      contentType: f.type, upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = "";
     if (!f) return;
-    if (f.size > 2 * 1024 * 1024) { alert("الحجم الأقصى 2MB"); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      editor.chain().focus().setImage({ src: reader.result as string }).run();
-    };
-    reader.readAsDataURL(f);
-    e.target.value = "";
+    if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); return; }
+    try {
+      const url = await uploadToBucket(f);
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
+  };
+
+  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
+    try {
+      const url = await uploadToBucket(f);
+      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
+      editor.chain().focus().insertContent(html).run();
+    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
   };
 
   return (
@@ -100,9 +124,11 @@ function Toolbar({ editor }: { editor: Editor }) {
       <Btn title="رابط (يحول الكلمة المحددة لرابط)" active={editor.isActive("link")} onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
       <Btn title="إزالة الرابط" disabled={!editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()}><Link2Off className="h-3.5 w-3.5"/></Btn>
       <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
-      <Btn title="رفع صورة" onClick={() => fileRef.current?.click()}><span className="text-[10px] font-bold">⬆</span></Btn>
+      <Btn title="رفع صورة من جهازك" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
+      <Btn title="رفع فيديو من جهازك" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
       <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload}/>
+      <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={onUploadImage}/>
+      <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
     </div>
   );
 }
