@@ -80,6 +80,7 @@ function GuestPost() {
       ai_report: report,
       ai_verdict: verdict,
       ai_reviewed_at: new Date().toISOString(),
+      ai_refs: refs,
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
