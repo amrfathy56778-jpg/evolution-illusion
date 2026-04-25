@@ -164,11 +164,15 @@ function Home() {
           >
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
           </p>
-          <h2 className="text-lg sm:text-2xl font-black leading-relaxed max-w-2xl mx-auto">
-            الدفاع عن الحقيقة العلمية ونقد الأوهام التطورية بحدة وصرامة
-          </h2>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            منصة علمية تحليلية تتناول نظرية التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحةً بأداة ذكاء اصطناعي متخصصة.
+          <p
+            className="text-base sm:text-xl leading-loose max-w-2xl mx-auto"
+            style={{
+              fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
+              color: "oklch(0.82 0.12 165)",
+              textShadow: "0 0 14px oklch(0.82 0.12 165 / 0.35)",
+            }}
+          >
+            ﴿ أَمْ جَعَلُوا لِلَّهِ شُرَكَاءَ خَلَقُوا كَخَلْقِهِ فَتَشَابَهَ الْخَلْقُ عَلَيْهِمْ ۚ قُلِ اللَّهُ خَالِقُ كُلِّ شَيْءٍ وَهُوَ الْوَاحِدُ الْقَهَّارُ ﴾
           </p>
         </div>
       </section>
