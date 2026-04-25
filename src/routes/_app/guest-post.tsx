@@ -4,7 +4,9 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { PenLine, Send, CheckCircle2 } from "lucide-react";
+import { PenLine, Send, CheckCircle2, ShieldCheck, Loader2, AlertTriangle, XCircle } from "lucide-react";
+import { RichEditor } from "@/components/RichEditor";
+import { AiReport } from "@/components/AiReport";
 
 export const Route = createFileRoute("/_app/guest-post")({
   component: GuestPost,
@@ -30,7 +32,7 @@ function GuestPost() {
   const { isStaff } = useAuth();
   const [form, setForm] = useState({ guest_name: "", guest_email: "", title: "", content: "", category: "critique" as const });
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<null | { report: string; verdict: string; refs: { n: number; id: string; title: string }[] }>(null);
 
   if (isStaff) {
     return (
@@ -54,22 +56,57 @@ function GuestPost() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse(form);
+    const plain = form.content.replace(/<[^>]+>/g, "").trim();
+    const parsed = schema.safeParse({ ...form, content: plain.length >= 20 ? form.content : "" });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setLoading(true);
-    const { error } = await supabase.from("guest_posts").insert(parsed.data);
+
+    // 1) AI review first
+    let report = ""; let verdict = "REVISE"; let refs: any[] = [];
+    try {
+      const { data, error: aiErr } = await supabase.functions.invoke("guest-post-review", {
+        body: { title: parsed.data.title, content: parsed.data.content, category: parsed.data.category },
+      });
+      if (aiErr) throw aiErr;
+      report = data?.report ?? ""; verdict = data?.verdict ?? "REVISE"; refs = data?.refs ?? [];
+    } catch (err: any) {
+      toast.error("تعذّرت مراجعة الذكاء الاصطناعي: " + (err?.message ?? "خطأ"));
+      setLoading(false); return;
+    }
+
+    // 2) Save submission with the AI report attached
+    const { error } = await supabase.from("guest_posts").insert({
+      ...parsed.data,
+      ai_report: report,
+      ai_verdict: verdict,
+      ai_reviewed_at: new Date().toISOString(),
+    });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    setDone(true);
+    setDone({ report, verdict, refs });
   };
 
   if (done) {
+    const v = done.verdict;
+    const tone = v === "APPROVE"
+      ? { c: "var(--c-evolution)", icon: <CheckCircle2 className="h-12 w-12 mx-auto"/>, t: "قبِله المحكّم الذكي" }
+      : v === "REJECT"
+      ? { c: "oklch(0.7 0.2 25)", icon: <XCircle className="h-12 w-12 mx-auto"/>, t: "رفضه المحكّم الذكي" }
+      : { c: "var(--c-guest)", icon: <AlertTriangle className="h-12 w-12 mx-auto"/>, t: "يحتاج مراجعة" };
     return (
-      <div className="max-w-md mx-auto text-center glass rounded-3xl p-8 space-y-3 glow-warm">
-        <CheckCircle2 className="h-14 w-14 mx-auto" style={{ color: "var(--c-guest)" }} />
-        <h2 className="text-2xl font-bold">تم إرسال منشورك</h2>
-        <p className="text-sm text-muted-foreground">سيُراجَع من قبل المشرفين قبل النشر. شكراً لمساهمتك!</p>
-        <Link to="/" className="inline-block mt-3 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-bold">العودة للرئيسية</Link>
+      <div className="max-w-2xl mx-auto space-y-4">
+        <div className="text-center glass rounded-3xl p-6 space-y-2 glow-warm">
+          <div style={{ color: tone.c }}>{tone.icon}</div>
+          <h2 className="text-2xl font-bold">تم إرسال منشورك</h2>
+          <p className="text-xs text-muted-foreground">سيتأكّد المشرفون من القرار قبل النشر النهائي.</p>
+          <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-bold" style={{ color: tone.c }}>
+            <ShieldCheck className="h-3.5 w-3.5"/> مراجعة الذكاء الاصطناعي: {tone.t}
+          </div>
+        </div>
+        <AiReport report={done.report} refs={done.refs}/>
+        <div className="text-center">
+          <Link to="/" className="inline-block px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-bold">العودة للرئيسية</Link>
+        </div>
       </div>
     );
   }
@@ -78,10 +115,10 @@ function GuestPost() {
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-guest)" }}>
-          <PenLine className="h-3.5 w-3.5" /> النشر كضيف · يخضع للمراجعة
+          <PenLine className="h-3.5 w-3.5" /> النشر كضيف · مراجعة AI ثم اعتماد المشرفين
         </div>
         <h1 className="text-3xl font-black text-gradient-emerald">شارك طرحك</h1>
-        <p className="text-xs text-muted-foreground">سيراجع المشرفون منشورك قبل نشره للجميع</p>
+        <p className="text-xs text-muted-foreground">يمكنك إضافة صور وفيديوهات من جهازك وتنسيق النص بحرية</p>
       </div>
 
       <form onSubmit={submit} className="glass rounded-3xl p-6 space-y-3">
@@ -97,13 +134,12 @@ function GuestPost() {
         </select>
         <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-primary/40"
           placeholder="عنوان المنشور" value={form.title} onChange={e=>setForm({...form, title: e.target.value})}/>
-        <textarea rows={10} className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-primary/40 leading-relaxed"
-          placeholder="اكتب محتوى منشورك هنا… كن واضحاً ومستنداً للمراجع كلما أمكن."
-          value={form.content} onChange={e=>setForm({...form, content: e.target.value})}/>
+        <RichEditor value={form.content} onChange={(html)=>setForm({...form, content: html})}
+          placeholder="اكتب محتوى منشورك… يمكنك إضافة صور وفيديوهات من جهازك وروابط وتنسيق النص."/>
         <button type="submit" disabled={loading}
           className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-sm hover:opacity-90 transition glow-warm flex items-center justify-center gap-2 disabled:opacity-50"
           style={{ background: "var(--c-guest)", color: "oklch(0.15 0.05 50)" }}>
-          <Send className="h-4 w-4" /> {loading ? "جارٍ الإرسال…" : "إرسال للمراجعة"}
+          {loading ? <><Loader2 className="h-4 w-4 animate-spin"/> جارٍ مراجعة AI…</> : <><Send className="h-4 w-4" /> إرسال ومراجعة بالذكاء الاصطناعي</>}
         </button>
       </form>
     </div>
