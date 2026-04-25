@@ -40,6 +40,9 @@ export type Database = {
       }
       guest_posts: {
         Row: {
+          ai_report: string | null
+          ai_reviewed_at: string | null
+          ai_verdict: string | null
           category: Database["public"]["Enums"]["post_category"]
           content: string
           created_at: string
@@ -52,6 +55,9 @@ export type Database = {
           title: string
         }
         Insert: {
+          ai_report?: string | null
+          ai_reviewed_at?: string | null
+          ai_verdict?: string | null
           category: Database["public"]["Enums"]["post_category"]
           content: string
           created_at?: string
@@ -64,6 +70,9 @@ export type Database = {
           title: string
         }
         Update: {
+          ai_report?: string | null
+          ai_reviewed_at?: string | null
+          ai_verdict?: string | null
           category?: Database["public"]["Enums"]["post_category"]
           content?: string
           created_at?: string
