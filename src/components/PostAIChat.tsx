@@ -91,13 +91,13 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-3 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl glass-strong rounded-3xl flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-        <header className="flex items-center justify-between p-4 border-b border-white/10">
-          <div className="flex items-center gap-2 min-w-0">
+      <div className="w-full max-w-2xl glass-strong rounded-3xl flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <header className="flex items-center justify-between gap-2 p-4 border-b border-white/10 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Sparkles className="h-4 w-4 text-primary shrink-0" />
-            <h3 className="font-bold text-sm truncate">ملخّص ونقاش: {post.title}</h3>
+            <h3 className="font-bold text-sm truncate min-w-0">ملخّص ونقاش: {post.title}</h3>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10 shrink-0"><X className="h-4 w-4" /></button>
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[280px]">
