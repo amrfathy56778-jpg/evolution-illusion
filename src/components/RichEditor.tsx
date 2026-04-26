@@ -11,11 +11,21 @@ import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
   AlignRight, AlignCenter, AlignLeft, AlignJustify, Undo2, Redo2, Minus, Palette,
-  Video, Upload,
+  Video, Upload, Maximize2, Minimize2,
 } from "lucide-react";
 import { useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Resizable image: stores width as percentage so it survives serialization
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: { default: null, parseHTML: el => el.getAttribute("width"), renderHTML: a => a.width ? { width: a.width } : {} },
+    };
+  },
+});
 
 // Minimal inline-video node so tiptap preserves <video controls src="...">
 const VideoNode = Node.create({
@@ -27,6 +37,7 @@ const VideoNode = Node.create({
     return {
       src: { default: null },
       controls: { default: true },
+      width: { default: null, parseHTML: el => el.getAttribute("width"), renderHTML: a => a.width ? { width: a.width } : {} },
     };
   },
   parseHTML() { return [{ tag: "video" }]; },
@@ -104,6 +115,13 @@ function Toolbar({ editor }: { editor: Editor }) {
     } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
   };
 
+  const setMediaWidth = (w: string | null) => {
+    if (editor.isActive("image")) editor.chain().focus().updateAttributes("image", { width: w }).run();
+    else if (editor.isActive("video")) editor.chain().focus().updateAttributes("video", { width: w }).run();
+    else toast.info("اختر صورة أو فيديو أولاً");
+  };
+  const mediaSelected = editor.isActive("image") || editor.isActive("video");
+
   return (
     <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-white/10 bg-white/5 rounded-t-xl sticky top-0 z-10">
       <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="h-3.5 w-3.5"/></Btn>
@@ -145,6 +163,23 @@ function Toolbar({ editor }: { editor: Editor }) {
       <Btn title="رفع صورة من جهازك" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
       <Btn title="رفع فيديو من جهازك" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
       <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <span className="text-[10px] text-muted-foreground px-1">حجم الوسائط:</span>
+      <Btn title="صغير 30%" disabled={!mediaSelected} onClick={() => setMediaWidth("30%")}>
+        <span className="text-[10px] font-bold">30٪</span>
+      </Btn>
+      <Btn title="متوسط 50%" disabled={!mediaSelected} onClick={() => setMediaWidth("50%")}>
+        <span className="text-[10px] font-bold">50٪</span>
+      </Btn>
+      <Btn title="كبير 75%" disabled={!mediaSelected} onClick={() => setMediaWidth("75%")}>
+        <span className="text-[10px] font-bold">75٪</span>
+      </Btn>
+      <Btn title="كامل العرض" disabled={!mediaSelected} onClick={() => setMediaWidth("100%")}>
+        <Maximize2 className="h-3.5 w-3.5"/>
+      </Btn>
+      <Btn title="إعادة الحجم الأصلي" disabled={!mediaSelected} onClick={() => setMediaWidth(null)}>
+        <Minimize2 className="h-3.5 w-3.5"/>
+      </Btn>
       <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={onUploadImage}/>
       <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
     </div>
@@ -160,7 +195,7 @@ export function RichEditor({ value, onChange, placeholder }:
       TextStyle,
       Color,
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: "text-primary underline" } }),
-      Image.configure({ HTMLAttributes: { class: "rounded-xl my-3 max-w-full mx-auto" } }),
+      ResizableImage.configure({ HTMLAttributes: { class: "rounded-xl my-3 max-w-full mx-auto" } }),
       TextAlign.configure({ types: ["heading", "paragraph"], defaultAlignment: "right" }),
       Youtube.configure({ controls: true, nocookie: true, HTMLAttributes: { class: "rounded-xl my-3 mx-auto max-w-full" } }),
       VideoNode,
