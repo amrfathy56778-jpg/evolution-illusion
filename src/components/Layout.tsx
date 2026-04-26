@@ -19,6 +19,8 @@ export default function Layout() {
   const path = location.pathname;
   // Show categories nav only on home, section pages and posting pages.
   const showNav = path === "/" || ["/critique", "/evolution", "/genetics", "/creation", "/guest-post"].some(p => path === p || path.startsWith(p + "/"));
+  // Reading-focused pages should maximize horizontal space
+  const isReadingFocus = path.startsWith("/post/") || path === "/critic";
 
   const [theme, setTheme] = useState<"dark" | "light">(() => (typeof window !== "undefined" && localStorage.getItem("theme") === "light") ? "light" : "dark");
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function Layout() {
         )}
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-3 sm:px-4 py-6">
+      <main className={`relative z-10 mx-auto px-2 sm:px-4 py-4 ${isReadingFocus ? "max-w-5xl" : "max-w-6xl"}`}>
         <Outlet />
       </main>
 
