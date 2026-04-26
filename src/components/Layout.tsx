@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, MessageSquare, PenLine } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 
 const NAV = [
@@ -15,6 +16,15 @@ const NAV = [
 export default function Layout() {
   const { user, isStaff, isOwner, signOut } = useAuth();
   const { location } = useRouterState();
+  const path = location.pathname;
+  // Show categories nav only on home, section pages and posting pages.
+  const showNav = path === "/" || ["/critique", "/evolution", "/genetics", "/creation", "/guest-post"].some(p => path === p || path.startsWith(p + "/"));
+
+  const [theme, setTheme] = useState<"dark" | "light">(() => (typeof window !== "undefined" && localStorage.getItem("theme") === "light") ? "light" : "dark");
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", theme === "light");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   return (
     <div className="ambient-orbs relative min-h-screen">
@@ -25,6 +35,12 @@ export default function Layout() {
           </Link>
 
           <div className="flex items-center gap-2">
+            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+              {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+            <TranslateButton />
             {isStaff && (
               <Link to="/admin" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-xs font-semibold hover:bg-white/10 transition">
                 <Shield className="h-3.5 w-3.5" />
@@ -43,9 +59,10 @@ export default function Layout() {
           </div>
         </div>
 
+        {showNav && (
         <nav className="mx-auto max-w-6xl px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-thin">
           {NAV.map((item) => {
-            const active = location.pathname === item.to;
+            const active = path === item.to;
             const Icon = item.icon;
             return (
               <Link
@@ -64,15 +81,55 @@ export default function Layout() {
             );
           })}
         </nav>
+        )}
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8">
+      <main className="relative z-10 mx-auto max-w-6xl px-3 sm:px-4 py-6">
         <Outlet />
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
         وهم التطور · منصة علمية للنقد المنهجي · {new Date().getFullYear()}
       </footer>
+      <div id="google_translate_element" className="fixed bottom-3 left-3 z-40 opacity-0 pointer-events-none"/>
     </div>
+  );
+}
+
+// Google Translate widget — loads on demand, then opens the language picker
+function TranslateButton() {
+  const [ready, setReady] = useState(false);
+  const ensureLoaded = () => {
+    if ((window as any).google?.translate?.TranslateElement) { setReady(true); return Promise.resolve(); }
+    return new Promise<void>((resolve) => {
+      (window as any).googleTranslateElementInit = () => {
+        new (window as any).google.translate.TranslateElement(
+          { pageLanguage: "ar", layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE },
+          "google_translate_element"
+        );
+        setReady(true);
+        resolve();
+      };
+      const s = document.createElement("script");
+      s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      s.async = true;
+      document.body.appendChild(s);
+    });
+  };
+  const open = async () => {
+    await ensureLoaded();
+    // Open native dropdown
+    setTimeout(() => {
+      const sel = document.querySelector<HTMLSelectElement>("#google_translate_element select");
+      if (sel) { sel.focus(); sel.click(); sel.dispatchEvent(new MouseEvent("mousedown")); }
+      const el = document.getElementById("google_translate_element");
+      if (el) { el.style.opacity = "1"; el.style.pointerEvents = "auto"; }
+    }, 100);
+  };
+  return (
+    <button onClick={open} title="ترجمة الموقع"
+      className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+      <Globe className="h-3.5 w-3.5" />
+    </button>
   );
 }
