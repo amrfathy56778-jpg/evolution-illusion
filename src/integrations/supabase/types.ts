@@ -95,30 +95,36 @@ export type Database = {
           author_name: string | null
           category: Database["public"]["Enums"]["post_category"]
           content: string
+          cover_image_url: string | null
           created_at: string
           id: string
           title: string
           updated_at: string
+          views_count: number
         }
         Insert: {
           author_id?: string | null
           author_name?: string | null
           category: Database["public"]["Enums"]["post_category"]
           content: string
+          cover_image_url?: string | null
           created_at?: string
           id?: string
           title: string
           updated_at?: string
+          views_count?: number
         }
         Update: {
           author_id?: string | null
           author_name?: string | null
           category?: Database["public"]["Enums"]["post_category"]
           content?: string
+          cover_image_url?: string | null
           created_at?: string
           id?: string
           title?: string
           updated_at?: string
+          views_count?: number
         }
         Relationships: []
       }
@@ -176,6 +182,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_post_views: { Args: { _post_id: string }; Returns: undefined }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
