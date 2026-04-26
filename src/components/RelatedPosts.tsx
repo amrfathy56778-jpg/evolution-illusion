@@ -24,7 +24,7 @@ export function RelatedPosts({ postId, category, title }: { postId: string; cate
       // simple relevance: same category + word overlap on title
       const { data } = await supabase.from("posts")
         .select("id,title,category,created_at,views_count,author_name,content")
-        .eq("category", category).neq("id", postId)
+        .eq("category", category as any).neq("id", postId)
         .order("created_at", { ascending: false }).limit(20);
       const words = title.split(/\s+/).filter(w => w.length > 2);
       const scored = (data ?? []).map((p) => ({
