@@ -31,12 +31,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "وهم التطور — منصة علمية للنقد المنهجي" },
-      { name: "description", content: "منصة علمية تحليلية تتناول نظرية التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة." },
+      { title: "وهم التطور" },
+      { name: "description", content: "منصة علمية نقدية تتناول خرافة التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { property: "og:title", content: "وهم التطور" },
-      { property: "og:description", content: "الدفاع عن الحقيقة العلمية ونقد الأوهام التطورية." },
+      { property: "og:description", content: "منصة علمية نقدية تتناول خرافة التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة." },
+      { name: "twitter:title", content: "وهم التطور" },
+      { name: "twitter:description", content: "منصة علمية نقدية تتناول خرافة التطور بالنقد الموضوعي المستند إلى أحدث الأبحاث، مسلّحة بأداة ذكاء اصطناعي متخصصة." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/ft3ULPpKzzbP7zYO8zM7VBAFfT72/social-images/social-1777203400827-1741004461598.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/ft3ULPpKzzbP7zYO8zM7VBAFfT72/social-images/social-1777203400827-1741004461598.webp" },
     ],
     links: [
       {
