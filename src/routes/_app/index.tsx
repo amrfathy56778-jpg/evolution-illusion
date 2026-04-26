@@ -32,7 +32,7 @@ function Home() {
   const { isStaff } = useAuth();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
-  const TYPED_TEXT = "الدفاع عن الحقيقة في مواجهة الأوهام التطورية";
+  const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
 
   useEffect(() => {
@@ -88,6 +88,7 @@ function Home() {
             <span>{typed}</span>
             <span className="inline-block w-[2px] h-[1em] align-[-0.15em] mx-1 bg-primary animate-pulse" />
           </p>
+          <p className="text-xs text-muted-foreground/80">لا تنسونا من صالح دعائكم</p>
           <div className="mx-auto h-[2px] w-40 rounded-full" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)", boxShadow: "0 0 18px var(--primary)" }} />
         </div>
       </section>

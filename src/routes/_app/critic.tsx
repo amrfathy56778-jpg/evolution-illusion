@@ -140,7 +140,7 @@ function CriticPage() {
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground text-sm py-12">
             <Brain className="h-10 w-10 mx-auto mb-3 opacity-50" style={{ color: "var(--c-critic)" }}/>
-            ابدأ بسؤال مثل: <em>"كيف يفسر التطور الانفجار الكامبري؟"</em>
+            ابدأ بسؤال مثل: <em>"هل تؤدي الطفرات للتطور؟"</em>
           </div>
         )}
         {messages.map((m, i) => (

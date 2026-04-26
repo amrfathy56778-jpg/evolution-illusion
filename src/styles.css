@@ -115,6 +115,35 @@
   --sidebar-ring: oklch(0.78 0.15 195);
 }
 
+/* Light theme overrides */
+html.light {
+  --background: oklch(0.985 0.005 240);
+  --foreground: oklch(0.18 0.03 246);
+  --card: oklch(0.97 0.008 240);
+  --card-foreground: oklch(0.18 0.03 246);
+  --popover: oklch(0.99 0.005 240);
+  --popover-foreground: oklch(0.18 0.03 246);
+  --primary: oklch(0.55 0.16 185);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.01 240);
+  --secondary-foreground: oklch(0.2 0.03 246);
+  --muted: oklch(0.94 0.01 240);
+  --muted-foreground: oklch(0.42 0.02 250);
+  --accent: oklch(0.92 0.04 215);
+  --accent-foreground: oklch(0.2 0.03 246);
+  --border: oklch(0.18 0.03 246 / 18%);
+  --input: oklch(0.18 0.03 246 / 18%);
+  --glass-bg: oklch(1 0 0 / 0.6);
+  --glass-border: oklch(0.18 0.03 246 / 0.16);
+  --glass-highlight: oklch(1 0 0 / 0.5);
+  --gradient-bg:
+    radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.78 0.12 185 / 0.18), transparent 58%),
+    radial-gradient(ellipse 760px 580px at 84% 18%, oklch(0.78 0.1 220 / 0.14), transparent 56%),
+    linear-gradient(165deg, oklch(0.985 0.005 240), oklch(0.96 0.01 220));
+}
+html.light .glass-strong { background: oklch(1 0 0 / 0.78); }
+html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.5 0.15 195), oklch(0.45 0.18 270)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
 @layer base {
   * { border-color: var(--color-border); }
 
@@ -211,6 +240,7 @@
   .prose-content h2 { font-size: 1.4rem; font-weight: 800; margin: 0.9rem 0 0.5rem; color: var(--primary); }
   .prose-content h3 { font-size: 1.15rem; font-weight: 700; margin: 0.8rem 0 0.4rem; }
   .prose-content p { margin: 0.55rem 0; }
+  .prose-content p:empty { min-height: 0.6em; }
   .prose-content a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
   .prose-content a:hover { opacity: 0.8; }
   .prose-content strong { color: var(--foreground); font-weight: 800; }
