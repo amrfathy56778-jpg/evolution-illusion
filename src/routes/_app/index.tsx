@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
 import { AISearchButton } from "@/components/AISearchDialog";
+import { PostAIButton } from "@/components/PostAIChat";
 
 export const Route = createFileRoute("/_app/")({
   component: Home,
@@ -214,9 +215,12 @@ function Home() {
                   <span className="text-muted-foreground">
                     {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
                   </span>
-                  <Link to="/post/$id" params={{ id: p.id }} className="text-primary font-semibold hover:underline">
-                    اقرأ المزيد ←
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <PostAIButton post={{ id: p.id, title: p.title, content: p.content }} compact />
+                    <Link to="/post/$id" params={{ id: p.id }} className="text-primary font-semibold hover:underline">
+                      اقرأ المزيد ←
+                    </Link>
+                  </div>
                 </div>
               </article>
             ))}
