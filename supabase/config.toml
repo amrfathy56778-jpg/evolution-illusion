@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.guest-post-review]
 verify_jwt = false
+
+[functions.post-chat]
+verify_jwt = false
