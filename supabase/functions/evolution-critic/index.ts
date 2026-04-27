@@ -1,6 +1,8 @@
 // Edge function: نقد التطور بالذكاء الاصطناعي عبر Lovable AI Gateway
 // يستخدم أحدث إصدار من Gemini تلقائياً
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -81,6 +83,26 @@ Deno.serve(async (req: Request) => {
     }
 
     // Streaming critique mode
+    // Pull recent site articles to ground responses
+    let siteContext = "";
+    try {
+      const sb = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      );
+      const { data: posts } = await sb
+        .from("posts")
+        .select("title, content")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (posts && posts.length) {
+        const snippets = posts.map((p: any) =>
+          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 700)}`
+        ).join("\n\n");
+        siteContext = `\n\n--- مقالات موقع "وهم التطور" (مصادرك الداخلية — استشهد منها بصيغة [مقال: العنوان]) ---\n${snippets}`;
+      }
+    } catch (_e) { /* non-fatal */ }
+
     const aiRes = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -92,7 +114,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: SYSTEM_PROMPT + siteContext },
             ...(messages ?? []),
           ],
           stream: true,
