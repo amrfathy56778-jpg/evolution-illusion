@@ -94,10 +94,10 @@ Deno.serve(async (req: Request) => {
         .from("posts")
         .select("title, content")
         .order("created_at", { ascending: false })
-        .limit(25);
+        .limit(200);
       if (posts && posts.length) {
         const snippets = posts.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 700)}`
+          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
         ).join("\n\n");
         siteContext = `\n\n--- مقالات موقع "وهم التطور" (مصادرك الداخلية — استشهد منها بصيغة [مقال: العنوان]) ---\n${snippets}`;
       }
