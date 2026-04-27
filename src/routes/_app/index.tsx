@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft } from "lucide-react";
+import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, ChevronLeft } from "lucide-react";
 import { AISearchButton } from "@/components/AISearchDialog";
 import { PostAIButton } from "@/components/PostAIChat";
 
@@ -29,10 +29,14 @@ const CAT_COLOR: Record<string, string> = {
   creation_marvels: "var(--c-creation)",
 };
 
+const PAGE_SIZE = 8;
+
 function Home() {
   const { isStaff } = useAuth();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
   const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
 
@@ -58,15 +62,23 @@ function Home() {
 
   useEffect(() => {
     (async () => {
-      const [{ count: posts }, { count: supervisors }, { data: latestPosts }] = await Promise.all([
+      const [{ count: postsCount }, { count: supervisors }] = await Promise.all([
         supabase.from("posts").select("*", { count: "exact", head: true }),
         supabase.from("user_roles").select("*", { count: "exact", head: true }).in("role", ["owner", "moderator"]),
-        supabase.from("posts").select("*").order("created_at", { ascending: false }).limit(5),
       ]);
-      setStats({ posts: posts ?? 0, supervisors: supervisors ?? 0, categories: 4 });
-      setLatest(latestPosts ?? []);
+      setStats({ posts: postsCount ?? 0, supervisors: supervisors ?? 0, categories: 4 });
+      setTotal(postsCount ?? 0);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data } = await supabase.from("posts").select("*").order("created_at", { ascending: false }).range(from, to);
+      setLatest(data ?? []);
+    })();
+  }, [page]);
 
   return (
     <div className="space-y-8">
@@ -192,6 +204,7 @@ function Home() {
             لا توجد منشورات بعد. كن أول من يكتب!
           </div>
         ) : (
+          <>
           <div className="space-y-3">
             {latest.map((p) => (
               <article key={p.id} className="glass rounded-2xl p-5 hover:bg-white/5 transition">
@@ -225,8 +238,38 @@ function Home() {
               </article>
             ))}
           </div>
+          <HomePagination page={page} total={total} onChange={setPage}/>
+          </>
         )}
       </section>
+    </div>
+  );
+}
+
+function HomePagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (pages <= 1) return null;
+  const go = (p: number) => { onChange(Math.max(0, Math.min(pages - 1, p))); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const start = Math.max(0, Math.min(page - 2, pages - 5));
+  const end = Math.min(pages, start + 5);
+  const nums = Array.from({ length: end - start }, (_, i) => start + i);
+  return (
+    <div className="flex items-center justify-center gap-1.5 pt-4 flex-wrap">
+      <button onClick={()=>go(page-1)} disabled={page===0}
+        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        <ChevronRight className="h-3.5 w-3.5"/>
+      </button>
+      {nums.map(n => (
+        <button key={n} onClick={()=>go(n)}
+          className={`min-w-[2rem] h-8 rounded-full text-xs font-bold px-2 transition ${n === page ? "bg-primary text-primary-foreground" : "glass hover:bg-white/10"}`}>
+          {n + 1}
+        </button>
+      ))}
+      <button onClick={()=>go(page+1)} disabled={page>=pages-1}
+        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        <ChevronLeft className="h-3.5 w-3.5"/>
+      </button>
+      <span className="text-[10px] text-muted-foreground ms-2">صفحة {page+1} من {pages}</span>
     </div>
   );
 }
