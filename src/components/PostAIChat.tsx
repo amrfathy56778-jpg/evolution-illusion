@@ -40,7 +40,7 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
       const resp = await fetch(FN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${ANON}` },
-        body: JSON.stringify({ article: { title: post.title, content: post.content }, mode, messages: history }),
+        body: JSON.stringify({ article: { id: post.id, title: post.title, content: post.content }, mode, messages: history }),
       });
       if (resp.status === 429) { toast.error("الحد الأقصى من الطلبات تم تجاوزه. حاول لاحقاً."); throw new Error("429"); }
       if (resp.status === 402) { toast.error("نفد الرصيد، يرجى إضافة رصيد للمساحة."); throw new Error("402"); }
