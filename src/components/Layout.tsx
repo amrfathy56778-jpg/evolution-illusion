@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 
@@ -93,45 +93,125 @@ export default function Layout() {
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
         وهم التطور · منصة علمية للنقد المنهجي · {new Date().getFullYear()}
       </footer>
-      <div id="google_translate_element" className="fixed bottom-3 left-3 z-40 opacity-0 pointer-events-none"/>
+      {/* Hidden anchor required by Google Translate script */}
+      <div id="google_translate_element" className="sr-only" aria-hidden="true"/>
     </div>
   );
 }
 
-// Google Translate widget — loads on demand, then opens the language picker
+// Custom Google Translate launcher — neat vertical scrollable language list
+const LANGS: { code: string; label: string; native: string }[] = [
+  { code: "ar", label: "Arabic", native: "العربية" },
+  { code: "en", label: "English", native: "English" },
+  { code: "fr", label: "French", native: "Français" },
+  { code: "es", label: "Spanish", native: "Español" },
+  { code: "de", label: "German", native: "Deutsch" },
+  { code: "it", label: "Italian", native: "Italiano" },
+  { code: "pt", label: "Portuguese", native: "Português" },
+  { code: "ru", label: "Russian", native: "Русский" },
+  { code: "tr", label: "Turkish", native: "Türkçe" },
+  { code: "fa", label: "Persian", native: "فارسی" },
+  { code: "ur", label: "Urdu", native: "اردو" },
+  { code: "id", label: "Indonesian", native: "Bahasa Indonesia" },
+  { code: "ms", label: "Malay", native: "Bahasa Melayu" },
+  { code: "hi", label: "Hindi", native: "हिन्दी" },
+  { code: "bn", label: "Bengali", native: "বাংলা" },
+  { code: "zh-CN", label: "Chinese (Simplified)", native: "简体中文" },
+  { code: "zh-TW", label: "Chinese (Traditional)", native: "繁體中文" },
+  { code: "ja", label: "Japanese", native: "日本語" },
+  { code: "ko", label: "Korean", native: "한국어" },
+  { code: "nl", label: "Dutch", native: "Nederlands" },
+  { code: "sv", label: "Swedish", native: "Svenska" },
+  { code: "pl", label: "Polish", native: "Polski" },
+  { code: "uk", label: "Ukrainian", native: "Українська" },
+  { code: "el", label: "Greek", native: "Ελληνικά" },
+  { code: "he", label: "Hebrew", native: "עברית" },
+  { code: "th", label: "Thai", native: "ไทย" },
+  { code: "vi", label: "Vietnamese", native: "Tiếng Việt" },
+  { code: "sw", label: "Swahili", native: "Kiswahili" },
+];
+
+function getCurrentLang(): string {
+  if (typeof document === "undefined") return "ar";
+  const m = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+  return m?.[1] ?? "ar";
+}
+
+function setLang(code: string) {
+  // Ensure Google Translate script is loaded once
+  if (!(window as any).googleTranslateElementInit) {
+    (window as any).googleTranslateElementInit = () => {
+      new (window as any).google.translate.TranslateElement(
+        { pageLanguage: "ar", autoDisplay: false },
+        "google_translate_element"
+      );
+    };
+    const s = document.createElement("script");
+    s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    s.async = true;
+    document.body.appendChild(s);
+  }
+  // Set cookie on the current host AND the parent domain (Google reads either)
+  const value = `/ar/${code}`;
+  const host = window.location.hostname;
+  const parts = host.split(".");
+  const root = parts.length > 1 ? "." + parts.slice(-2).join(".") : host;
+  document.cookie = `googtrans=${value}; path=/`;
+  document.cookie = `googtrans=${value}; path=/; domain=${root}`;
+  // Reload so Google Translate applies the new target language
+  window.location.reload();
+}
+
 function TranslateButton() {
-  const [ready, setReady] = useState(false);
-  const ensureLoaded = () => {
-    if ((window as any).google?.translate?.TranslateElement) { setReady(true); return Promise.resolve(); }
-    return new Promise<void>((resolve) => {
-      (window as any).googleTranslateElementInit = () => {
-        new (window as any).google.translate.TranslateElement(
-          { pageLanguage: "ar", layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE },
-          "google_translate_element"
-        );
-        setReady(true);
-        resolve();
-      };
-      const s = document.createElement("script");
-      s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-      s.async = true;
-      document.body.appendChild(s);
-    });
-  };
-  const open = async () => {
-    await ensureLoaded();
-    // Open native dropdown
-    setTimeout(() => {
-      const sel = document.querySelector<HTMLSelectElement>("#google_translate_element select");
-      if (sel) { sel.focus(); sel.click(); sel.dispatchEvent(new MouseEvent("mousedown")); }
-      const el = document.getElementById("google_translate_element");
-      if (el) { el.style.opacity = "1"; el.style.pointerEvents = "auto"; }
-    }, 100);
-  };
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("ar");
+  useEffect(() => { setCurrent(getCurrentLang()); }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <button onClick={open} title="ترجمة الموقع"
-      className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
-      <Globe className="h-3.5 w-3.5" />
-    </button>
+    <>
+      <button onClick={() => setOpen(true)} title="ترجمة الموقع"
+        className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+        <Globe className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+             onClick={() => setOpen(false)}>
+          <div onClick={e => e.stopPropagation()}
+            className="w-full max-w-xs glass-strong rounded-3xl p-3 shadow-2xl border border-white/10">
+            <div className="flex items-center justify-between px-2 py-2 border-b border-white/10 mb-2">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <Globe className="h-3.5 w-3.5"/> اختر لغة الترجمة
+              </div>
+              <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-white/10">
+                <X className="h-3.5 w-3.5"/>
+              </button>
+            </div>
+            <ul className="max-h-[60vh] overflow-y-auto flex flex-col gap-0.5 scrollbar-thin">
+              {LANGS.map(l => (
+                <li key={l.code}>
+                  <button onClick={() => setLang(l.code)}
+                    className={`w-full flex items-center justify-between gap-2 text-right px-3 py-2.5 rounded-xl text-sm transition ${
+                      l.code === current ? "bg-primary/20 text-primary font-bold" : "hover:bg-white/10"}`}>
+                    <span className="flex flex-col items-start">
+                      <span>{l.native}</span>
+                      <span className="text-[10px] text-muted-foreground">{l.label}</span>
+                    </span>
+                    {l.code === current && <Check className="h-3.5 w-3.5"/>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
