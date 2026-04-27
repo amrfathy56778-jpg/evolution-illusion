@@ -17,6 +17,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const [t, setT] = useState(""); const [c, setC] = useState("");
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [authorName, setAuthorName] = useState("");
   const coverRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -25,14 +26,26 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   };
   useEffect(() => { load(); }, [category]);
 
+  // Preload display_name from profile (so the email is never used as fallback name)
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setAuthorName(data?.display_name ?? ""));
+  }, [user]);
+
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     const plain = c.replace(/<[^>]+>/g, "").trim();
     if (t.trim().length < 3 || plain.length < 20) { toast.error("العنوان والمحتوى قصيران"); return; }
+    const finalName = authorName.trim() || "مشرف";
     setBusy(true);
+    // Persist chosen name to the profile so it auto-fills next time
+    if (authorName.trim()) {
+      await supabase.from("profiles").update({ display_name: authorName.trim() }).eq("id", user!.id);
+    }
     const { error } = await supabase.from("posts").insert({
       title: t.trim(), content: c.trim(), category, cover_image_url: cover,
-      author_id: user!.id, author_name: user!.email?.split("@")[0] ?? "مشرف",
+      author_id: user!.id, author_name: finalName,
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -74,6 +87,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
         <form onSubmit={create} className="glass rounded-3xl p-5 space-y-3">
           <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none" placeholder="العنوان"
             value={t} onChange={e=>setT(e.target.value)} maxLength={200}/>
+          <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none"
+            placeholder="اسم الناشر الظاهر للقراء (لن يُعرض بريدك)" value={authorName} onChange={e=>setAuthorName(e.target.value)} maxLength={60}/>
           <div className="flex items-center gap-2 flex-wrap">
             <button type="button" onClick={()=>coverRef.current?.click()}
               className="glass-input rounded-full px-3 py-1.5 text-xs inline-flex items-center gap-1.5 hover:bg-white/10">
