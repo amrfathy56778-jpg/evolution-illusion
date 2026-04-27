@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_app/guest-post")({
 
 const schema = z.object({
   guest_name: z.string().trim().min(2, "الاسم قصير").max(100),
-  guest_email: z.string().trim().email("بريد غير صالح").max(255),
+  guest_email: z.string().trim().email("بريد غير صالح").max(255).optional().or(z.literal("")),
   title: z.string().trim().min(3, "العنوان قصير").max(200),
   content: z.string().trim().min(20, "المحتوى قصير").max(10000),
   category: z.enum(["critique", "evolution_basics", "genetics", "creation_marvels"]),
@@ -31,6 +31,7 @@ const CATEGORIES = [
 function GuestPost() {
   const { isStaff } = useAuth();
   const [form, setForm] = useState({ guest_name: "", guest_email: "", title: "", content: "", category: "critique" as const });
+  const [anonymous, setAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | { report: string; verdict: string; refs: { n: number; id: string; title: string }[] }>(null);
 
@@ -57,7 +58,10 @@ function GuestPost() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const plain = form.content.replace(/<[^>]+>/g, "").trim();
-    const parsed = schema.safeParse({ ...form, content: plain.length >= 20 ? form.content : "" });
+    const finalForm = anonymous
+      ? { ...form, guest_name: "مجهول", guest_email: "anonymous@example.com" }
+      : form;
+    const parsed = schema.safeParse({ ...finalForm, content: plain.length >= 20 ? form.content : "" });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setLoading(true);
 
@@ -77,6 +81,7 @@ function GuestPost() {
     // 2) Save submission with the AI report attached
     const { error } = await supabase.from("guest_posts").insert({
       ...parsed.data,
+      guest_email: parsed.data.guest_email || "anonymous@example.com",
       ai_report: report,
       ai_verdict: verdict,
       ai_reviewed_at: new Date().toISOString(),
@@ -123,12 +128,19 @@ function GuestPost() {
       </div>
 
       <form onSubmit={submit} className="glass rounded-3xl p-6 space-y-3">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <input className="glass-input rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-            placeholder="اسمك" value={form.guest_name} onChange={e=>setForm({...form, guest_name: e.target.value})}/>
-          <input type="email" className="glass-input rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-            placeholder="بريدك الإلكتروني" value={form.guest_email} onChange={e=>setForm({...form, guest_email: e.target.value})}/>
-        </div>
+        <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+          <input type="checkbox" checked={anonymous} onChange={e=>setAnonymous(e.target.checked)}
+            className="accent-primary w-4 h-4"/>
+          <span>النشر كمجهول (دون اسم أو بريد)</span>
+        </label>
+        {!anonymous && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <input className="glass-input rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="اسمك أو اسم مستعار" value={form.guest_name} onChange={e=>setForm({...form, guest_name: e.target.value})}/>
+            <input type="email" className="glass-input rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="بريدك (اختياري — للتواصل فقط، لن يُنشر)" value={form.guest_email} onChange={e=>setForm({...form, guest_email: e.target.value})}/>
+          </div>
+        )}
         <select value={form.category} onChange={e=>setForm({...form, category: e.target.value as any})}
           className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none">
           {CATEGORIES.map(c => <option key={c.v} value={c.v} className="bg-background">{c.l}</option>)}
