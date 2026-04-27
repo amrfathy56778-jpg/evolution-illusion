@@ -7,6 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
+import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
@@ -188,6 +189,66 @@ function Toolbar({ editor }: { editor: Editor }) {
 
 export function RichEditor({ value, onChange, placeholder }:
   { value: string; onChange: (html: string) => void; placeholder?: string }) {
+  // Upload helper used by paste/drop interception
+  const uploadFile = async (f: File): Promise<string> => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("post-media").upload(path, f, {
+      contentType: f.type, upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  // Plugin: intercept pasted/dropped images so they upload to storage instead of becoming blob: URLs
+  const PasteUploadPlugin = () =>
+    new Plugin({
+      props: {
+        handlePaste(view, event) {
+          const files = Array.from(event.clipboardData?.files ?? []).filter(f => f.type.startsWith("image/"));
+          if (files.length === 0) return false;
+          event.preventDefault();
+          (async () => {
+            for (const f of files) {
+              if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); continue; }
+              try {
+                const url = await uploadFile(f);
+                const node = view.state.schema.nodes.image.create({ src: url });
+                view.dispatch(view.state.tr.replaceSelectionWith(node));
+              } catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
+            }
+          })();
+          return true;
+        },
+        handleDrop(view, event) {
+          const files = Array.from((event as DragEvent).dataTransfer?.files ?? []).filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+          if (files.length === 0) return false;
+          event.preventDefault();
+          (async () => {
+            for (const f of files) {
+              const isVideo = f.type.startsWith("video/");
+              const max = isVideo ? 25 : 10;
+              if (f.size > max * 1024 * 1024) { toast.error(`الحجم الأقصى ${max}MB`); continue; }
+              try {
+                const url = await uploadFile(f);
+                if (isVideo) {
+                  const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
+                  view.dispatch(view.state.tr.insertText("")); // ensure cursor
+                  (view as any).pasteHTML?.(html);
+                  // Fallback: use editor command via ref later
+                } else {
+                  const node = view.state.schema.nodes.image.create({ src: url });
+                  view.dispatch(view.state.tr.replaceSelectionWith(node));
+                }
+              } catch (err: any) { toast.error("تعذّر الرفع: " + err.message); }
+            }
+          })();
+          return true;
+        },
+      },
+    });
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
@@ -210,6 +271,12 @@ export function RichEditor({ value, onChange, placeholder }:
     },
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
+
+  // Register paste/drop interceptor once editor is ready
+  if (editor && !(editor as any)._pasteUploadRegistered) {
+    editor.registerPlugin(PasteUploadPlugin());
+    (editor as any)._pasteUploadRegistered = true;
+  }
 
   if (!editor) return <div className="glass-input rounded-xl h-72 animate-pulse"/>;
 
