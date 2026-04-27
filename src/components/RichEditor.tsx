@@ -7,6 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
+import { BubbleMenu } from "@tiptap/react/menus";
 import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
