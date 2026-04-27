@@ -294,5 +294,9 @@ export function RichContent({ html }: { html: string }) {
   if (!isHtml) {
     return <div className="prose-content text-sm leading-loose whitespace-pre-wrap">{html}</div>;
   }
-  return <div className="prose-content text-sm leading-loose" dangerouslySetInnerHTML={{ __html: html }}/>;
+  // Strip dead blob: image/video sources (they expire after the upload session)
+  const cleaned = html
+    .replace(/<img[^>]*src=["']blob:[^"']*["'][^>]*>/gi, '<p class="text-xs text-muted-foreground italic">[صورة فُقدت — يرجى من الكاتب إعادة رفعها]</p>')
+    .replace(/<video[^>]*src=["']blob:[^"']*["'][^>]*>(.*?<\/video>)?/gi, '<p class="text-xs text-muted-foreground italic">[فيديو فُقد — يرجى من الكاتب إعادة رفعه]</p>');
+  return <div className="prose-content text-sm leading-loose" dangerouslySetInnerHTML={{ __html: cleaned }}/>;
 }
