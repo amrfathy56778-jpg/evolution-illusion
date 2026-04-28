@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, Loader2, BookOpenCheck } from "lucide-react";
+import { Sparkles, X, Send, Loader2, BookOpenCheck, Languages } from "lucide-react";
 import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -31,6 +31,12 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, loading]);
+
+  // Signal to Layout that the AI dialog is open — it will hide the categories nav.
+  useEffect(() => {
+    document.body.classList.add("ai-dialog-open");
+    return () => { document.body.classList.remove("ai-dialog-open"); };
+  }, []);
 
   const stream = async (mode: "summarize" | "chat", history: Msg[]) => {
     setLoading(true);
@@ -90,8 +96,10 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-3 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl glass-strong rounded-3xl flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] grid place-items-center p-3 bg-black/85 backdrop-blur-2xl" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-3xl flex flex-col max-h-[90vh] overflow-hidden animate-pop-in border border-white/15"
+        style={{ background: "oklch(0.14 0.03 246 / 0.97)", backdropFilter: "blur(24px) saturate(180%)", boxShadow: "0 30px 80px -20px rgba(0,0,0,0.8)" }}
+        onClick={(e) => e.stopPropagation()}>
         <header className="flex items-center justify-between gap-2 p-4 border-b border-white/10 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Sparkles className="h-4 w-4 text-primary shrink-0" />
@@ -110,11 +118,7 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
             </div>
           ) : messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
-                m.role === "user" ? "bg-primary/20 border border-primary/40" : "glass"
-              }`}>
-                {m.content || (loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null)}
-              </div>
+              <AIBubble m={m} loading={loading && i === messages.length - 1}/>
             </div>
           ))}
         </div>
@@ -129,6 +133,46 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+/** Message bubble with a "translate quote" action for any bubble. */
+function AIBubble({ m, loading }: { m: Msg; loading: boolean }) {
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [tLoading, setTLoading] = useState(false);
+  const isUser = m.role === "user";
+
+  const translate = async () => {
+    if (tLoading) return;
+    setTLoading(true);
+    try {
+      // Google Translate free endpoint — source auto, target = Arabic (site language)
+      const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ar&dt=t&q=${encodeURIComponent(m.content)}`);
+      const j = await r.json();
+      const out = (j?.[0] ?? []).map((s: any) => s?.[0]).filter(Boolean).join("");
+      setTranslated(out || "(تعذّرت الترجمة)");
+    } catch { toast.error("تعذّرت الترجمة"); }
+    finally { setTLoading(false); }
+  };
+
+  return (
+    <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+      isUser ? "bg-primary/20 border border-primary/40" : "glass"
+    }`}>
+      <div>{m.content || (loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null)}</div>
+      {!isUser && m.content && (
+        <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center gap-2">
+          <button onClick={translate} disabled={tLoading}
+            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition">
+            {tLoading ? <Loader2 className="h-3 w-3 animate-spin"/> : <Languages className="h-3 w-3"/>}
+            ترجمة الاقتباس
+          </button>
+        </div>
+      )}
+      {translated && (
+        <div className="mt-1.5 p-2 rounded-lg bg-primary/10 border border-primary/30 text-xs" dir="rtl">{translated}</div>
+      )}
     </div>
   );
 }
