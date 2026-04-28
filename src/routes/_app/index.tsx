@@ -169,7 +169,8 @@ function Home() {
              style={{ background: "radial-gradient(ellipse at top, color-mix(in oklab, var(--primary) 18%, transparent), transparent 65%)" }} />
         <div className="relative space-y-4">
           <p
-            className="text-xl sm:text-2xl font-bold"
+            translate="no"
+            className="notranslate text-xl sm:text-2xl font-bold"
             style={{
               fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
               color: "oklch(0.78 0.14 175)",
@@ -179,7 +180,8 @@ function Home() {
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
           </p>
           <p
-            className="text-base sm:text-xl leading-loose max-w-2xl mx-auto px-1"
+            translate="no"
+            className="notranslate text-base sm:text-xl leading-loose max-w-2xl mx-auto px-1"
             style={{
               fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
               color: "oklch(0.82 0.12 165)",
