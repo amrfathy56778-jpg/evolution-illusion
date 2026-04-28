@@ -89,6 +89,8 @@ function GuestPost() {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
+    const ring = document.createElement("div"); ring.className = "confetti-ring";
+    document.body.appendChild(ring); setTimeout(() => ring.remove(), 900);
     setDone({ report, verdict, refs });
   };
 
