@@ -136,7 +136,7 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         return editor.isEditable;
       }}
     >
-      <div dir="rtl" className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/15 bg-background/95 backdrop-blur-xl shadow-2xl">
+      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)]">
         <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
@@ -182,7 +182,7 @@ function MediaBubble({ editor }: { editor: Editor }) {
       options={{ placement: "top" }}
       shouldShow={({ editor }) => editor.isActive("image") || editor.isActive("video")}
     >
-      <div dir="rtl" className="flex items-center gap-0.5 p-1.5 rounded-xl border border-white/15 bg-background/95 backdrop-blur-xl shadow-2xl">
+      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)]">
         <span className="text-[10px] text-muted-foreground px-1">حجم:</span>
         <Btn title="30%" onClick={() => setMediaWidth("30%")}><span className="text-[10px] font-bold">30٪</span></Btn>
         <Btn title="50%" onClick={() => setMediaWidth("50%")}><span className="text-[10px] font-bold">50٪</span></Btn>
