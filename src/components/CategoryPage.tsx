@@ -59,7 +59,10 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("تم النشر"); setT(""); setC(""); setCover(null); setOpen(false); load();
+    toast.success("تم النشر");
+    const ring = document.createElement("div"); ring.className = "confetti-ring";
+    document.body.appendChild(ring); setTimeout(() => ring.remove(), 900);
+    setT(""); setC(""); setCover(null); setOpen(false); load();
   };
 
   const onCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
