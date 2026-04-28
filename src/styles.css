@@ -276,6 +276,12 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     animation: confetti-ring 0.9s ease-out forwards;
   }
 
+  /* Hide categories nav while the AI summary/chat dialog is open */
+  body.ai-dialog-open .hide-when-ai-open { display: none !important; }
+
+  /* Bubble toolbar — guarantee it floats above sticky headers & other UI */
+  [data-tippy-root], [data-floating-ui-portal] { z-index: 99999 !important; }
+
   .text-gradient-emerald {
     background: linear-gradient(135deg, oklch(0.92 0.13 195), oklch(0.78 0.18 270));
     -webkit-background-clip: text;
