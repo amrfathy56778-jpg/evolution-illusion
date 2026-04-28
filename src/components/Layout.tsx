@@ -193,34 +193,46 @@ function getCurrentLang(): string {
 }
 
 function setLang(code: string) {
-  // Ensure Google Translate script is loaded once
-  if (!(window as any).googleTranslateElementInit) {
-    (window as any).googleTranslateElementInit = () => {
-      new (window as any).google.translate.TranslateElement(
-        { pageLanguage: "ar", autoDisplay: false },
-        "google_translate_element"
-      );
-    };
-    const s = document.createElement("script");
-    s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    s.async = true;
-    document.body.appendChild(s);
-  }
   // Set cookie on the current host AND the parent domain (Google reads either)
   const value = `/ar/${code}`;
   const host = window.location.hostname;
   const parts = host.split(".");
   const root = parts.length > 1 ? "." + parts.slice(-2).join(".") : host;
-  document.cookie = `googtrans=${value}; path=/`;
-  document.cookie = `googtrans=${value}; path=/; domain=${root}`;
-  // Reload so Google Translate applies the new target language
-  window.location.reload();
+  // Clear prior cookie first (paths/domains that may linger).
+  document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+  document.cookie = `googtrans=; path=/; domain=${root}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+  if (code !== "ar") {
+    document.cookie = `googtrans=${value}; path=/`;
+    document.cookie = `googtrans=${value}; path=/; domain=${root}`;
+  }
+  // Trigger sweep animation then reload so Google Translate applies the new target language
+  const sweep = document.createElement("div");
+  sweep.className = "lang-sweep";
+  document.body.appendChild(sweep);
+  setTimeout(() => window.location.reload(), 700);
 }
 
 function TranslateButton() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("ar");
-  useEffect(() => { setCurrent(getCurrentLang()); }, []);
+  useEffect(() => {
+    setCurrent(getCurrentLang());
+    // Load Google Translate script once globally so cookie-based translation applies on every page.
+    if (!(window as any).__gt_loaded) {
+      (window as any).__gt_loaded = true;
+      (window as any).googleTranslateElementInit = () => {
+        // eslint-disable-next-line no-new
+        new (window as any).google.translate.TranslateElement(
+          { pageLanguage: "ar", autoDisplay: false, layout: 0 },
+          "google_translate_element",
+        );
+      };
+      const s = document.createElement("script");
+      s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      s.async = true;
+      document.body.appendChild(s);
+    }
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -233,11 +245,11 @@ function TranslateButton() {
   return (
     <>
       <button onClick={() => setOpen(true)} title="ترجمة الموقع"
-        className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+        className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
         <Globe className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
             className="w-full max-w-xs glass-strong rounded-3xl p-3 shadow-2xl border border-white/10">
