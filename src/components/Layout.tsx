@@ -107,15 +107,17 @@ function SectionsButton({ current }: { current: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)}
-        className="liquid-glass inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold">
-        <LayoutGrid className="h-3.5 w-3.5"/> الأقسام
+      <button onClick={() => setOpen(true)} title="الأقسام" aria-label="الأقسام"
+        className="liquid-glass inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-bold">
+        <LayoutGrid className="h-3.5 w-3.5"/>
+        <span className="hidden sm:inline">الأقسام</span>
       </button>
       {open && (
-        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-xl grid place-items-center p-4 animate-pop-in"
+        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-xl grid place-items-center p-4"
              onClick={() => setOpen(false)}>
+          <span className="sections-burst" aria-hidden="true" />
           <div onClick={e => e.stopPropagation()}
-            className="relative w-full max-w-md rounded-[2rem] p-5 border border-white/15"
+            className="relative w-full max-w-md rounded-[2rem] p-5 border border-white/15 animate-pop-in"
             style={{ background: "oklch(0.14 0.03 246 / 0.95)" }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 font-bold text-sm"><LayoutGrid className="h-4 w-4"/> تصفّح الأقسام</div>
@@ -128,11 +130,11 @@ function SectionsButton({ current }: { current: string }) {
                 return (
                   <Link key={item.to} to={item.to} onClick={() => setOpen(false)}
                     style={{
-                      animationDelay: `${idx * 60}ms`,
+                      animationDelay: `${idx * 45}ms`,
                       borderColor: active ? item.color : undefined,
                       boxShadow: active ? `0 0 30px -5px ${item.color}` : undefined,
                     }}
-                    className="liquid-glass animate-pop-in flex flex-col items-center gap-2 p-4 rounded-2xl text-center">
+                    className="liquid-glass animate-fan-in flex flex-col items-center gap-2 p-4 rounded-2xl text-center">
                     <div className="h-10 w-10 rounded-full grid place-items-center"
                       style={{ background: `color-mix(in oklab, ${item.color} 25%, transparent)`, color: item.color }}>
                       <Icon className="h-5 w-5"/>
