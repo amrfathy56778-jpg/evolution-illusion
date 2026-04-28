@@ -169,21 +169,21 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
   return (
     <div className="flex items-center justify-center gap-1.5 pt-4 flex-wrap">
       <button onClick={()=>go(page-1)} disabled={page===0}
-        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
         <ChevronRight className="h-3.5 w-3.5"/>
       </button>
       {nums.map(n => (
         <button key={n} onClick={()=>go(n)}
-          className={`min-w-[2rem] h-8 rounded-full text-xs font-bold px-2 transition ${
-            n === page ? "bg-primary text-primary-foreground" : "glass hover:bg-white/10"}`}>
-          {n + 1}
+          className="liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none"
+          style={n === page ? { background: "var(--primary)", color: "var(--primary-foreground)" } : undefined}>
+          <span className="block">{n + 1}</span>
         </button>
       ))}
       <button onClick={()=>go(page+1)} disabled={page>=pages-1}
-        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
         <ChevronLeft className="h-3.5 w-3.5"/>
       </button>
-      <span className="text-[10px] text-muted-foreground ms-2">صفحة {page+1} من {pages}</span>
+      <span className="text-[10px] text-muted-foreground basis-full text-center">صفحة {page+1} من {pages}</span>
     </div>
   );
 }
