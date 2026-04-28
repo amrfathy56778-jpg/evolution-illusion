@@ -136,7 +136,7 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         return editor.isEditable;
       }}
     >
-      <div dir="rtl" className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/15 bg-background/95 backdrop-blur-xl shadow-2xl">
+      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)]">
         <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
@@ -182,7 +182,7 @@ function MediaBubble({ editor }: { editor: Editor }) {
       options={{ placement: "top" }}
       shouldShow={({ editor }) => editor.isActive("image") || editor.isActive("video")}
     >
-      <div dir="rtl" className="flex items-center gap-0.5 p-1.5 rounded-xl border border-white/15 bg-background/95 backdrop-blur-xl shadow-2xl">
+      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)]">
         <span className="text-[10px] text-muted-foreground px-1">حجم:</span>
         <Btn title="30%" onClick={() => setMediaWidth("30%")}><span className="text-[10px] font-bold">30٪</span></Btn>
         <Btn title="50%" onClick={() => setMediaWidth("50%")}><span className="text-[10px] font-bold">50٪</span></Btn>
@@ -209,11 +209,17 @@ function InsertBar({ editor }: { editor: Editor }) {
     return data.publicUrl;
   };
   const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); return; }
-    try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); }
-    catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
+    const files = Array.from(e.target.files ?? []); e.target.value = "";
+    if (files.length === 0) return;
+    const big = files.filter(f => f.size > 10 * 1024 * 1024);
+    if (big.length) toast.error(`${big.length} صورة تجاوزت 10MB وتم تجاهلها`);
+    const ok = files.filter(f => f.size <= 10 * 1024 * 1024);
+    if (ok.length > 1) toast.info(`جارٍ رفع ${ok.length} صور…`);
+    for (const f of ok) {
+      try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); editor.chain().focus().createParagraphNear().run(); }
+      catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
+    }
+    if (ok.length > 1) toast.success("تم رفع جميع الصور");
   };
   const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; e.target.value = "";
@@ -239,7 +245,7 @@ function InsertBar({ editor }: { editor: Editor }) {
         <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
         <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
       </div>
-      <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={onUploadImage}/>
+      <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onUploadImage}/>
       <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
     </div>
   );

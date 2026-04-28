@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 
@@ -28,6 +28,22 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Page-transition: animate content on route change.
+  const [routeAnimKey, setRouteAnimKey] = useState(0);
+  useEffect(() => { setRouteAnimKey(k => k + 1); }, [path]);
+
+  // Theme toggle — ripple burst animation from the button position.
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const burst = document.createElement("div");
+    burst.className = "theme-burst";
+    burst.style.left = rect.left + rect.width / 2 - 10 + "px";
+    burst.style.top = rect.top + rect.height / 2 - 10 + "px";
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 900);
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <div className="ambient-orbs relative min-h-screen">
       <header className="sticky top-0 z-30 glass-strong border-b border-white/10">
@@ -37,24 +53,25 @@ export default function Layout() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+              className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
               {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
             <TranslateButton />
             {isStaff && (
-              <Link to="/admin" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-xs font-semibold hover:bg-white/10 transition">
+              <Link to="/admin" title={isOwner ? "لوحة المالك" : "لوحة المشرف"}
+                className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold">
                 <Shield className="h-3.5 w-3.5" />
-                {isOwner ? "لوحة المالك" : "لوحة المشرف"}
+                <span className="hidden sm:inline">{isOwner ? "لوحة المالك" : "لوحة المشرف"}</span>
               </Link>
             )}
             {user ? (
-              <button onClick={signOut} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-xs font-semibold hover:bg-white/10 transition">
+              <button onClick={signOut} className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold">
                 <LogOut className="h-3.5 w-3.5" /> خروج
               </button>
             ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition glow-emerald">
+              <Link to="/auth" className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-primary">
                 <LogIn className="h-3.5 w-3.5" /> دخول
               </Link>
             )}
@@ -62,32 +79,16 @@ export default function Layout() {
         </div>
 
         {showNav && (
-        <nav className="mx-auto max-w-6xl px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-thin">
-          {NAV.map((item) => {
-            const active = path === item.to;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold glass transition hover:scale-105"
-                style={
-                  active
-                    ? { background: `color-mix(in oklab, ${item.color} 35%, transparent)`, borderColor: item.color, boxShadow: `0 0 20px -5px ${item.color}` }
-                    : { color: item.color }
-                }
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+          <div className="mx-auto max-w-6xl px-4 pb-3 hide-when-ai-open">
+            <SectionsButton current={path}/>
+          </div>
         )}
       </header>
 
       <main className={`relative z-10 mx-auto px-2 sm:px-4 py-4 ${isReadingFocus ? "max-w-5xl" : "max-w-6xl"}`}>
-        <Outlet />
+        <div key={routeAnimKey} className="animate-pop-in">
+          <Outlet />
+        </div>
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
@@ -96,6 +97,60 @@ export default function Layout() {
       {/* Hidden anchor required by Google Translate script */}
       <div id="google_translate_element" className="sr-only" aria-hidden="true"/>
     </div>
+  );
+}
+
+/** Button that pops a stunning ring of section links instead of consuming screen space. */
+function SectionsButton({ current }: { current: string }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}
+        className="liquid-glass inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold">
+        <LayoutGrid className="h-3.5 w-3.5"/> الأقسام
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-xl grid place-items-center p-4 animate-pop-in"
+             onClick={() => setOpen(false)}>
+          <div onClick={e => e.stopPropagation()}
+            className="relative w-full max-w-md rounded-[2rem] p-5 border border-white/15"
+            style={{ background: "oklch(0.14 0.03 246 / 0.95)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 font-bold text-sm"><LayoutGrid className="h-4 w-4"/> تصفّح الأقسام</div>
+              <button onClick={() => setOpen(false)} className="liquid-glass p-1.5 rounded-full"><X className="h-3.5 w-3.5"/></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {NAV.map((item, idx) => {
+                const Icon = item.icon;
+                const active = current === item.to;
+                return (
+                  <Link key={item.to} to={item.to} onClick={() => setOpen(false)}
+                    style={{
+                      animationDelay: `${idx * 60}ms`,
+                      borderColor: active ? item.color : undefined,
+                      boxShadow: active ? `0 0 30px -5px ${item.color}` : undefined,
+                    }}
+                    className="liquid-glass animate-pop-in flex flex-col items-center gap-2 p-4 rounded-2xl text-center">
+                    <div className="h-10 w-10 rounded-full grid place-items-center"
+                      style={{ background: `color-mix(in oklab, ${item.color} 25%, transparent)`, color: item.color }}>
+                      <Icon className="h-5 w-5"/>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: item.color }}>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -138,34 +193,46 @@ function getCurrentLang(): string {
 }
 
 function setLang(code: string) {
-  // Ensure Google Translate script is loaded once
-  if (!(window as any).googleTranslateElementInit) {
-    (window as any).googleTranslateElementInit = () => {
-      new (window as any).google.translate.TranslateElement(
-        { pageLanguage: "ar", autoDisplay: false },
-        "google_translate_element"
-      );
-    };
-    const s = document.createElement("script");
-    s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    s.async = true;
-    document.body.appendChild(s);
-  }
   // Set cookie on the current host AND the parent domain (Google reads either)
   const value = `/ar/${code}`;
   const host = window.location.hostname;
   const parts = host.split(".");
   const root = parts.length > 1 ? "." + parts.slice(-2).join(".") : host;
-  document.cookie = `googtrans=${value}; path=/`;
-  document.cookie = `googtrans=${value}; path=/; domain=${root}`;
-  // Reload so Google Translate applies the new target language
-  window.location.reload();
+  // Clear prior cookie first (paths/domains that may linger).
+  document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+  document.cookie = `googtrans=; path=/; domain=${root}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+  if (code !== "ar") {
+    document.cookie = `googtrans=${value}; path=/`;
+    document.cookie = `googtrans=${value}; path=/; domain=${root}`;
+  }
+  // Trigger sweep animation then reload so Google Translate applies the new target language
+  const sweep = document.createElement("div");
+  sweep.className = "lang-sweep";
+  document.body.appendChild(sweep);
+  setTimeout(() => window.location.reload(), 700);
 }
 
 function TranslateButton() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("ar");
-  useEffect(() => { setCurrent(getCurrentLang()); }, []);
+  useEffect(() => {
+    setCurrent(getCurrentLang());
+    // Load Google Translate script once globally so cookie-based translation applies on every page.
+    if (!(window as any).__gt_loaded) {
+      (window as any).__gt_loaded = true;
+      (window as any).googleTranslateElementInit = () => {
+        // eslint-disable-next-line no-new
+        new (window as any).google.translate.TranslateElement(
+          { pageLanguage: "ar", autoDisplay: false, layout: 0 },
+          "google_translate_element",
+        );
+      };
+      const s = document.createElement("script");
+      s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      s.async = true;
+      document.body.appendChild(s);
+    }
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -178,11 +245,11 @@ function TranslateButton() {
   return (
     <>
       <button onClick={() => setOpen(true)} title="ترجمة الموقع"
-        className="inline-flex items-center justify-center h-8 w-8 rounded-full glass hover:bg-white/10 transition">
+        className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
         <Globe className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
             className="w-full max-w-xs glass-strong rounded-3xl p-3 shadow-2xl border border-white/10">

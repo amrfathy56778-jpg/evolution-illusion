@@ -169,7 +169,8 @@ function Home() {
              style={{ background: "radial-gradient(ellipse at top, color-mix(in oklab, var(--primary) 18%, transparent), transparent 65%)" }} />
         <div className="relative space-y-4">
           <p
-            className="text-xl sm:text-2xl font-bold"
+            translate="no"
+            className="notranslate text-xl sm:text-2xl font-bold"
             style={{
               fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
               color: "oklch(0.78 0.14 175)",
@@ -179,7 +180,8 @@ function Home() {
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
           </p>
           <p
-            className="text-base sm:text-xl leading-loose max-w-2xl mx-auto px-1"
+            translate="no"
+            className="notranslate text-base sm:text-xl leading-loose max-w-2xl mx-auto px-1"
             style={{
               fontFamily: '"Amiri Quran", "Amiri", "Tajawal", serif',
               color: "oklch(0.82 0.12 165)",
@@ -206,8 +208,9 @@ function Home() {
         ) : (
           <>
           <div className="space-y-3">
-            {latest.map((p) => (
-              <article key={p.id} className="glass rounded-2xl p-5 hover:bg-white/5 transition">
+            {latest.map((p, idx) => (
+              <article key={p.id} style={{ animationDelay: `${idx * 60}ms` }}
+                className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in">
                 <div className="flex items-center gap-2 mb-2">
                   <span
                     className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
@@ -256,20 +259,21 @@ function HomePagination({ page, total, onChange }: { page: number; total: number
   return (
     <div className="flex items-center justify-center gap-1.5 pt-4 flex-wrap">
       <button onClick={()=>go(page-1)} disabled={page===0}
-        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
         <ChevronRight className="h-3.5 w-3.5"/>
       </button>
       {nums.map(n => (
         <button key={n} onClick={()=>go(n)}
-          className={`min-w-[2rem] h-8 rounded-full text-xs font-bold px-2 transition ${n === page ? "bg-primary text-primary-foreground" : "glass hover:bg-white/10"}`}>
-          {n + 1}
+          className={`liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "text-primary-foreground" : ""}`}
+          style={n === page ? { background: "var(--primary)", color: "var(--primary-foreground)" } : undefined}>
+          <span className="block">{n + 1}</span>
         </button>
       ))}
       <button onClick={()=>go(page+1)} disabled={page>=pages-1}
-        className="glass rounded-full p-2 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
         <ChevronLeft className="h-3.5 w-3.5"/>
       </button>
-      <span className="text-[10px] text-muted-foreground ms-2">صفحة {page+1} من {pages}</span>
+      <span className="text-[10px] text-muted-foreground ms-2 basis-full text-center">صفحة {page+1} من {pages}</span>
     </div>
   );
 }
