@@ -127,9 +127,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
         <>
         <div className="space-y-3">
           {posts.map((p, idx) => (
-            <article key={p.id} style={{ animationDelay: `${idx * 60}ms` }}
+            <article key={p.id}
               className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in"
-              style={{ borderColor: `color-mix(in oklab, ${color} 25%, transparent)` }}>
+              style={{ animationDelay: `${idx * 60}ms`, borderColor: `color-mix(in oklab, ${color} 25%, transparent)` }}>
               {p.cover_image_url && (
                 <img src={p.cover_image_url} alt={p.title} className="w-full max-h-48 object-cover rounded-xl mb-3"/>
               )}
