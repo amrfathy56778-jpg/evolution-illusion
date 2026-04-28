@@ -53,6 +53,7 @@ export default function Layout() {
           </Link>
 
           <div className="flex items-center gap-2">
+            {showNav && <SectionsButton current={path}/>}
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
               className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
@@ -77,12 +78,6 @@ export default function Layout() {
             )}
           </div>
         </div>
-
-        {showNav && (
-          <div className="mx-auto max-w-6xl px-4 pb-3 hide-when-ai-open">
-            <SectionsButton current={path}/>
-          </div>
-        )}
       </header>
 
       <main className={`relative z-10 mx-auto px-2 sm:px-4 py-4 ${isReadingFocus ? "max-w-5xl" : "max-w-6xl"}`}>
