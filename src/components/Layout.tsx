@@ -211,9 +211,23 @@ function TranslateButton() {
       (window as any).googleTranslateElementInit = () => {
         // eslint-disable-next-line no-new
         new (window as any).google.translate.TranslateElement(
-          { pageLanguage: "ar", autoDisplay: false, layout: 0 },
+          {
+            pageLanguage: "ar",
+            autoDisplay: false,
+            // SIMPLE layout — no top banner / "show original" toolbar
+            layout: (window as any).google?.translate?.TranslateElement?.InlineLayout?.SIMPLE ?? 0,
+          },
           "google_translate_element",
         );
+        // Belt-and-braces: continually strip the banner if Google re-injects it.
+        const strip = () => {
+          document.querySelectorAll<HTMLElement>(".goog-te-banner-frame, iframe.goog-te-banner-frame").forEach(el => el.remove());
+          document.body.style.top = "0px";
+          document.documentElement.style.top = "0px";
+        };
+        strip();
+        const mo = new MutationObserver(strip);
+        mo.observe(document.body, { childList: true, subtree: true });
       };
       const s = document.createElement("script");
       s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
