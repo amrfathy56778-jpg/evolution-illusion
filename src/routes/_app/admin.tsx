@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Shield, Check, X, UserPlus, Trash2, Mail, ShieldCheck } from "lucide-react";
+import { Shield, Check, X, UserPlus, Trash2, Mail, ShieldCheck, Filter, Copy, Loader2 } from "lucide-react";
 import { RichContent } from "@/components/RichEditor";
 import { AiReport } from "@/components/AiReport";
 
@@ -24,6 +24,8 @@ function Admin() {
   const [invites, setInvites] = useState<any[]>([]);
   const [mods, setMods] = useState<any[]>([]);
   const [newEmail, setNewEmail] = useState("");
+  const [dupGroups, setDupGroups] = useState<any[][]>([]);
+  const [dupBusy, setDupBusy] = useState(false);
 
   const load = async () => {
     if (!isStaff) return;
@@ -77,6 +79,69 @@ function Admin() {
     if (error) toast.error(error.message); else { toast.success("تمت الإزالة"); load(); }
   };
 
+  const normalize = (s: string) => s
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+  const tokens = (s: string) => new Set(normalize(s).split(" ").filter(w => w.length > 2));
+
+  const jaccard = (a: Set<string>, b: Set<string>) => {
+    if (a.size === 0 || b.size === 0) return 0;
+    let inter = 0;
+    for (const t of a) if (b.has(t)) inter++;
+    return inter / (a.size + b.size - inter);
+  };
+
+  const runDuplicateScan = async () => {
+    setDupBusy(true);
+    try {
+      const { data, error } = await supabase
+        .from("posts").select("id, title, content, category, created_at, author_name")
+        .order("created_at", { ascending: false }).limit(500);
+      if (error) throw error;
+      const posts = data ?? [];
+      const sigs = posts.map((p: any) => ({
+        ...p,
+        titleTok: tokens(p.title ?? ""),
+        bodyTok: tokens((p.content ?? "").slice(0, 4000)),
+      }));
+      const used = new Set<string>();
+      const groups: any[][] = [];
+      for (let i = 0; i < sigs.length; i++) {
+        if (used.has(sigs[i].id)) continue;
+        const group = [sigs[i]];
+        for (let j = i + 1; j < sigs.length; j++) {
+          if (used.has(sigs[j].id)) continue;
+          const tSim = jaccard(sigs[i].titleTok, sigs[j].titleTok);
+          const bSim = jaccard(sigs[i].bodyTok, sigs[j].bodyTok);
+          if (tSim >= 0.6 || bSim >= 0.55) {
+            group.push(sigs[j]);
+            used.add(sigs[j].id);
+          }
+        }
+        if (group.length > 1) {
+          used.add(sigs[i].id);
+          groups.push(group);
+        }
+      }
+      setDupGroups(groups);
+      if (groups.length === 0) toast.success("لا توجد منشورات مكررة");
+      else toast.info(`عُثر على ${groups.length} مجموعة مكررة`);
+    } catch (err: any) {
+      toast.error("تعذّر الفحص: " + (err.message ?? err));
+    } finally { setDupBusy(false); }
+  };
+
+  const deletePost = async (id: string) => {
+    if (!confirm("حذف هذا المنشور المكرر؟")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("تم الحذف"); setDupGroups(prev => prev.map(g => g.filter(p => p.id !== id)).filter(g => g.length > 1)); }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="text-center space-y-2">
@@ -126,6 +191,49 @@ function Admin() {
             </div>
           </div>
         ))}
+      </section>
+
+      {/* Duplicate detection — for all staff */}
+      <section className="space-y-3">
+        <h2 className="font-bold flex items-center gap-2"><Copy className="h-4 w-4"/> فحص المنشورات المكررة</h2>
+        <div className="glass rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-xs text-muted-foreground">يقارن العنوان والمحتوى لاكتشاف التكرارات. يحدّد لك الأحدث كمشتبه به.</p>
+            <button onClick={runDuplicateScan} disabled={dupBusy}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold disabled:opacity-50">
+              {dupBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <Filter className="h-3.5 w-3.5"/>}
+              الفلترة الذكية
+            </button>
+          </div>
+          {dupGroups.length > 0 && (
+            <div className="space-y-3">
+              {dupGroups.map((g, gi) => (
+                <div key={gi} className="rounded-xl border border-white/10 p-3 space-y-2">
+                  <div className="text-[11px] text-muted-foreground">مجموعة #{gi + 1} — {g.length} منشورات متشابهة</div>
+                  {g.map((p: any, pi: number) => {
+                    const isSuspect = pi > 0; // first (oldest after sort: actually newest in our order desc) flagged
+                    return (
+                      <div key={p.id} className={`rounded-lg p-3 flex items-start justify-between gap-2 ${isSuspect ? "bg-destructive/10 border border-destructive/30" : "bg-white/5"}`}>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Link to="/post/$id" params={{ id: p.id }} className="font-bold text-sm hover:underline">{p.title}</Link>
+                            {isSuspect && <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/20 text-destructive font-bold">مكرر مشتبه به</span>}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-1">
+                            {CAT[p.category]} · {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
+                          </div>
+                        </div>
+                        <button onClick={() => deletePost(p.id)} className="shrink-0 text-destructive hover:opacity-70">
+                          <Trash2 className="h-3.5 w-3.5"/>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {isOwner && (
