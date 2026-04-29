@@ -199,7 +199,7 @@ function Home() {
       </section>
 
       {/* Latest posts */}
-      <section className="space-y-4">
+      <section id="posts-list" className="space-y-4 scroll-mt-20">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
             📌 آخر المنشورات
@@ -228,7 +228,9 @@ function Home() {
                     {CAT_LABEL[p.category]}
                   </span>
                 </div>
-                <h3 className="font-bold text-base mb-1.5">{p.title}</h3>
+                <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
+                  <h3 className="font-bold text-base mb-1.5">{p.title}</h3>
+                </Link>
                 <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
                   {p.content.slice(0, 200)}...
                 </p>
