@@ -28,10 +28,6 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Page-transition: animate content on route change.
-  const [routeAnimKey, setRouteAnimKey] = useState(0);
-  useEffect(() => { setRouteAnimKey(k => k + 1); }, [path]);
-
   // Theme toggle — ripple burst animation from the button position.
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -81,9 +77,7 @@ export default function Layout() {
       </header>
 
       <main className={`relative z-10 mx-auto px-2 sm:px-4 py-4 ${isReadingFocus ? "max-w-5xl" : "max-w-6xl"}`}>
-        <div key={routeAnimKey} className="animate-pop-in">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
