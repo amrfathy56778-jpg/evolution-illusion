@@ -190,7 +190,7 @@ function Admin() {
         <h2 className="font-bold flex items-center gap-2"><Copy className="h-4 w-4"/> فحص المنشورات المكررة</h2>
         <div className="glass rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs text-muted-foreground">يقارن العنوان والمحتوى لاكتشاف التكرارات. يحدّد لك الأحدث كمشتبه به.</p>
+            <p className="text-xs text-muted-foreground">يُظهر فقط المنشورات التي يتطابق نصها بالكامل. يحدّد الأحدث كمشتبه به.</p>
             <button onClick={runDuplicateScan} disabled={dupBusy}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold disabled:opacity-50">
               {dupBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <Filter className="h-3.5 w-3.5"/>}
