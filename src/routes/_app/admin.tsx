@@ -103,29 +103,21 @@ function Admin() {
         .order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       const posts = data ?? [];
+      // Show ONLY posts whose full normalized body text is identical.
       const sigs = posts.map((p: any) => ({
         ...p,
-        titleTok: tokens(p.title ?? ""),
-        bodyTok: tokens((p.content ?? "").slice(0, 4000)),
+        bodyNorm: normalize(p.content ?? ""),
       }));
-      const used = new Set<string>();
+      const byBody = new Map<string, any[]>();
+      for (const s of sigs) {
+        if (!s.bodyNorm) continue;
+        const arr = byBody.get(s.bodyNorm) ?? [];
+        arr.push(s);
+        byBody.set(s.bodyNorm, arr);
+      }
       const groups: any[][] = [];
-      for (let i = 0; i < sigs.length; i++) {
-        if (used.has(sigs[i].id)) continue;
-        const group = [sigs[i]];
-        for (let j = i + 1; j < sigs.length; j++) {
-          if (used.has(sigs[j].id)) continue;
-          const tSim = jaccard(sigs[i].titleTok, sigs[j].titleTok);
-          const bSim = jaccard(sigs[i].bodyTok, sigs[j].bodyTok);
-          if (tSim >= 0.6 || bSim >= 0.55) {
-            group.push(sigs[j]);
-            used.add(sigs[j].id);
-          }
-        }
-        if (group.length > 1) {
-          used.add(sigs[i].id);
-          groups.push(group);
-        }
+      for (const arr of byBody.values()) {
+        if (arr.length > 1) groups.push(arr);
       }
       setDupGroups(groups);
       if (groups.length === 0) toast.success("لا توجد منشورات مكررة");
