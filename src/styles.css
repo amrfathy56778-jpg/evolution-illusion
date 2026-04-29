@@ -199,18 +199,17 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     position: relative;
     background:
       linear-gradient(135deg,
-        oklch(1 0 0 / 0.26) 0%,
-        oklch(1 0 0 / 0.10) 40%,
-        oklch(1 0 0 / 0.06) 60%,
-        oklch(1 0 0 / 0.18) 100%);
-    backdrop-filter: blur(26px) saturate(200%) brightness(1.06);
-    -webkit-backdrop-filter: blur(26px) saturate(200%) brightness(1.06);
-    border: 1px solid oklch(1 0 0 / 0.38);
+        oklch(1 0 0 / 0.18) 0%,
+        oklch(1 0 0 / 0.05) 45%,
+        oklch(1 0 0 / 0.03) 60%,
+        oklch(1 0 0 / 0.12) 100%);
+    backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
+    -webkit-backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
+    border: 1px solid oklch(1 0 0 / 0.32);
     box-shadow:
-      inset 0 1px 0 oklch(1 0 0 / 0.55),
-      inset 0 -1px 0 oklch(1 0 0 / 0.12),
-      inset 0 0 14px oklch(1 0 0 / 0.15),
-      0 8px 22px -10px oklch(0 0 0 / 0.5);
+      inset 0 1px 0 oklch(1 0 0 / 0.45),
+      inset 0 -1px 0 oklch(1 0 0 / 0.08),
+      0 8px 22px -10px oklch(0 0 0 / 0.45);
     overflow: hidden;
     transform: translateZ(0);
     will-change: transform;
@@ -219,49 +218,32 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   .liquid-glass::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse 80% 55% at 30% 0%, oklch(1 0 0 / 0.55), transparent 70%),
-      radial-gradient(ellipse 60% 40% at 70% 100%, oklch(1 0 0 / 0.18), transparent 70%);
+      radial-gradient(ellipse 70% 50% at 30% 0%, oklch(1 0 0 / 0.35), transparent 70%),
+      radial-gradient(ellipse 50% 35% at 70% 100%, oklch(1 0 0 / 0.10), transparent 70%);
   }
-  .liquid-glass::after {
-    content: ""; position: absolute; inset: -40% -40%; pointer-events: none;
-    background: conic-gradient(from 0deg,
-      oklch(0.9 0.15 185 / 0), oklch(0.9 0.15 185 / 0.25),
-      oklch(0.85 0.18 285 / 0.22), oklch(0.9 0.15 185 / 0));
-    opacity: 0; transition: opacity 0.35s; animation: lg-spin 10s linear infinite;
-  }
-  .liquid-glass:hover { transform: translate3d(0,-1px,0) scale(1.04); border-color: oklch(1 0 0 / 0.55); }
-  .liquid-glass:hover::after { opacity: 0.55; }
-  .liquid-glass:active { transform: translate3d(0,0,0) scale(0.96); }
+  .liquid-glass:hover { transform: translate3d(0,-1px,0) scale(1.03); border-color: oklch(1 0 0 / 0.5); }
+  .liquid-glass:active { transform: translate3d(0,0,0) scale(0.97); }
   .liquid-glass > * { position: relative; z-index: 1; }
-  @keyframes lg-spin { to { transform: rotate(360deg); } }
 
-  /* Pop-in for cards/articles — GPU-accelerated, no filter/blur for smooth FPS */
+  html.light .liquid-glass {
+    background:
+      linear-gradient(135deg,
+        oklch(1 0 0 / 0.55) 0%,
+        oklch(1 0 0 / 0.30) 45%,
+        oklch(1 0 0 / 0.25) 60%,
+        oklch(1 0 0 / 0.45) 100%);
+    border: 1px solid oklch(0.18 0.03 246 / 0.18);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.7),
+      0 6px 18px -10px oklch(0 0 0 / 0.18);
+  }
+
+  /* Pop-in for cards/articles — GPU-accelerated, light + fast for smooth FPS */
   @keyframes pop-in {
-    0% { transform: translate3d(0,8px,0) scale(0.96); opacity: 0; }
-    100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+    0% { transform: translate3d(0,6px,0); opacity: 0; }
+    100% { transform: translate3d(0,0,0); opacity: 1; }
   }
-  .animate-pop-in { animation: pop-in 0.26s cubic-bezier(.2,.9,.3,1.2) both; will-change: transform, opacity; }
-
-  /* Radial fan-out for Sections grid items */
-  @keyframes fan-in {
-    0% { transform: translate3d(0,-14px,0) scale(0.6) rotate(-8deg); opacity: 0; }
-    100% { transform: translate3d(0,0,0) scale(1) rotate(0); opacity: 1; }
-  }
-  .animate-fan-in { animation: fan-in 0.34s cubic-bezier(.2,.9,.3,1.4) both; will-change: transform, opacity; }
-
-  /* Sections dialog background burst */
-  @keyframes sections-burst {
-    0% { transform: scale(0.2); opacity: 0; }
-    60% { opacity: 1; }
-    100% { transform: scale(1.6); opacity: 0; }
-  }
-  .sections-burst {
-    position: absolute; left: 50%; top: 50%;
-    width: 320px; height: 320px; margin: -160px 0 0 -160px;
-    border-radius: 50%; pointer-events: none;
-    background: radial-gradient(circle, oklch(0.85 0.18 185 / 0.45), transparent 65%);
-    animation: sections-burst 0.7s ease-out forwards;
-  }
+  .animate-pop-in { animation: pop-in 0.18s ease-out both; }
 
   /* Theme burst */
   @keyframes theme-burst {
@@ -309,11 +291,10 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
 
   /* Honor reduced-motion preferences */
   @media (prefers-reduced-motion: reduce) {
-    .animate-pop-in, .animate-fan-in, .theme-burst, .lang-sweep, .confetti-ring, .sections-burst {
+    .animate-pop-in, .theme-burst, .lang-sweep, .confetti-ring {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
     }
-    .liquid-glass::after { animation: none !important; }
   }
 
   /* Bubble toolbar — guarantee it floats above sticky headers & other UI */
@@ -332,7 +313,7 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     position: fixed;
     width: 420px; height: 420px; border-radius: 50%;
     filter: blur(90px);
-    opacity: 0.28;
+    opacity: 0.22;
     pointer-events: none;
     z-index: 0;
   }
@@ -357,6 +338,14 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     }
   }
 }
+
+/* Global fixes */
+html, body { background: var(--gradient-bg); }
+html { background-color: var(--background); }
+/* Hide Google Translate's default banner ("show original" toolbar) */
+.goog-te-banner-frame, .skiptranslate iframe.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; }
+.goog-te-gadget, .goog-tooltip, .goog-tooltip:hover, .goog-text-highlight { display: none !important; background: transparent !important; box-shadow: none !important; }
 
 /* === Rich content (TipTap output) === */
 @layer components {
