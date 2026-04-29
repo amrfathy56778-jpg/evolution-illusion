@@ -128,7 +128,7 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
   return (
     <BubbleMenu
       editor={editor}
-      options={{ placement: "top" }}
+      options={{ placement: "top", offset: 16 }}
       shouldShow={({ editor, from, to }) => {
         // show only when there is a non-empty text selection
         if (from === to) return false;
@@ -136,7 +136,7 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         return editor.isEditable;
       }}
     >
-      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)]">
+      <div dir="rtl" style={{ zIndex: 2147483647 }} className="relative flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-2">
         <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
@@ -196,7 +196,7 @@ function MediaBubble({ editor }: { editor: Editor }) {
 
 /** Compact persistent insert bar — actions that don't require a selection. */
 function InsertBar({ editor }: { editor: Editor }) {
-  const { addImageUrl, addYoutube } = useEditorActions(editor);
+  const { addImageUrl, addYoutube, setLink } = useEditorActions(editor);
   const imgRef = useRef<HTMLInputElement>(null);
   const vidRef = useRef<HTMLInputElement>(null);
 
@@ -233,18 +233,33 @@ function InsertBar({ editor }: { editor: Editor }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-white/10 bg-white/5 rounded-t-xl">
-      <span className="text-[10px] text-muted-foreground px-2 hidden sm:inline">حدّد نصاً لإظهار أدوات التنسيق</span>
-      <div className="ms-auto flex items-center gap-0.5">
-        <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="h-3.5 w-3.5"/></Btn>
-        <Btn title="إعادة" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/10 mx-1"/>
-        <Btn title="فاصل أفقي" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="h-3.5 w-3.5"/></Btn>
-        <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رفع صورة" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
-        <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
-      </div>
+    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 p-2 border-b border-white/10 bg-background/85 backdrop-blur-xl rounded-t-xl">
+      <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
+      <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
+      <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-3.5 w-3.5"/></Btn>
+      <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-3.5 w-3.5"/></Btn>
+      <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-3.5 w-3.5"/></Btn>
+      <Btn title="مشطوب" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-3.5 w-3.5"/></Btn>
+      <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-3.5 w-3.5"/></Btn>
+      <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-3.5 w-3.5"/></Btn>
+      <Btn title="رابط" active={editor.isActive("link")} onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-3.5 w-3.5"/></Btn>
+      <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-3.5 w-3.5"/></Btn>
+      <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="h-3.5 w-3.5"/></Btn>
+      <Btn title="إعادة" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="h-3.5 w-3.5"/></Btn>
+      <div className="w-px h-5 bg-white/10 mx-1"/>
+      <Btn title="فاصل أفقي" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="h-3.5 w-3.5"/></Btn>
+      <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
+      <Btn title="رفع صور (متعدد)" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
+      <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
+      <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
       <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onUploadImage}/>
       <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
     </div>

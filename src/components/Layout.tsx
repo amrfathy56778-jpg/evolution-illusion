@@ -28,10 +28,6 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Page-transition: animate content on route change.
-  const [routeAnimKey, setRouteAnimKey] = useState(0);
-  useEffect(() => { setRouteAnimKey(k => k + 1); }, [path]);
-
   // Theme toggle — ripple burst animation from the button position.
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -81,9 +77,7 @@ export default function Layout() {
       </header>
 
       <main className={`relative z-10 mx-auto px-2 sm:px-4 py-4 ${isReadingFocus ? "max-w-5xl" : "max-w-6xl"}`}>
-        <div key={routeAnimKey} className="animate-pop-in">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
@@ -113,31 +107,27 @@ function SectionsButton({ current }: { current: string }) {
         <span className="hidden sm:inline">الأقسام</span>
       </button>
       {open && (
-        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-xl grid place-items-center p-4"
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
-          <span className="sections-burst" aria-hidden="true" />
           <div onClick={e => e.stopPropagation()}
-            className="relative w-full max-w-md rounded-[2rem] p-5 border border-white/15 animate-pop-in"
-            style={{ background: "oklch(0.14 0.03 246 / 0.95)" }}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 font-bold text-sm"><LayoutGrid className="h-4 w-4"/> تصفّح الأقسام</div>
-              <button onClick={() => setOpen(false)} className="liquid-glass p-1.5 rounded-full"><X className="h-3.5 w-3.5"/></button>
+            className="w-full max-w-md glass-strong rounded-3xl p-4 shadow-2xl border border-white/10">
+            <div className="flex items-center justify-between px-2 py-2 border-b border-white/10 mb-3">
+              <div className="flex items-center gap-2 text-xs font-bold"><LayoutGrid className="h-4 w-4"/> تصفّح الأقسام</div>
+              <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-white/10"><X className="h-3.5 w-3.5"/></button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {NAV.map((item, idx) => {
+            <div className="grid grid-cols-2 gap-2">
+              {NAV.map((item) => {
                 const Icon = item.icon;
                 const active = current === item.to;
                 return (
                   <Link key={item.to} to={item.to} onClick={() => setOpen(false)}
                     style={{
-                      animationDelay: `${idx * 45}ms`,
                       borderColor: active ? item.color : undefined,
-                      boxShadow: active ? `0 0 30px -5px ${item.color}` : undefined,
                     }}
-                    className="liquid-glass animate-fan-in flex flex-col items-center gap-2 p-4 rounded-2xl text-center">
-                    <div className="h-10 w-10 rounded-full grid place-items-center"
-                      style={{ background: `color-mix(in oklab, ${item.color} 25%, transparent)`, color: item.color }}>
-                      <Icon className="h-5 w-5"/>
+                    className={`flex items-center gap-2 p-3 rounded-2xl text-right transition border border-transparent ${active ? "bg-white/10" : "hover:bg-white/10"}`}>
+                    <div className="h-8 w-8 rounded-full grid place-items-center shrink-0"
+                      style={{ background: `color-mix(in oklab, ${item.color} 22%, transparent)`, color: item.color }}>
+                      <Icon className="h-4 w-4"/>
                     </div>
                     <span className="text-xs font-bold" style={{ color: item.color }}>{item.label}</span>
                   </Link>

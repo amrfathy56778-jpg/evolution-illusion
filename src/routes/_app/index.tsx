@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, ChevronLeft } from "lucide-react";
@@ -8,6 +9,7 @@ import { PostAIButton } from "@/components/PostAIChat";
 
 export const Route = createFileRoute("/_app/")({
   component: Home,
+  validateSearch: z.object({ page: z.coerce.number().int().min(1).optional() }),
   head: () => ({
     meta: [
       { title: "وهم التطور — الرئيسية" },
@@ -33,9 +35,12 @@ const PAGE_SIZE = 8;
 
 function Home() {
   const { isStaff } = useAuth();
+  const search = Route.useSearch();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
-  const [page, setPage] = useState(0);
+  const page = Math.max(0, (search.page ?? 1) - 1);
+  const setPage = (p: number) => navigate({ to: "/", search: { page: p === 0 ? undefined : p + 1 }, replace: false });
   const [total, setTotal] = useState(0);
   const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
@@ -194,7 +199,7 @@ function Home() {
       </section>
 
       {/* Latest posts */}
-      <section className="space-y-4">
+      <section id="posts-list" className="space-y-4 scroll-mt-20">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
             📌 آخر المنشورات
@@ -223,7 +228,9 @@ function Home() {
                     {CAT_LABEL[p.category]}
                   </span>
                 </div>
-                <h3 className="font-bold text-base mb-1.5">{p.title}</h3>
+                <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
+                  <h3 className="font-bold text-base mb-1.5">{p.title}</h3>
+                </Link>
                 <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
                   {p.content.slice(0, 200)}...
                 </p>
@@ -252,7 +259,13 @@ function Home() {
 function HomePagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (pages <= 1) return null;
-  const go = (p: number) => { onChange(Math.max(0, Math.min(pages - 1, p))); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const go = (p: number) => {
+    onChange(Math.max(0, Math.min(pages - 1, p)));
+    setTimeout(() => {
+      const el = document.getElementById("posts-list");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
   const start = Math.max(0, Math.min(page - 2, pages - 5));
   const end = Math.min(pages, start + 5);
   const nums = Array.from({ length: end - start }, (_, i) => start + i);
