@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Plus, X, ImagePlus, ImageOff, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, X, ImagePlus, ImageOff, ChevronRight, ChevronLeft, Sparkles, Loader2 } from "lucide-react";
 import { RichEditor } from "@/components/RichEditor";
 import { PostAIButton } from "@/components/PostAIChat";
 
@@ -26,6 +26,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [authorName, setAuthorName] = useState("");
+  const [titleBusy, setTitleBusy] = useState(false);
   const coverRef = useRef<HTMLInputElement>(null);
   const [page, setPageState] = useState(initialPage);
   const [total, setTotal] = useState(0);
@@ -58,6 +59,22 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle()
       .then(({ data }) => setAuthorName(data?.display_name ?? ""));
   }, [user]);
+
+  const suggestTitle = async () => {
+    const plain = c.replace(/<[^>]+>/g, "").trim();
+    if (plain.length < 30) { toast.error("اكتب محتوى أطول لاقتراح العنوان"); return; }
+    setTitleBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("smart-title", { body: { content: c, category } });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const title = (data as any)?.title?.trim();
+      if (!title) throw new Error("لم يُرجع عنوان");
+      setT(title);
+      toast.success("تم اقتراح العنوان");
+    } catch (err: any) { toast.error("تعذّر الاقتراح: " + (err.message ?? err)); }
+    finally { setTitleBusy(false); }
+  };
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,8 +131,17 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 
       {open && (
         <form onSubmit={create} className="glass rounded-3xl p-5 space-y-3">
-          <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none" placeholder="العنوان"
-            value={t} onChange={e=>setT(e.target.value)} maxLength={200}/>
+          <div className="flex gap-2">
+            <input className="glass-input rounded-xl px-3 py-2.5 text-sm flex-1 outline-none" placeholder="العنوان"
+              value={t} onChange={e=>setT(e.target.value)} maxLength={200}/>
+            <button type="button" onClick={suggestTitle} disabled={titleBusy}
+              title="تحديد العنوان الذكي بالذكاء الاصطناعي"
+              className="glass-input rounded-xl px-3 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-white/10 disabled:opacity-50 shrink-0"
+              style={{ color }}>
+              {titleBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <Sparkles className="h-3.5 w-3.5"/>}
+              <span className="hidden sm:inline">تحديد العنوان الذكي</span>
+            </button>
+          </div>
           <input className="glass-input rounded-xl px-3 py-2.5 text-sm w-full outline-none"
             placeholder="اسم الناشر الظاهر للقراء (لن يُعرض بريدك)" value={authorName} onChange={e=>setAuthorName(e.target.value)} maxLength={60}/>
           <div className="flex items-center gap-2 flex-wrap">
