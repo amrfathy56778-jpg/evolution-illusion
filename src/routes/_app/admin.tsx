@@ -86,15 +86,6 @@ function Admin() {
     .trim()
     .toLowerCase();
 
-  const tokens = (s: string) => new Set(normalize(s).split(" ").filter(w => w.length > 2));
-
-  const jaccard = (a: Set<string>, b: Set<string>) => {
-    if (a.size === 0 || b.size === 0) return 0;
-    let inter = 0;
-    for (const t of a) if (b.has(t)) inter++;
-    return inter / (a.size + b.size - inter);
-  };
-
   const runDuplicateScan = async () => {
     setDupBusy(true);
     try {
