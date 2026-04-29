@@ -28,21 +28,22 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Theme toggle — ripple burst animation from the button position.
+  // Theme toggle — silky ripple burst that doesn't block frames.
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const burst = document.createElement("div");
     burst.className = "theme-burst";
-    burst.style.left = rect.left + rect.width / 2 - 10 + "px";
-    burst.style.top = rect.top + rect.height / 2 - 10 + "px";
+    burst.style.left = rect.left + rect.width / 2 - 12 + "px";
+    burst.style.top = rect.top + rect.height / 2 - 12 + "px";
     document.body.appendChild(burst);
     setTimeout(() => burst.remove(), 900);
-    setTheme(theme === "dark" ? "light" : "dark");
+    // Defer the actual class flip slightly so the burst's first frames render before paint reflows.
+    requestAnimationFrame(() => setTheme(theme === "dark" ? "light" : "dark"));
   };
 
   return (
     <div className="ambient-orbs relative min-h-screen">
-      <header className="sticky top-0 z-30 glass-strong border-b border-white/10">
+      <header className="sticky top-0 z-20 glass-strong border-b border-white/10">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 group">
             <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
@@ -107,7 +108,7 @@ function SectionsButton({ current }: { current: string }) {
         <span className="hidden sm:inline">الأقسام</span>
       </button>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-pop-in"
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
             className="w-full max-w-md glass-strong rounded-3xl p-4 shadow-2xl border border-white/10">
@@ -236,7 +237,7 @@ function TranslateButton() {
         <Globe className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
             className="w-full max-w-xs glass-strong rounded-3xl p-3 shadow-2xl border border-white/10">
