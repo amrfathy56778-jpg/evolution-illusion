@@ -16,8 +16,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const navigate = useNavigate();
   const location = useLocation();
   const initialPage = (() => {
-    const sp = new URLSearchParams(location.search);
-    const n = parseInt(sp.get("page") ?? "1", 10);
+    const raw = (location.search as any)?.page;
+    const n = typeof raw === "number" ? raw : parseInt(String(raw ?? "1"), 10);
     return isNaN(n) || n < 1 ? 0 : n - 1;
   })();
   const [posts, setPosts] = useState<any[]>([]);
