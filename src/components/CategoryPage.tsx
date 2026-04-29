@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -13,6 +13,13 @@ const PAGE_SIZE = 10;
 export default function CategoryPage({ category, title, color, emoji, description }:
   { category: Cat; title: string; color: string; emoji: string; description: string }) {
   const { isStaff, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const initialPage = (() => {
+    const sp = new URLSearchParams(location.search);
+    const n = parseInt(sp.get("page") ?? "1", 10);
+    return isNaN(n) || n < 1 ? 0 : n - 1;
+  })();
   const [posts, setPosts] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [t, setT] = useState(""); const [c, setC] = useState("");
@@ -20,8 +27,17 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const [busy, setBusy] = useState(false);
   const [authorName, setAuthorName] = useState("");
   const coverRef = useRef<HTMLInputElement>(null);
-  const [page, setPage] = useState(0);
+  const [page, setPageState] = useState(initialPage);
   const [total, setTotal] = useState(0);
+
+  const setPage = (p: number) => {
+    setPageState(p);
+    navigate({
+      to: location.pathname,
+      search: (prev: any) => ({ ...prev, page: p === 0 ? undefined : p + 1 }),
+      replace: false,
+    } as any);
+  };
 
   const load = async () => {
     const from = page * PAGE_SIZE;
@@ -124,6 +140,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
         </form>
       )}
 
+      <div id="posts-list" className="scroll-mt-20"/>
       {posts.length === 0 ? (
         <div className="glass rounded-2xl p-8 text-center text-muted-foreground text-sm">لا توجد منشورات في هذا القسم بعد.</div>
       ) : (
@@ -136,7 +153,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               {p.cover_image_url && (
                 <img src={p.cover_image_url} alt={p.title} className="w-full max-h-48 object-cover rounded-xl mb-3"/>
               )}
-              <h3 className="font-bold mb-1.5">{p.title}</h3>
+              <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
+                <h3 className="font-bold mb-1.5">{p.title}</h3>
+              </Link>
               <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                 {p.content.replace(/<[^>]+>/g, " ").slice(0, 200)}…
               </p>
@@ -164,7 +183,13 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (pages <= 1) return null;
-  const go = (p: number) => { onChange(Math.max(0, Math.min(pages - 1, p))); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const go = (p: number) => {
+    onChange(Math.max(0, Math.min(pages - 1, p)));
+    setTimeout(() => {
+      const el = document.getElementById("posts-list");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
   // Build window of up to 5 numbered buttons around current
   const start = Math.max(0, Math.min(page - 2, pages - 5));
   const end = Math.min(pages, start + 5);
