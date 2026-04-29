@@ -86,15 +86,6 @@ function Admin() {
     .trim()
     .toLowerCase();
 
-  const tokens = (s: string) => new Set(normalize(s).split(" ").filter(w => w.length > 2));
-
-  const jaccard = (a: Set<string>, b: Set<string>) => {
-    if (a.size === 0 || b.size === 0) return 0;
-    let inter = 0;
-    for (const t of a) if (b.has(t)) inter++;
-    return inter / (a.size + b.size - inter);
-  };
-
   const runDuplicateScan = async () => {
     setDupBusy(true);
     try {
@@ -103,29 +94,21 @@ function Admin() {
         .order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       const posts = data ?? [];
+      // Show ONLY posts whose full normalized body text is identical.
       const sigs = posts.map((p: any) => ({
         ...p,
-        titleTok: tokens(p.title ?? ""),
-        bodyTok: tokens((p.content ?? "").slice(0, 4000)),
+        bodyNorm: normalize(p.content ?? ""),
       }));
-      const used = new Set<string>();
+      const byBody = new Map<string, any[]>();
+      for (const s of sigs) {
+        if (!s.bodyNorm) continue;
+        const arr = byBody.get(s.bodyNorm) ?? [];
+        arr.push(s);
+        byBody.set(s.bodyNorm, arr);
+      }
       const groups: any[][] = [];
-      for (let i = 0; i < sigs.length; i++) {
-        if (used.has(sigs[i].id)) continue;
-        const group = [sigs[i]];
-        for (let j = i + 1; j < sigs.length; j++) {
-          if (used.has(sigs[j].id)) continue;
-          const tSim = jaccard(sigs[i].titleTok, sigs[j].titleTok);
-          const bSim = jaccard(sigs[i].bodyTok, sigs[j].bodyTok);
-          if (tSim >= 0.6 || bSim >= 0.55) {
-            group.push(sigs[j]);
-            used.add(sigs[j].id);
-          }
-        }
-        if (group.length > 1) {
-          used.add(sigs[i].id);
-          groups.push(group);
-        }
+      for (const arr of byBody.values()) {
+        if (arr.length > 1) groups.push(arr);
       }
       setDupGroups(groups);
       if (groups.length === 0) toast.success("لا توجد منشورات مكررة");
@@ -198,7 +181,7 @@ function Admin() {
         <h2 className="font-bold flex items-center gap-2"><Copy className="h-4 w-4"/> فحص المنشورات المكررة</h2>
         <div className="glass rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs text-muted-foreground">يقارن العنوان والمحتوى لاكتشاف التكرارات. يحدّد لك الأحدث كمشتبه به.</p>
+            <p className="text-xs text-muted-foreground">يُظهر فقط المنشورات التي يتطابق نصها بالكامل. يحدّد الأحدث كمشتبه به.</p>
             <button onClick={runDuplicateScan} disabled={dupBusy}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold disabled:opacity-50">
               {dupBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <Filter className="h-3.5 w-3.5"/>}

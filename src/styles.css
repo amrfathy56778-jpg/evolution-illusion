@@ -199,13 +199,13 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     position: relative;
     background:
       linear-gradient(135deg,
-        oklch(1 0 0 / 0.18) 0%,
-        oklch(1 0 0 / 0.05) 45%,
-        oklch(1 0 0 / 0.03) 60%,
-        oklch(1 0 0 / 0.12) 100%);
-    backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
-    -webkit-backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
-    border: 1px solid oklch(1 0 0 / 0.32);
+        oklch(1 0 0 / 0.10) 0%,
+        oklch(1 0 0 / 0.03) 45%,
+        oklch(1 0 0 / 0.02) 60%,
+        oklch(1 0 0 / 0.08) 100%);
+    backdrop-filter: blur(40px) saturate(220%) brightness(1.10);
+    -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.10);
+    border: 1px solid oklch(1 0 0 / 0.28);
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 0.45),
       inset 0 -1px 0 oklch(1 0 0 / 0.08),
@@ -245,17 +245,23 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   }
   .animate-pop-in { animation: pop-in 0.18s ease-out both; }
 
-  /* Theme burst */
+  /* Theme burst — silky, GPU-only transform/opacity, no layout cost */
   @keyframes theme-burst {
-    0% { transform: scale(0); opacity: 0.95; }
-    100% { transform: scale(80); opacity: 0; }
+    0% { transform: translate3d(0,0,0) scale(0); opacity: 0.85; }
+    60% { opacity: 0.55; }
+    100% { transform: translate3d(0,0,0) scale(120); opacity: 0; }
   }
   .theme-burst {
-    position: fixed; width: 20px; height: 20px; border-radius: 50%;
+    position: fixed; width: 24px; height: 24px; border-radius: 50%;
     pointer-events: none; z-index: 9999;
-    background: radial-gradient(circle, oklch(0.88 0.18 185), transparent 65%);
-    animation: theme-burst 0.55s ease-out forwards;
+    background: radial-gradient(circle, oklch(0.92 0.15 195 / 0.95), oklch(0.85 0.18 195 / 0.4) 45%, transparent 70%);
+    animation: theme-burst 0.85s cubic-bezier(.22,1,.36,1) forwards;
     will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+  /* Smooth color/background transitions when theme flips so no harsh frame jumps */
+  html, body, .glass, .glass-strong, .liquid-glass, header, main, footer, [class*="bg-"], [class*="text-"] {
+    transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease;
   }
 
   /* Language sweep */
@@ -298,7 +304,16 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   }
 
   /* Bubble toolbar — guarantee it floats above sticky headers & other UI */
-  [data-tippy-root], [data-floating-ui-portal] { z-index: 99999 !important; }
+  [data-tippy-root], [data-floating-ui-portal] { z-index: 2147483647 !important; position: fixed !important; }
+  [data-tippy-root] *, [data-floating-ui-portal] * { z-index: 2147483647 !important; }
+
+  /* Hide Google Translate's persistent top banner ("show original / options") on every variant */
+  .goog-te-banner-frame.skiptranslate,
+  iframe.goog-te-banner-frame,
+  .goog-te-banner-frame,
+  #goog-gt-tt, .goog-te-balloon-frame,
+  div[id^="goog-gt-"] { display: none !important; visibility: hidden !important; }
+  html, body { top: 0 !important; position: static !important; }
 
   .text-gradient-emerald {
     background: linear-gradient(135deg, oklch(0.92 0.13 195), oklch(0.78 0.18 270));
