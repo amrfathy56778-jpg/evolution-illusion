@@ -35,12 +35,12 @@ const PAGE_SIZE = 8;
 
 function Home() {
   const { isStaff } = useAuth();
-  const search = useSearch({ from: "/_app/" });
-  const navigate = useNavigate({ from: "/_app/" });
+  const search = Route.useSearch();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ posts: 0, supervisors: 0, categories: 4 });
   const [latest, setLatest] = useState<any[]>([]);
   const page = Math.max(0, (search.page ?? 1) - 1);
-  const setPage = (p: number) => navigate({ search: (prev) => ({ ...prev, page: p === 0 ? undefined : p + 1 }), replace: false });
+  const setPage = (p: number) => navigate({ to: "/", search: { page: p === 0 ? undefined : p + 1 }, replace: false });
   const [total, setTotal] = useState(0);
   const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
