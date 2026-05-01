@@ -130,6 +130,12 @@ function GuestPost() {
       </div>
 
       <form onSubmit={submit} className="glass rounded-3xl p-6 space-y-3">
+        {/* Submit button (top) */}
+        <button type="submit" disabled={loading}
+          className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-sm hover:opacity-90 transition glow-warm flex items-center justify-center gap-2 disabled:opacity-50"
+          style={{ background: "var(--c-guest)", color: "oklch(0.15 0.05 50)" }}>
+          {loading ? <><Loader2 className="h-4 w-4 animate-spin"/> جارٍ مراجعة AI…</> : <><Send className="h-4 w-4" /> إرسال ومراجعة بالذكاء الاصطناعي</>}
+        </button>
         <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
           <input type="checkbox" checked={anonymous} onChange={e=>setAnonymous(e.target.checked)}
             className="accent-primary w-4 h-4"/>
