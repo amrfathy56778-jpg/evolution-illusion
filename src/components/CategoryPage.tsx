@@ -213,7 +213,6 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (pages <= 1) return null;
   const go = (p: number) => {
     onChange(Math.max(0, Math.min(pages - 1, p)));
     setTimeout(() => {
