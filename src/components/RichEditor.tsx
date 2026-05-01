@@ -124,11 +124,41 @@ function useEditorActions(editor: Editor) {
 
 /** Floating bubble toolbar — appears on text selection. */
 function FloatingToolbar({ editor }: { editor: Editor }) {
-  const { setLink } = useEditorActions(editor);
+  const { setLink, addImageUrl, addYoutube } = useEditorActions(editor);
+  const imgRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
+
+  const uploadToBucket = async (f: File) => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type, upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+    return data.publicUrl;
+  };
+  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []); e.target.value = "";
+    if (files.length === 0) return;
+    for (const f of files) {
+      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: تجاوز 10MB`); continue; }
+      try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); }
+      catch (err: any) { toast.error("تعذّر الرفع: " + err.message); }
+    }
+  };
+  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
+    try {
+      const url = await uploadToBucket(f);
+      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
+      editor.chain().focus().insertContent(html).run();
+    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
+  };
   return (
     <BubbleMenu
       editor={editor}
-      options={{ placement: "top", offset: 16 }}
+      options={{ placement: "top", offset: 28 }}
       shouldShow={({ editor, from, to }) => {
         // show only when there is a non-empty text selection
         if (from === to) return false;
@@ -136,7 +166,7 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         return editor.isEditable;
       }}
     >
-      <div dir="rtl" style={{ zIndex: 2147483647 }} className="relative flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-2">
+      <div dir="rtl" style={{ zIndex: 2147483647, position: "relative" }} className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-3">
         <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
         <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
@@ -158,6 +188,13 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         <div className="w-px h-5 bg-white/15 mx-1"/>
         <Btn title="رابط" active={editor.isActive("link")} onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
         <Btn title="إزالة الرابط" disabled={!editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()}><Link2Off className="h-3.5 w-3.5"/></Btn>
+        <div className="w-px h-5 bg-white/15 mx-1"/>
+        <Btn title="رفع صور" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
+        <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
+        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
+        <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
+        <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onUploadImage}/>
+        <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
         <div className="w-px h-5 bg-white/15 mx-1"/>
         <div className="flex items-center gap-0.5">
           <Palette className="h-3.5 w-3.5 text-muted-foreground mx-0.5"/>

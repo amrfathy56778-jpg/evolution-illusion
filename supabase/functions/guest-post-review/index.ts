@@ -58,8 +58,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    if (!GEMINI_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -108,40 +109,46 @@ Deno.serve(async (req: Request) => {
         stripHtml(content).slice(0, 6000)
       }\n\n---\n\n# مقالات الموقع المتاحة للاستشهاد بأرقامها\n\n${corpusText}`;
 
-    const aiRes = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
+    let report = "";
+    if (GEMINI_KEY) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+      const gr = await fetch(url, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: userMessage },
-          ],
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: "user", parts: [{ text: userMessage }] }],
         }),
-      },
-    );
-
-    if (!aiRes.ok) {
-      const t = await aiRes.text();
-      const status = aiRes.status === 429 || aiRes.status === 402
-        ? aiRes.status
-        : 500;
-      return new Response(
-        JSON.stringify({ error: "AI gateway error", detail: t }),
+      });
+      if (!gr.ok) {
+        const t = await gr.text();
+        return new Response(JSON.stringify({ error: "Gemini error", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const gj = await gr.json();
+      report = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "";
+    } else {
+      const aiRes = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
-          status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          method: "POST",
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: userMessage },
+            ],
+          }),
         },
       );
+      if (!aiRes.ok) {
+        const t = await aiRes.text();
+        const status = aiRes.status === 429 || aiRes.status === 402 ? aiRes.status : 500;
+        return new Response(JSON.stringify({ error: "AI gateway error", detail: t }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const data = await aiRes.json();
+      report = data.choices?.[0]?.message?.content ?? "";
     }
-
-    const data = await aiRes.json();
-    const report: string = data.choices?.[0]?.message?.content ?? "";
 
     // Parse verdict
     const upper = report.toUpperCase();

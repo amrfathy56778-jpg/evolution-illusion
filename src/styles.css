@@ -255,13 +255,13 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     position: fixed; width: 24px; height: 24px; border-radius: 50%;
     pointer-events: none; z-index: 9999;
     background: radial-gradient(circle, oklch(0.92 0.15 195 / 0.95), oklch(0.85 0.18 195 / 0.4) 45%, transparent 70%);
-    animation: theme-burst 0.85s cubic-bezier(.22,1,.36,1) forwards;
+    animation: theme-burst 0.35s cubic-bezier(.22,1,.36,1) forwards;
     will-change: transform, opacity;
     backface-visibility: hidden;
   }
   /* Smooth color/background transitions when theme flips so no harsh frame jumps */
   html, body, .glass, .glass-strong, .liquid-glass, header, main, footer, [class*="bg-"], [class*="text-"] {
-    transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   }
 
   /* Language sweep */
@@ -294,6 +294,19 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
 
   /* Hide categories nav while the AI summary/chat dialog is open */
   body.ai-dialog-open .hide-when-ai-open { display: none !important; }
+
+  /* Hide the entire site header while AI search dialog is open */
+  body.ai-search-open header.site-header { display: none !important; }
+
+  /* Site header — strong frosted-glass blur over content behind it */
+  header.site-header {
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    background: oklch(0.16 0.03 248 / 0.55) !important;
+  }
+  html.light header.site-header {
+    background: oklch(1 0 0 / 0.55) !important;
+  }
 
   /* Honor reduced-motion preferences */
   @media (prefers-reduced-motion: reduce) {

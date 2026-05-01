@@ -131,6 +131,11 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 
       {open && (
         <form onSubmit={create} className="glass rounded-3xl p-5 space-y-3">
+          {/* Publish button (top) */}
+          <button type="submit" disabled={busy} className="w-full rounded-xl py-2.5 font-bold text-sm disabled:opacity-50"
+            style={{ background: color, color: "oklch(0.15 0.05 200)" }}>
+            {busy ? "جارٍ النشر…" : "نشر"}
+          </button>
           <div className="flex gap-2">
             <input className="glass-input rounded-xl px-3 py-2.5 text-sm flex-1 outline-none" placeholder="العنوان"
               value={t} onChange={e=>setT(e.target.value)} maxLength={200}/>
@@ -208,7 +213,6 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
 
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (pages <= 1) return null;
   const go = (p: number) => {
     onChange(Math.max(0, Math.min(pages - 1, p)));
     setTimeout(() => {
