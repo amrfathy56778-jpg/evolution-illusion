@@ -41,10 +41,29 @@ Deno.serve(async (req: Request) => {
 
   try {
     const { messages, verify } = await req.json();
+    const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    if (!GEMINI_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
 
     if (verify && typeof verify === "string") {
+      if (GEMINI_KEY) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+        const gr = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: VERIFY_PROMPT }] },
+            contents: [{ role: "user", parts: [{ text: `الرد المراد تدقيقه:\n\n${verify}` }] }],
+          }),
+        });
+        if (!gr.ok) {
+          const t = await gr.text();
+          return new Response(JSON.stringify({ error: "verification failed", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const gj = await gr.json();
+        const out = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "";
+        return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       // Self-verification mode
       const vRes = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -94,14 +113,64 @@ Deno.serve(async (req: Request) => {
         .from("posts")
         .select("title, content")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(2000);
       if (posts && posts.length) {
         const snippets = posts.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
+          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 700)}`
         ).join("\n\n");
         siteContext = `\n\n--- مقالات موقع "وهم التطور" (مصادرك الداخلية — استشهد منها بصيغة [مقال: العنوان]) ---\n${snippets}`;
       }
     } catch (_e) { /* non-fatal */ }
+
+    if (GEMINI_KEY) {
+      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const contents = (messages ?? []).map((m: any) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
+      const gr = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents }),
+      });
+      if (!gr.ok || !gr.body) {
+        const t = await gr.text();
+        return new Response(JSON.stringify({ error: "Gemini error", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const stream = new ReadableStream({
+        async start(controller) {
+          const reader = gr.body!.getReader();
+          const dec = new TextDecoder();
+          const enc = new TextEncoder();
+          let buf = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            let nl: number;
+            while ((nl = buf.indexOf("\n")) !== -1) {
+              const line = buf.slice(0, nl).trim();
+              buf = buf.slice(nl + 1);
+              if (!line.startsWith("data: ")) continue;
+              const j = line.slice(6).trim();
+              if (!j) continue;
+              try {
+                const p = JSON.parse(j);
+                const text = p?.candidates?.[0]?.content?.parts?.map((pt: any) => pt.text).filter(Boolean).join("") ?? "";
+                if (text) {
+                  const out = { choices: [{ delta: { content: text } }] };
+                  controller.enqueue(enc.encode(`data: ${JSON.stringify(out)}\n\n`));
+                }
+              } catch { /* ignore */ }
+            }
+          }
+          controller.enqueue(enc.encode(`data: [DONE]\n\n`));
+          controller.close();
+        },
+      });
+      return new Response(stream, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+    }
 
     const aiRes = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
