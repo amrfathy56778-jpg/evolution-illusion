@@ -47,7 +47,7 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
         .from("posts")
         .select("id, title, category, content")
         .order("created_at", { ascending: false })
-        .limit(80);
+        .limit(1000);
       if (pErr) throw pErr;
       const { data, error: fErr } = await supabase.functions.invoke("ai-search", {
         body: { query, posts: posts ?? [] },
