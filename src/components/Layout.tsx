@@ -177,7 +177,12 @@ const LANGS: { code: string; label: string; native: string }[] = [
 function getCurrentLang(): string {
   if (typeof document === "undefined") return "ar";
   const m = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
-  return m?.[1] ?? "ar";
+  if (m?.[1]) return m[1];
+  try {
+    const stored = localStorage.getItem("siteLang");
+    if (stored) return stored;
+  } catch {}
+  return "ar";
 }
 
 function setLang(code: string) {
@@ -193,6 +198,7 @@ function setLang(code: string) {
     document.cookie = `googtrans=${value}; path=/`;
     document.cookie = `googtrans=${value}; path=/; domain=${root}`;
   }
+  try { localStorage.setItem("siteLang", code); } catch {}
   // Trigger sweep animation then reload so Google Translate applies the new target language
   const sweep = document.createElement("div");
   sweep.className = "lang-sweep";
@@ -205,6 +211,19 @@ function TranslateButton() {
   const [current, setCurrent] = useState("ar");
   useEffect(() => {
     setCurrent(getCurrentLang());
+    // Restore last chosen language from localStorage if cookie was wiped
+    try {
+      const stored = localStorage.getItem("siteLang");
+      const cookieMatch = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+      const cookieLang = cookieMatch?.[1];
+      if (stored && stored !== "ar" && cookieLang !== stored) {
+        const host = window.location.hostname;
+        const parts = host.split(".");
+        const root = parts.length > 1 ? "." + parts.slice(-2).join(".") : host;
+        document.cookie = `googtrans=/ar/${stored}; path=/`;
+        document.cookie = `googtrans=/ar/${stored}; path=/; domain=${root}`;
+      }
+    } catch {}
     // Load Google Translate script once globally so cookie-based translation applies on every page.
     if (!(window as any).__gt_loaded) {
       (window as any).__gt_loaded = true;
@@ -221,13 +240,26 @@ function TranslateButton() {
         );
         // Belt-and-braces: continually strip the banner if Google re-injects it.
         const strip = () => {
-          document.querySelectorAll<HTMLElement>(".goog-te-banner-frame, iframe.goog-te-banner-frame").forEach(el => el.remove());
+          document.querySelectorAll<HTMLElement>(
+            ".goog-te-banner-frame, iframe.goog-te-banner-frame, .goog-te-ftab, .goog-te-balloon-frame, #goog-gt-tt, .goog-tooltip"
+          ).forEach(el => el.remove());
+          // Google sometimes injects a visible <div class="skiptranslate"> wrapper containing the bar
+          document.querySelectorAll<HTMLElement>("body > .skiptranslate").forEach(el => {
+            // keep our hidden anchor (#google_translate_element) intact
+            if (el.id !== "google_translate_element" && !el.contains(document.getElementById("google_translate_element"))) {
+              el.style.display = "none";
+            }
+          });
           document.body.style.top = "0px";
+          document.body.style.position = "static";
           document.documentElement.style.top = "0px";
         };
         strip();
         const mo = new MutationObserver(strip);
         mo.observe(document.body, { childList: true, subtree: true });
+        // Extra polling for the first few seconds in case mutations fire before observer is ready
+        let count = 0;
+        const iv = setInterval(() => { strip(); if (++count > 20) clearInterval(iv); }, 250);
       };
       const s = document.createElement("script");
       s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
