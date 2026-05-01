@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Sparkles, X, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,12 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState<string>("");
 
+  // Hide the site header while this dialog is open
+  useEffect(() => {
+    document.body.classList.add("ai-search-open");
+    return () => { document.body.classList.remove("ai-search-open"); };
+  }, []);
+
   const onSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim() || loading) return;
@@ -58,7 +64,8 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 bg-black/60 backdrop-blur-2xl animate-pop-in" onClick={onClose}>
+    <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-8 bg-black/70 backdrop-blur-2xl animate-pop-in"
+         style={{ zIndex: 2147483600 }} onClick={onClose}>
       <div className="glass-strong rounded-3xl w-full max-w-2xl mt-8 sm:mt-16 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-2 text-primary font-bold">
