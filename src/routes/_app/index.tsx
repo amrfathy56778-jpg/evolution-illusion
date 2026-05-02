@@ -221,7 +221,16 @@ function Home() {
         ) : (
           <>
           <div className="space-y-3">
-            {latest.map((p, idx) => (
+            {(query.trim()
+              ? latest.filter((p) => {
+                  const q = query.trim().toLowerCase();
+                  return (
+                    String(p.title ?? "").toLowerCase().includes(q) ||
+                    String(p.content ?? "").toLowerCase().includes(q)
+                  );
+                })
+              : latest
+            ).map((p, idx) => (
               <article key={p.id} style={{ animationDelay: `${idx * 60}ms` }}
                 className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in">
                 <div className="flex items-center gap-2 mb-2">
