@@ -23,8 +23,9 @@ Deno.serve(async (req) => {
   try {
     const { article, mode, messages } = await req.json();
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
+    const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!GEMINI_KEY && !LOVABLE_KEY) throw new Error("No AI key configured");
+    if (!GEMINI_KEY && !GROQ_KEY && !LOVABLE_KEY) throw new Error("No AI key configured");
     if (!article?.title || !article?.content) {
       return new Response(JSON.stringify({ error: "article required" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
     }
@@ -68,7 +69,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Prefer Gemini direct API if key is available
+    // Helper: stream from Groq using OpenAI-compatible chat completions
+    const streamFromGroq = async () => {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: baseMessages,
+          stream: true,
+        }),
+      });
+      if (!r.ok || !r.body) {
+        const t = await r.text();
+        throw new Error(`Groq error: ${t}`);
+      }
+      return new Response(r.body, { headers: { ...cors, "Content-Type": "text/event-stream" } });
+    };
+
+    // Prefer Gemini direct API if key is available, fallback to Groq, then Lovable.
     if (GEMINI_KEY) {
       // Convert OpenAI-style messages to Gemini format
       const sys = baseMessages.filter(m => m.role === "system").map(m => m.content).join("\n\n");
@@ -86,6 +105,12 @@ Deno.serve(async (req) => {
         }),
       });
       if (!gr.ok || !gr.body) {
+        // Gemini failed (rate limit / quota) → try Groq fallback
+        if (GROQ_KEY) {
+          try { return await streamFromGroq(); } catch (e) {
+            return new Response(JSON.stringify({ error: `Gemini & Groq failed: ${(e as Error).message}` }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
+          }
+        }
         const t = await gr.text();
         return new Response(JSON.stringify({ error: `Gemini error: ${t}` }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
       }
@@ -122,6 +147,11 @@ Deno.serve(async (req) => {
         },
       });
       return new Response(stream, { headers: { ...cors, "Content-Type": "text/event-stream" } });
+    }
+
+    // No Gemini → try Groq directly
+    if (GROQ_KEY) {
+      try { return await streamFromGroq(); } catch (_e) { /* fall through to Lovable */ }
     }
 
     // Fallback to Lovable AI
