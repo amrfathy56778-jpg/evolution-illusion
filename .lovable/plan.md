@@ -1,65 +1,52 @@
+## ملخص التغييرات
 
-## التغييرات المطلوبة
+سأنفذ خمسة تعديلات على الموقع وفق طلبك:
 
-### 1. تسريع أنيميشن الوضع النهاري/الليلي
-في `src/styles.css`:
-- تقليل مدة `theme-burst` من 0.85s إلى ~0.35s.
-- تقليل transition العام من 0.45s إلى 0.18s.
+### 1) إعادة أنيميشن تغيير الوضع (الليلي/النهاري) كما كان أصلاً، لكن أسرع
 
-### 2. قائمة تلخيص المقالات (PostAIChat) فوق كل شيء + خلفية مموهة
-في `src/components/PostAIChat.tsx`:
-- رفع z-index الـ overlay إلى `z-[2147483600]` (أعلى من الـ header).
-- زيادة `backdrop-blur-2xl` + طبقة `bg-background/40` لتقوية التمويه على ما خلف الحوار.
-- التأكد من `position: fixed; inset: 0` (موجود بالفعل).
-- نفس المعالجة لـ `AISearchDialog.tsx`.
+- إعادة أنيميشن `theme-burst` الانتشاري الأصلي (دائرة تتمدد من زر الزر) مع خفض المدة من `0.35s` إلى `0.25s` لشعور أسرع.
+- خفض زمن انتقالات الألوان العامة من `0.18s` إلى `0.12s` ليكون الانتقال أنعم وأسرع دون تقطيع.
+- الإبقاء على `requestAnimationFrame` قبل قلب الكلاس حتى لا يحدث "وميض" بين الفريمات.
 
-### 3. شريط علوي بتمويه + إخفاؤه عند فتح بحث الذكاء الاصطناعي
-في `src/components/Layout.tsx` و `src/styles.css`:
-- إضافة class `site-header` للـ header مع backdrop-filter قوي.
-- عند فتح AISearchDialog: إضافة `body.classList.add("ai-search-open")` و CSS:
-  ```css
-  body.ai-search-open header.site-header { display: none; }
-  ```
+### 2) شريط علوي شفاف بتمويه قوي + الأزرار وحدها مرئية (مثل الصورة المرفقة)
 
-### 4. قائمة التحرير عند تحديد النص فوق قائمة النظام + خيار صورة/فيديو
-في `src/components/RichEditor.tsx`:
-- في `FloatingToolbar` (BubbleMenu للنص):
-  - إضافة أزرار: رفع صورة، رفع فيديو، صورة من رابط، يوتيوب.
-  - عمل input مخفي للملفات داخل الـ FloatingToolbar.
-- لرفع القائمة فوق قائمة النظام (Copy/Paste الأصلية للنظام لا يمكن إخفاؤها برمجياً، لكن يمكن منع إظهار قائمة المتصفح الافتراضية على التحديد عبر `onContextMenu` + إعطاء BubbleMenu `position: fixed` و `z-index: 2147483647`، وإضافة `transform: translateY(-12px)` لرفعها بعيداً عن منطقة التحديد). إضافة الـ class `editor-bubble-top` مع style `position: fixed !important; z-index: 2147483647 !important`.
-- إضافة `InsertBar` ثانية في الأسفل (Sticky bottom) مع زر حفظ، و**نقل زر "نشر" إلى أعلى وأسفل** نموذج الإضافة في `CategoryPage.tsx`.
+- إزالة خلفية الشريط الكاملة (`background` على `header.site-header`) واستبدالها بـ `background: transparent`، مع إبقاء `backdrop-filter: blur(28px) saturate(200%)` فقط — هذا يطابق الشكل الذي في الصورة (تمويه ناعم خلف العناصر بلا "صندوق" واضح).
+- إزالة `border-b` و`glass-strong` من عنصر `<header>` في `Layout.tsx`.
+- جعل الأزرار (الأقسام، الوضع، الترجمة، لوحة الإدارة، تسجيل الدخول/الخروج) محتفظة بمظهر `liquid-glass` (شفاف مع تمويه خاص بكل زر) — وهي بالفعل كذلك، فستظهر كأقراص زجاجية فوق التمويه كما في الصورة.
+- اللوغو يبقى كما هو على اليمين، وستظل الأزرار تجمعة على اليسار.
 
-### 5. زر "حفظ/نشر" أعلى وأسفل
-في `src/components/CategoryPage.tsx` و `src/routes/_app/guest-post.tsx`:
-- إضافة زر النشر مرة أخرى أعلى الـ form (فوق RichEditor) بنفس المنطق.
+### 3) فصل البحث عن الذكاء الاصطناعي
 
-### 6. أرقام الصفحات في صفحات الأقسام
-الأرقام موجودة فعلاً في `Pagination` داخل `CategoryPage.tsx`. التأكد أنها تظهر دائماً (حتى لو صفحة واحدة فقط، عرض رقم 1 فقط، وإلا إخفاء). تعديل: إزالة شرط `if (pages <= 1) return null;` واستبداله بإظهار "صفحة 1 من 1".
+- استبدال زر "AI بحث ذكي في المقالات" في الصفحة الرئيسية بحقل بحث نصي بسيط يصفّي المقالات محلياً (تطابق في العنوان أو نص المقال) — لا استدعاء للذكاء الاصطناعي ولا أخطاء "نفاد الرصيد".
+- الإبقاء على زر "ملخّص ونقاش" (`PostAIButton`) داخل صفحة المقال لأنه فعلاً ملخص (الذكاء الاصطناعي يستخدم فقط للتلخيص حسب طلبك).
+- (اختياري) حذف ملف `AISearchDialog.tsx` غير المستخدم بعد ذلك للحفاظ على نظافة الكود.
 
-### 7. الذكاء الاصطناعي يقرأ كل المقالات + يعتمد عليها أساساً
-في `supabase/functions/post-chat/index.ts`:
-- إزالة `.limit(200)` ليصبح بدون حد (أو `.limit(2000)`).
-- تعديل SYSTEM prompt ليؤكد: "اعتمد بشكل أساسي وحصري على مقالات الموقع المرفقة. إذا لم تجد الإجابة في الموقع، قل ذلك صراحة قبل إضافة معلومات خارجية."
-- نفس الشيء في `supabase/functions/ai-search/index.ts`: إزالة `.slice(0, 80)` و `.limit(80)` ورفعها إلى 1000.
+### 4) رفع قائمة تعديل النص (BubbleMenu) لتفادي تداخلها مع قائمة النظام
 
-### 8. ربط الذكاء الاصطناعي بـ Google Gemini API
-- إضافة secret جديد `GEMINI_API_KEY` (سيُطلب من المستخدم بعد الموافقة).
-- تعديل `post-chat`, `ai-search`, `smart-title`, `evolution-critic`, `verify-critique`, `guest-post-review` لاستخدام Gemini API مباشرة:
-  - URL: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}` (للـ streaming) أو `:generateContent` للعادي.
-  - تحويل تنسيق الرسائل من OpenAI format إلى Gemini format (`contents: [{role, parts:[{text}]}]`).
-  - الاحتفاظ بـ Lovable AI كـ fallback في حال عدم وجود `GEMINI_API_KEY`.
+- زيادة `offset` في `BubbleMenu` من `28` إلى `56` (تقريباً 1سم إضافية).
+- زيادة `-translate-y-3` إلى `-translate-y-10` لرفع القائمة بصرياً أعلى.
+- ضبط `MediaBubble` بنفس القيم لتكون متناسقة (`offset: 56`, `-translate-y-10`).
+- ضمان `flex-wrap` يبقي الأزرار داخل الشاشة بدون اقتطاع، وإضافة `max-w-[95vw]` لمنع تجاوز الشاشة.
 
-### الملفات المعدّلة
-- `src/styles.css` — سرعة الأنيميشن، z-index الحوارات، إخفاء الهيدر عند البحث.
-- `src/components/Layout.tsx` — class للهيدر، backdrop-blur.
-- `src/components/PostAIChat.tsx` — z-index أعلى، تمويه أقوى.
-- `src/components/AISearchDialog.tsx` — z-index، إشارة لإخفاء الهيدر.
-- `src/components/RichEditor.tsx` — أزرار صورة/فيديو في BubbleMenu، رفع z-index.
-- `src/components/CategoryPage.tsx` — زر نشر أعلى وأسفل، إظهار رقم الصفحة دائماً.
-- `src/routes/_app/guest-post.tsx` — زر إرسال أعلى وأسفل.
-- `supabase/functions/post-chat/index.ts` — إزالة الحد، تعديل system prompt، دعم Gemini.
-- `supabase/functions/ai-search/index.ts` — إزالة الحد، دعم Gemini.
-- `supabase/functions/smart-title/index.ts` — دعم Gemini.
+### 5) إضافة Groq كذكاء اصطناعي ناقد احتياطي يتعلم من الموقع
 
-### المفاتيح السرية
-بعد الموافقة على الخطة، سأطلب منك إضافة `GEMINI_API_KEY` (احصل عليه مجاناً من https://aistudio.google.com/apikey).
+- إضافة سر جديد `GROQ_API_KEY` (سيُطلب منك إدخاله بعد الموافقة على الخطة).
+- تعديل جميع وظائف Edge AI (`evolution-critic`, `ai-search` للملخص فقط، `post-chat`, `smart-title`, `guest-post-review`) لإضافة سلسلة احتياط ثلاثية المراحل:
+  1. **Gemini** (المفتاح الموجود حالياً) — يحاول أولاً.
+  2. عند فشل أو 402/429 → **Groq** (`llama-3.3-70b-versatile` عبر `https://api.groq.com/openai/v1/chat/completions`) — نفس البرومبت ونفس مهمة "الناقد للتطور" ونفس قائمة منشورات الموقع كسياق (يتعلم منها بنفس الطريقة).
+  3. عند فشل الاثنين → رسالة واضحة بدل خطأ خام.
+- نفس الـ system prompt للتعليم من 1000 منشور وإعطاء أولوية لمحتوى الموقع.
+
+## التفاصيل التقنية (للمراجعة)
+
+**الملفات المعدّلة:**
+- `src/styles.css` — تعديل `.theme-burst` (0.25s)، transitions العامة (0.12s)، header شفاف بتمويه فقط.
+- `src/components/Layout.tsx` — إزالة كلاسات الخلفية من `<header>`.
+- `src/routes/_app/index.tsx` — استبدال `<AISearchButton />` بحقل بحث نصي + فلترة محلية على `latest`.
+- `src/components/RichEditor.tsx` — `offset: 56`, `-translate-y-10`, `max-w-[95vw]` على BubbleMenu و MediaBubble.
+- `supabase/functions/evolution-critic/index.ts` + `ai-search` + `post-chat` + `smart-title` + `guest-post-review` — إضافة دالة `callAI()` مشتركة تجرّب Gemini ثم Groq.
+
+**سر مطلوب:**
+- `GROQ_API_KEY` (ستحصل عليه مجاناً من https://console.groq.com/keys).
+
+بعد موافقتك، سأطلب منك إدخال المفتاح ثم أنفّذ كل التعديلات في خطوة واحدة.
