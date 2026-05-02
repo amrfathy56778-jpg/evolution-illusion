@@ -59,8 +59,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
+    const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!GEMINI_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
+    if (!GEMINI_KEY && !GROQ_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -110,6 +111,20 @@ Deno.serve(async (req: Request) => {
       }\n\n---\n\n# مقالات الموقع المتاحة للاستشهاد بأرقامها\n\n${corpusText}`;
 
     let report = "";
+    const callGroq = async (): Promise<string> => {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: userMessage }],
+        }),
+      });
+      if (!r.ok) throw new Error(`Groq error ${r.status}: ${await r.text()}`);
+      const j = await r.json();
+      return j?.choices?.[0]?.message?.content ?? "";
+    };
+
     if (GEMINI_KEY) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
       const gr = await fetch(url, {
@@ -121,11 +136,21 @@ Deno.serve(async (req: Request) => {
         }),
       });
       if (!gr.ok) {
+        if (GROQ_KEY) {
+          try { report = await callGroq(); } catch (_e) {
+            const t = await gr.text();
+            return new Response(JSON.stringify({ error: "Gemini error", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+        } else {
         const t = await gr.text();
         return new Response(JSON.stringify({ error: "Gemini error", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      } else {
+        const gj = await gr.json();
+        report = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "";
       }
-      const gj = await gr.json();
-      report = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "";
+    } else if (GROQ_KEY) {
+      report = await callGroq();
     } else {
       const aiRes = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",

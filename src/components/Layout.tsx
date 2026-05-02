@@ -43,7 +43,7 @@ export default function Layout() {
 
   return (
     <div className="ambient-orbs relative min-h-screen">
-      <header className="site-header sticky top-0 z-20 glass-strong border-b border-white/10">
+      <header className="site-header sticky top-0 z-20">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 group">
             <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />

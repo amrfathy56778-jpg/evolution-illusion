@@ -245,7 +245,7 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   }
   .animate-pop-in { animation: pop-in 0.18s ease-out both; }
 
-  /* Theme burst — silky, GPU-only transform/opacity, no layout cost */
+  /* Theme burst — original ripple, faster (0.25s) */
   @keyframes theme-burst {
     0% { transform: translate3d(0,0,0) scale(0); opacity: 0.85; }
     60% { opacity: 0.55; }
@@ -255,13 +255,13 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     position: fixed; width: 24px; height: 24px; border-radius: 50%;
     pointer-events: none; z-index: 9999;
     background: radial-gradient(circle, oklch(0.92 0.15 195 / 0.95), oklch(0.85 0.18 195 / 0.4) 45%, transparent 70%);
-    animation: theme-burst 0.35s cubic-bezier(.22,1,.36,1) forwards;
+    animation: theme-burst 0.25s cubic-bezier(.22,1,.36,1) forwards;
     will-change: transform, opacity;
     backface-visibility: hidden;
   }
   /* Smooth color/background transitions when theme flips so no harsh frame jumps */
   html, body, .glass, .glass-strong, .liquid-glass, header, main, footer, [class*="bg-"], [class*="text-"] {
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
   }
 
   /* Language sweep */
@@ -298,14 +298,16 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   /* Hide the entire site header while AI search dialog is open */
   body.ai-search-open header.site-header { display: none !important; }
 
-  /* Site header — strong frosted-glass blur over content behind it */
+  /* Site header — transparent with a beautiful blur; only the buttons/logo stay visible (like the reference). */
   header.site-header {
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    background: oklch(0.16 0.03 248 / 0.55) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
   }
   html.light header.site-header {
-    background: oklch(1 0 0 / 0.55) !important;
+    background: transparent !important;
   }
 
   /* Honor reduced-motion preferences */

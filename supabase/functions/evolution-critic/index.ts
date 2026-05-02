@@ -42,8 +42,24 @@ Deno.serve(async (req: Request) => {
   try {
     const { messages, verify } = await req.json();
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
+    const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!GEMINI_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
+    if (!GEMINI_KEY && !GROQ_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
+
+    // Groq helper (OpenAI-compatible) for non-streaming verify and streaming critique
+    const groqJSON = async (sys: string, userText: string): Promise<string> => {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "system", content: sys }, { role: "user", content: userText }],
+        }),
+      });
+      if (!r.ok) throw new Error(`Groq error ${r.status}: ${await r.text()}`);
+      const j = await r.json();
+      return j?.choices?.[0]?.message?.content ?? "";
+    };
 
     if (verify && typeof verify === "string") {
       if (GEMINI_KEY) {
@@ -57,12 +73,24 @@ Deno.serve(async (req: Request) => {
           }),
         });
         if (!gr.ok) {
+          if (GROQ_KEY) {
+            try {
+              const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+              return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            } catch (_e) { /* fall through */ }
+          }
           const t = await gr.text();
           return new Response(JSON.stringify({ error: "verification failed", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         const gj = await gr.json();
         const out = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "";
         return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (GROQ_KEY) {
+        try {
+          const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+          return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        } catch (_e) { /* fall through */ }
       }
       // Self-verification mode
       const vRes = await fetch(
@@ -122,6 +150,22 @@ Deno.serve(async (req: Request) => {
       }
     } catch (_e) { /* non-fatal */ }
 
+    // Groq streaming helper for critique mode
+    const streamFromGroq = async () => {
+      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "system", content: sys }, ...(messages ?? [])],
+          stream: true,
+        }),
+      });
+      if (!r.ok || !r.body) throw new Error(`Groq error ${r.status}: ${await r.text()}`);
+      return new Response(r.body, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+    };
+
     if (GEMINI_KEY) {
       const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
       const contents = (messages ?? []).map((m: any) => ({
@@ -135,6 +179,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents }),
       });
       if (!gr.ok || !gr.body) {
+        if (GROQ_KEY) { try { return await streamFromGroq(); } catch (_e) { /* fall through */ } }
         const t = await gr.text();
         return new Response(JSON.stringify({ error: "Gemini error", detail: t }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -170,6 +215,11 @@ Deno.serve(async (req: Request) => {
         },
       });
       return new Response(stream, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+    }
+
+    // No Gemini → try Groq directly
+    if (GROQ_KEY) {
+      try { return await streamFromGroq(); } catch (_e) { /* fall through to Lovable */ }
     }
 
     const aiRes = await fetch(

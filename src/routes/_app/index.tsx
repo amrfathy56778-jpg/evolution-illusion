@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, ChevronLeft } from "lucide-react";
-import { AISearchButton } from "@/components/AISearchDialog";
+import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, ChevronLeft, Search } from "lucide-react";
 import { PostAIButton } from "@/components/PostAIChat";
 
 export const Route = createFileRoute("/_app/")({
@@ -42,6 +41,7 @@ function Home() {
   const page = Math.max(0, (search.page ?? 1) - 1);
   const setPage = (p: number) => navigate({ to: "/", search: { page: p === 0 ? undefined : p + 1 }, replace: false });
   const [total, setTotal] = useState(0);
+  const [query, setQuery] = useState("");
   const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
 
@@ -204,7 +204,15 @@ function Home() {
           <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
             📌 آخر المنشورات
           </h2>
-          <AISearchButton />
+          <div className="glass-input flex items-center gap-2 rounded-full px-3 py-1.5 w-full sm:w-72">
+            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="بحث في المقالات…"
+              className="bg-transparent outline-none text-xs flex-1"
+            />
+          </div>
         </div>
         {latest.length === 0 ? (
           <div className="glass rounded-2xl p-8 text-center text-muted-foreground text-sm">
@@ -213,7 +221,16 @@ function Home() {
         ) : (
           <>
           <div className="space-y-3">
-            {latest.map((p, idx) => (
+            {(query.trim()
+              ? latest.filter((p) => {
+                  const q = query.trim().toLowerCase();
+                  return (
+                    String(p.title ?? "").toLowerCase().includes(q) ||
+                    String(p.content ?? "").toLowerCase().includes(q)
+                  );
+                })
+              : latest
+            ).map((p, idx) => (
               <article key={p.id} style={{ animationDelay: `${idx * 60}ms` }}
                 className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in">
                 <div className="flex items-center gap-2 mb-2">
