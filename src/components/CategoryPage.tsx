@@ -129,7 +129,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
       )}
 
       {open && (
-        <form onSubmit={create} className="glass rounded-3xl p-5 space-y-3">
+        <form onSubmit={create} className="glass rounded-3xl p-2 sm:p-4 space-y-3">
           {/* Publish button (top) */}
           <button type="submit" disabled={busy} className="w-full rounded-xl py-2.5 font-bold text-sm disabled:opacity-50"
             style={{ background: color, color: "oklch(0.15 0.05 200)" }}>
