@@ -45,10 +45,10 @@ Deno.serve(async (req) => {
         .select("title, content")
         .neq("id", article.id ?? "")
         .order("created_at", { ascending: false })
-        .limit(2000);
+        .limit(40);
       if (related && related.length) {
         const snippets = related.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 800)}`
+          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
         ).join("\n\n");
         relatedContext = `\n\n--- مقالات الموقع ذات الصلة (استخدمها كمصادر واستشهد منها) ---\n${snippets}`;
       }
