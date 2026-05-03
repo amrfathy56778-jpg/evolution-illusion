@@ -28,17 +28,14 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Theme toggle — silky ripple burst that doesn't block frames.
+  // Theme toggle — instant flip, with a tasteful emerald glow on the button itself.
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const burst = document.createElement("div");
-    burst.className = "theme-burst";
-    burst.style.left = rect.left + rect.width / 2 - 12 + "px";
-    burst.style.top = rect.top + rect.height / 2 - 12 + "px";
-    document.body.appendChild(burst);
-    setTimeout(() => burst.remove(), 900);
-    // Defer the actual class flip slightly so the burst's first frames render before paint reflows.
-    requestAnimationFrame(() => setTheme(theme === "dark" ? "light" : "dark"));
+    const btn = e.currentTarget;
+    btn.classList.remove("theme-press-glow");
+    // restart the animation
+    void btn.offsetWidth;
+    btn.classList.add("theme-press-glow");
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   return (
