@@ -397,7 +397,7 @@ export function RichEditor({ value, onChange, placeholder }:
   if (!editor) return <div className="glass-input rounded-xl h-72 animate-pulse"/>;
 
   return (
-    <div className="glass-input rounded-xl overflow-hidden">
+    <div className="rounded-xl overflow-hidden border border-white/10 bg-background/40">
       <InsertBar editor={editor}/>
       <FloatingToolbar editor={editor}/>
       <MediaBubble editor={editor}/>
