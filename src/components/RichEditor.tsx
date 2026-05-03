@@ -7,7 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
-import { BubbleMenu } from "@tiptap/react/menus";
+import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
@@ -231,6 +231,51 @@ function MediaBubble({ editor }: { editor: Editor }) {
   );
 }
 
+/** FloatingMenu — appears at cursor on an empty line for quick media/link insert. */
+function EmptyLineMenu({ editor }: { editor: Editor }) {
+  const { setLink, addImageUrl, addYoutube } = useEditorActions(editor);
+  const imgRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
+  const uploadToBucket = async (f: File) => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type, upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+    return data.publicUrl;
+  };
+  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); return; }
+    try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); }
+    catch (err: any) { toast.error("تعذّر الرفع: " + err.message); }
+  };
+  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
+    try {
+      const url = await uploadToBucket(f);
+      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
+      editor.chain().focus().insertContent(html).run();
+    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
+  };
+  return (
+    <FloatingMenu editor={editor} options={{ placement: "right-start", offset: 8 }}>
+      <div dir="rtl" className="flex items-center gap-0.5 p-1 rounded-full border border-white/20 bg-background/95 backdrop-blur-xl shadow-lg">
+        <Btn title="رفع صورة" onClick={() => imgRef.current?.click()}><ImageIcon className="h-3.5 w-3.5"/></Btn>
+        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
+        <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
+        <Btn title="رابط صورة" onClick={addImageUrl}><Upload className="h-3.5 w-3.5"/></Btn>
+        <Btn title="رابط" onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
+        <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={onUploadImage}/>
+        <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
+      </div>
+    </FloatingMenu>
+  );
+}
+
 /** Compact persistent insert bar — actions that don't require a selection. */
 function InsertBar({ editor }: { editor: Editor }) {
   const { addImageUrl, addYoutube, setLink } = useEditorActions(editor);
@@ -397,10 +442,11 @@ export function RichEditor({ value, onChange, placeholder }:
   if (!editor) return <div className="glass-input rounded-xl h-72 animate-pulse"/>;
 
   return (
-    <div className="glass-input rounded-xl overflow-hidden">
+    <div className="rounded-xl overflow-hidden border border-white/10 bg-background/40">
       <InsertBar editor={editor}/>
       <FloatingToolbar editor={editor}/>
       <MediaBubble editor={editor}/>
+      <EmptyLineMenu editor={editor}/>
       <EditorContent editor={editor}/>
     </div>
   );

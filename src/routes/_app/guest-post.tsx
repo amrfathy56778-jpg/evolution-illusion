@@ -120,7 +120,7 @@ function GuestPost() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="w-full max-w-5xl mx-auto space-y-5 px-0">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-guest)" }}>
           <PenLine className="h-3.5 w-3.5" /> النشر كضيف · مراجعة AI ثم اعتماد المشرفين
@@ -129,7 +129,7 @@ function GuestPost() {
         <p className="text-xs text-muted-foreground">يمكنك إضافة صور وفيديوهات من جهازك وتنسيق النص بحرية</p>
       </div>
 
-      <form onSubmit={submit} className="glass rounded-3xl p-6 space-y-3">
+      <form onSubmit={submit} className="glass rounded-3xl p-2 sm:p-4 space-y-3">
         {/* Submit button (top) */}
         <button type="submit" disabled={loading}
           className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-sm hover:opacity-90 transition glow-warm flex items-center justify-center gap-2 disabled:opacity-50"

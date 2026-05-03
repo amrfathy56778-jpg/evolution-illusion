@@ -245,24 +245,13 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   }
   .animate-pop-in { animation: pop-in 0.18s ease-out both; }
 
-  /* Theme burst — original ripple, faster (0.25s) */
-  @keyframes theme-burst {
-    0% { transform: translate3d(0,0,0) scale(0); opacity: 0.85; }
-    60% { opacity: 0.55; }
-    100% { transform: translate3d(0,0,0) scale(120); opacity: 0; }
+  /* Emerald glow on theme button press (no fullscreen animation) */
+  @keyframes theme-press-glow {
+    0%   { box-shadow: 0 0 0 0 oklch(0.85 0.18 165 / 0.0), 0 0 0 0 oklch(0.85 0.18 165 / 0); }
+    20%  { box-shadow: 0 0 18px 2px oklch(0.85 0.18 165 / 0.85), inset 0 0 14px oklch(0.85 0.18 165 / 0.55); }
+    100% { box-shadow: 0 0 0 0 oklch(0.85 0.18 165 / 0), inset 0 0 0 oklch(0.85 0.18 165 / 0); }
   }
-  .theme-burst {
-    position: fixed; width: 24px; height: 24px; border-radius: 50%;
-    pointer-events: none; z-index: 9999;
-    background: radial-gradient(circle, oklch(0.92 0.15 195 / 0.95), oklch(0.85 0.18 195 / 0.4) 45%, transparent 70%);
-    animation: theme-burst 0.25s cubic-bezier(.22,1,.36,1) forwards;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-  }
-  /* Smooth color/background transitions when theme flips so no harsh frame jumps */
-  html, body, .glass, .glass-strong, .liquid-glass, header, main, footer, [class*="bg-"], [class*="text-"] {
-    transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
-  }
+  .theme-press-glow { animation: theme-press-glow 0.55s ease-out; }
 
   /* Language sweep */
   @keyframes lang-sweep {
