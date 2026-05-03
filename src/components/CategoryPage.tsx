@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Plus, X, ImagePlus, ImageOff, ChevronRight, ChevronLeft, Sparkles, Loader2 } from "lucide-react";
 import { RichEditor } from "@/components/RichEditor";
-import { PostAIButton } from "@/components/PostAIChat";
 
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 const PAGE_SIZE = 10;
@@ -51,7 +50,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     setTotal(count ?? 0);
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [category, page]);
-  useEffect(() => { setPage(0); }, [category]);
+  // NOTE: do not auto-reset the page when navigating back — keep the URL's ?page=N intact.
 
   // Preload display_name from profile (so the email is never used as fallback name)
   useEffect(() => {
@@ -195,7 +194,6 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
                   {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
                 </div>
                 <div className="flex items-center gap-2">
-                  <PostAIButton post={{ id: p.id, title: p.title, content: p.content }} compact />
                   <Link to="/post/$id" params={{ id: p.id }} className="text-primary text-xs font-semibold hover:underline">
                     اقرأ ←
                   </Link>
