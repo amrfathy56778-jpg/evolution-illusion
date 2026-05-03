@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, ChevronLeft, Search } from "lucide-react";
-import { PostAIButton } from "@/components/PostAIChat";
+import { AISearchButton } from "@/components/AISearchDialog";
 
 export const Route = createFileRoute("/_app/")({
   component: Home,
@@ -42,6 +42,8 @@ function Home() {
   const setPage = (p: number) => navigate({ to: "/", search: { page: p === 0 ? undefined : p + 1 }, replace: false });
   const [total, setTotal] = useState(0);
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[] | null>(null);
+  const [searchBusy, setSearchBusy] = useState(false);
   const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
   const [typed, setTyped] = useState("");
 
@@ -84,6 +86,25 @@ function Home() {
       setLatest(data ?? []);
     })();
   }, [page]);
+
+  // Full-site search across ALL posts (server-side ilike on title + content)
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) { setSearchResults(null); return; }
+    let cancelled = false;
+    setSearchBusy(true);
+    const t = setTimeout(async () => {
+      const like = `%${q.replace(/[%_]/g, "")}%`;
+      const { data } = await supabase
+        .from("posts")
+        .select("*")
+        .or(`title.ilike.${like},content.ilike.${like}`)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!cancelled) { setSearchResults(data ?? []); setSearchBusy(false); }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [query]);
 
   return (
     <div className="space-y-8">
@@ -204,33 +225,27 @@ function Home() {
           <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-emerald">
             📌 آخر المنشورات
           </h2>
-          <div className="glass-input flex items-center gap-2 rounded-full px-3 py-1.5 w-full sm:w-72">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="بحث في المقالات…"
-              className="bg-transparent outline-none text-xs flex-1"
-            />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="glass-input flex items-center gap-2 rounded-full px-3 py-1.5 flex-1 sm:w-64">
+              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="بحث في كل المقالات…"
+                className="bg-transparent outline-none text-xs flex-1"
+              />
+            </div>
+            <AISearchButton className="!px-3 !py-1.5 !text-xs" />
           </div>
         </div>
-        {latest.length === 0 ? (
+        {(searchResults ?? latest).length === 0 ? (
           <div className="glass rounded-2xl p-8 text-center text-muted-foreground text-sm">
-            لا توجد منشورات بعد. كن أول من يكتب!
+            {query.trim() ? (searchBusy ? "جارٍ البحث…" : "لا توجد نتائج لبحثك.") : "لا توجد منشورات بعد. كن أول من يكتب!"}
           </div>
         ) : (
           <>
           <div className="space-y-3">
-            {(query.trim()
-              ? latest.filter((p) => {
-                  const q = query.trim().toLowerCase();
-                  return (
-                    String(p.title ?? "").toLowerCase().includes(q) ||
-                    String(p.content ?? "").toLowerCase().includes(q)
-                  );
-                })
-              : latest
-            ).map((p, idx) => (
+            {(searchResults ?? latest).map((p, idx) => (
               <article key={p.id} style={{ animationDelay: `${idx * 60}ms` }}
                 className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in">
                 <div className="flex items-center gap-2 mb-2">
@@ -256,7 +271,6 @@ function Home() {
                     {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
                   </span>
                   <div className="flex items-center gap-2">
-                    <PostAIButton post={{ id: p.id, title: p.title, content: p.content }} compact />
                     <Link to="/post/$id" params={{ id: p.id }} className="text-primary font-semibold hover:underline">
                       اقرأ المزيد ←
                     </Link>
@@ -265,7 +279,7 @@ function Home() {
               </article>
             ))}
           </div>
-          <HomePagination page={page} total={total} onChange={setPage}/>
+          {!searchResults && <HomePagination page={page} total={total} onChange={setPage}/>}
           </>
         )}
       </section>
