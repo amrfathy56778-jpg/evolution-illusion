@@ -197,7 +197,6 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   /* Liquid glass — refractive pill surface */
   .liquid-glass {
     position: relative;
-    isolation: isolate;
     background:
       linear-gradient(135deg,
         oklch(1 0 0 / 0.10) 0%,
