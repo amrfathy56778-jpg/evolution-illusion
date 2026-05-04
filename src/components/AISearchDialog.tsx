@@ -11,11 +11,12 @@ export function AISearchButton({ className = "" }: { className?: string }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition glow-emerald ${className}`}
+        title="بحث ذكي بالذكاء الاصطناعي"
+        aria-label="بحث ذكي بالذكاء الاصطناعي"
+        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition glow-emerald ${className}`}
       >
-        <span className="text-xs font-black tracking-wider">AI</span>
         <Search className="h-4 w-4" />
-        <span>بحث ذكي في المقالات</span>
+        <span className="text-xs font-black tracking-wider">AI</span>
       </button>
       {open && <AISearchDialog onClose={() => setOpen(false)} />}
     </>
