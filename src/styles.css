@@ -289,9 +289,9 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
 
   /* Site header — transparent with a beautiful blur; only the buttons/logo stay visible (like the reference). */
   header.site-header {
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
     background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border-bottom: none !important;
     box-shadow: none !important;
   }
