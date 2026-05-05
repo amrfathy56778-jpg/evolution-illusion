@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/")({
   head: () => ({
     meta: [
       { title: "وهم التطور — الرئيسية" },
-      { name: "description", content: "منصة علمية للنقد المنهجي لنظرية التطور، مدعومة بأحدث إصدارات Gemini." },
+      { name: "description", content: "منصة علمية للنقد المنهجي لنظرية التطور." },
     ],
   }),
 });
@@ -137,7 +137,7 @@ function Home() {
         <StatCard value={stats.posts} label="منشورات" icon={BookOpen} color="var(--c-evolution)" />
         <StatCard value={stats.supervisors} label="مشرفون" icon={Users} color="var(--c-genetics)" />
         <StatCard value={stats.categories} label="أقسام" icon={Sparkles} color="var(--c-creation)" />
-        <StatCard value="∞" label="نقاشات AI" icon={MessageCircle} color="var(--c-critic)" />
+        <StatCard value="AI" label="نقاشات الذكاء" icon={MessageCircle} color="var(--c-critic)" />
       </section>
 
       {/* Two main CTAs side by side */}
@@ -157,7 +157,7 @@ function Home() {
               ناقد التطور الذكي
             </h3>
             <p className="text-xs text-muted-foreground">
-              مدعوم بأحدث Gemini · تحقق علمي مزدوج
+              تحقق علمي مزدوج
             </p>
             <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-critic)" }}>
               ابدأ النقاش <ArrowLeft className="h-3 w-3" />

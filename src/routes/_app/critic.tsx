@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_app/critic")({
   head: () => ({
     meta: [
       { title: "ناقد التطور الذكي · وهم التطور" },
-      { name: "description", content: "أداة ذكاء اصطناعي متخصصة لنقد التطور علمياً، مدعومة بأحدث Gemini." },
+      { name: "description", content: "أداة ذكاء اصطناعي متخصصة لنقد التطور علمياً." },
     ],
   }),
 });
@@ -125,10 +125,10 @@ function CriticPage() {
   };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
+    <div className="space-y-4 max-w-3xl mx-auto notranslate" translate="no">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-critic)" }}>
-          <Brain className="h-3.5 w-3.5" /> مدعوم بأحدث Gemini · تحقق علمي تلقائي
+          <Brain className="h-3.5 w-3.5" /> تحقق علمي تلقائي
         </div>
         <h1 className="text-3xl font-black text-gradient-emerald">ناقد التطور الذكي</h1>
         <p className="text-xs text-muted-foreground max-w-lg mx-auto">
