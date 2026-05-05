@@ -65,7 +65,8 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-8 bg-black/70 backdrop-blur-2xl animate-pop-in"
+    <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-8 bg-black/70 backdrop-blur-2xl animate-pop-in notranslate"
+         translate="no"
          style={{ zIndex: 2147483600 }} onClick={onClose}>
       <div className="glass-strong rounded-3xl w-full max-w-2xl mt-8 sm:mt-16 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
