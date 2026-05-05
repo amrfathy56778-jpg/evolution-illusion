@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, Heart, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 
@@ -79,6 +79,11 @@ export default function Layout() {
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <Link to="/donate" className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-primary">
+            <Heart className="h-3 w-3" /> ادعم الموقع
+          </Link>
+        </div>
         وهم التطور · منصة علمية للنقد المنهجي · {new Date().getFullYear()}
       </footer>
       {/* Hidden anchor required by Google Translate script */}
