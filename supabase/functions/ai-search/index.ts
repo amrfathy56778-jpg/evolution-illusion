@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
           model: "llama-3.3-70b-versatile",
           response_format: { type: "json_object" },
           messages: [
-            { role: "system", content: SYSTEM },
+            { role: "system", content: SYS_USE },
             { role: "user", content: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` },
           ],
         }),
@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
+          systemInstruction: { parts: [{ text: SYS_USE }] },
           contents: [{ role: "user", parts: [{ text: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` }] }],
           generationConfig: { responseMimeType: "application/json" },
         }),
@@ -90,7 +90,7 @@ Deno.serve(async (req: Request) => {
         model: "google/gemini-3-flash-preview",
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: SYS_USE },
           { role: "user", content: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` },
         ],
       }),
