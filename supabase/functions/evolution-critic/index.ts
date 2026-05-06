@@ -40,7 +40,16 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { messages, verify } = await req.json();
+    const { messages, verify, lang } = await req.json();
+    const LANG_NAMES: Record<string, string> = {
+      ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian",
+      tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese",
+      hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian"
+    };
+    const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
+    const langDirective = `\n\nIMPORTANT: Respond ENTIRELY in ${langName}. The site is currently displayed in ${langName} — ignore any other language detected in the user's message.`;
+    const SYS_USE = SYSTEM_PROMPT + langDirective;
+    const VERIFY_USE = VERIFY_PROMPT + langDirective;
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
