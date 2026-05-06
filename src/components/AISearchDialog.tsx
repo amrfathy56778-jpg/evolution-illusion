@@ -50,8 +50,9 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
         .order("created_at", { ascending: false })
         .limit(1000);
       if (pErr) throw pErr;
+      const lang = getSiteLang();
       const { data, error: fErr } = await supabase.functions.invoke("ai-search", {
-        body: { query, posts: posts ?? [] },
+        body: { query, posts: posts ?? [], lang },
       });
       if (fErr) throw fErr;
       if ((data as any)?.error) throw new Error((data as any).error);
