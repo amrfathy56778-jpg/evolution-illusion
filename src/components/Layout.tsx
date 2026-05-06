@@ -48,6 +48,10 @@ export default function Layout() {
 
           <div className="flex items-center gap-2">
             {showNav && <SectionsButton current={path}/>}
+            <Link to="/notifications" title="إشعاراتي"
+              className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
+              <Bell className="h-3.5 w-3.5" />
+            </Link>
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
               className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
