@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Brain, Send, Loader2, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { getSiteLang } from "@/components/AISearchDialog";
 
 export const Route = createFileRoute("/_app/critic")({
   component: CriticPage,
@@ -53,7 +54,7 @@ function CriticPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })) }),
+        body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), lang: getSiteLang() }),
       });
       if (resp.status === 429) { toast.error("تم تجاوز الحد. حاول لاحقاً."); setLoading(false); return; }
       if (resp.status === 402) { toast.error("نفد رصيد الذكاء الاصطناعي."); setLoading(false); return; }
@@ -101,7 +102,7 @@ function CriticPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ verify: acc }),
+          body: JSON.stringify({ verify: acc, lang: getSiteLang() }),
         });
         if (vResp.ok) {
           const vData = await vResp.json();

@@ -21,7 +21,10 @@ const SYSTEM = `أنت "ناقد التطور الذكي" في موقع "وهم 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
-    const { article, mode, messages } = await req.json();
+    const { article, mode, messages, lang } = await req.json();
+    const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
+    const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
+    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site is currently displayed in ${langName}. Respond ENTIRELY in ${langName}, regardless of the language of the article or user's message.`;
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -55,7 +58,7 @@ Deno.serve(async (req) => {
     } catch (_e) { /* non-fatal */ }
 
     const baseMessages: any[] = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: SYS_USE },
       { role: "user", content: articleContext + relatedContext },
     ];
 

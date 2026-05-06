@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Result = { id: string; title: string; reason?: string };
 
+export function getSiteLang(): string {
+  if (typeof document === "undefined") return "ar";
+  const m = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+  if (m?.[1]) return m[1];
+  try { return localStorage.getItem("siteLang") || "ar"; } catch { return "ar"; }
+}
+
 export function AISearchButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -50,8 +57,9 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
         .order("created_at", { ascending: false })
         .limit(1000);
       if (pErr) throw pErr;
+      const lang = getSiteLang();
       const { data, error: fErr } = await supabase.functions.invoke("ai-search", {
-        body: { query, posts: posts ?? [] },
+        body: { query, posts: posts ?? [], lang },
       });
       if (fErr) throw fErr;
       if ((data as any)?.error) throw new Error((data as any).error);

@@ -40,7 +40,16 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { messages, verify } = await req.json();
+    const { messages, verify, lang } = await req.json();
+    const LANG_NAMES: Record<string, string> = {
+      ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian",
+      tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese",
+      hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian"
+    };
+    const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
+    const langDirective = `\n\nIMPORTANT: Respond ENTIRELY in ${langName}. The site is currently displayed in ${langName} — ignore any other language detected in the user's message.`;
+    const SYS_USE = SYSTEM_PROMPT + langDirective;
+    const VERIFY_USE = VERIFY_PROMPT + langDirective;
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -68,14 +77,14 @@ Deno.serve(async (req: Request) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: VERIFY_PROMPT }] },
+            systemInstruction: { parts: [{ text: VERIFY_USE }] },
             contents: [{ role: "user", parts: [{ text: `الرد المراد تدقيقه:\n\n${verify}` }] }],
           }),
         });
         if (!gr.ok) {
           if (GROQ_KEY) {
             try {
-              const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+              const out = await groqJSON(VERIFY_USE, `الرد المراد تدقيقه:\n\n${verify}`);
               return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
             } catch (_e) { /* fall through */ }
           }
@@ -88,7 +97,7 @@ Deno.serve(async (req: Request) => {
       }
       if (GROQ_KEY) {
         try {
-          const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+          const out = await groqJSON(VERIFY_USE, `الرد المراد تدقيقه:\n\n${verify}`);
           return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         } catch (_e) { /* fall through */ }
       }
@@ -104,7 +113,7 @@ Deno.serve(async (req: Request) => {
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",
             messages: [
-              { role: "system", content: VERIFY_PROMPT },
+              { role: "system", content: VERIFY_USE },
               { role: "user", content: `الرد المراد تدقيقه:\n\n${verify}` },
             ],
           }),
@@ -152,7 +161,7 @@ Deno.serve(async (req: Request) => {
 
     // Groq streaming helper for critique mode
     const streamFromGroq = async () => {
-      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const sys = SYS_USE + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
       const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
@@ -167,7 +176,7 @@ Deno.serve(async (req: Request) => {
     };
 
     if (GEMINI_KEY) {
-      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const sys = SYS_USE + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
       const contents = (messages ?? []).map((m: any) => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
@@ -233,7 +242,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT + siteContext },
+            { role: "system", content: SYS_USE + siteContext },
             ...(messages ?? []),
           ],
           stream: true,
