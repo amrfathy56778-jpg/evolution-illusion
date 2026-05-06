@@ -85,13 +85,16 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     if (authorName.trim()) {
       await supabase.from("profiles").update({ display_name: authorName.trim() }).eq("id", user!.id);
     }
-    const { error } = await supabase.from("posts").insert({
+    const { data: created, error } = await supabase.from("posts").insert({
       title: t.trim(), content: c.trim(), category, cover_image_url: cover,
       author_id: user!.id, author_name: finalName,
-    });
+    }).select("id").single();
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("تم النشر");
+    if (created?.id) {
+      supabase.functions.invoke("notify-subscribers", { body: { type: "new_post", post: { id: created.id, title: t.trim(), category } } });
+    }
     const ring = document.createElement("div"); ring.className = "confetti-ring";
     document.body.appendChild(ring); setTimeout(() => ring.remove(), 900);
     setT(""); setC(""); setCover(null); setOpen(false); load();

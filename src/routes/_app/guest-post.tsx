@@ -89,6 +89,7 @@ function GuestPost() {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
+    supabase.functions.invoke("notify-subscribers", { body: { type: "guest_submitted", guest_post: { title: parsed.data.title, guest_name: parsed.data.guest_name } } });
     const ring = document.createElement("div"); ring.className = "confetti-ring";
     document.body.appendChild(ring); setTimeout(() => ring.remove(), 900);
     setDone({ report, verdict, refs });

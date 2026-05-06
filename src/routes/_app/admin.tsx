@@ -47,18 +47,27 @@ function Admin() {
   const review = async (id: string, approve: boolean) => {
     const g = guests.find(x => x.id === id);
     if (!g) return;
+    let newPostId: string | null = null;
     if (approve) {
-      const { error: e1 } = await supabase.from("posts").insert({
+      const { data: created, error: e1 } = await supabase.from("posts").insert({
         title: g.title, content: g.content, category: g.category,
         author_id: null, author_name: `${g.guest_name} (ضيف)`,
-      });
+      }).select("id").single();
       if (e1) { toast.error(e1.message); return; }
+      newPostId = created?.id ?? null;
     }
     const { error } = await supabase.from("guest_posts").update({
       status: approve ? "approved" : "rejected", reviewed_by: user.id, reviewed_at: new Date().toISOString(),
     }).eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success(approve ? "تم النشر" : "تم الرفض"); load(); }
+    else {
+      toast.success(approve ? "تم النشر" : "تم الرفض");
+      if (approve && newPostId) {
+        supabase.functions.invoke("notify-subscribers", { body: { type: "new_post", post: { id: newPostId, title: g.title, category: g.category } } });
+        if (g.guest_email) supabase.functions.invoke("notify-subscribers", { body: { type: "guest_approved", to: g.guest_email, title: g.title, post_id: newPostId } });
+      }
+      load();
+    }
   };
 
   const addInvite = async (e: React.FormEvent) => {

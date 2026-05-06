@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
 import { Route as AppGeneticsRouteImport } from './routes/_app/genetics'
 import { Route as AppEvolutionRouteImport } from './routes/_app/evolution'
@@ -29,6 +30,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGuestPostRoute = AppGuestPostRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/evolution': typeof AppEvolutionRoute
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
+  '/notifications': typeof AppNotificationsRoute
   '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesByTo {
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/evolution': typeof AppEvolutionRoute
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
+  '/notifications': typeof AppNotificationsRoute
   '/': typeof AppIndexRoute
   '/post/$id': typeof AppPostIdRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_app/evolution': typeof AppEvolutionRoute
   '/_app/genetics': typeof AppGeneticsRoute
   '/_app/guest-post': typeof AppGuestPostRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/post/$id': typeof AppPostIdRoute
 }
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/genetics'
     | '/guest-post'
+    | '/notifications'
     | '/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/genetics'
     | '/guest-post'
+    | '/notifications'
     | '/'
     | '/post/$id'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_app/evolution'
     | '/_app/genetics'
     | '/_app/guest-post'
+    | '/_app/notifications'
     | '/_app/'
     | '/_app/post/$id'
   fileRoutesById: FileRoutesById
@@ -184,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/guest-post': {
@@ -269,6 +288,7 @@ interface AppRouteChildren {
   AppEvolutionRoute: typeof AppEvolutionRoute
   AppGeneticsRoute: typeof AppGeneticsRoute
   AppGuestPostRoute: typeof AppGuestPostRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppPostIdRoute: typeof AppPostIdRoute
 }
@@ -283,6 +303,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppEvolutionRoute: AppEvolutionRoute,
   AppGeneticsRoute: AppGeneticsRoute,
   AppGuestPostRoute: AppGuestPostRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppIndexRoute: AppIndexRoute,
   AppPostIdRoute: AppPostIdRoute,
 }
