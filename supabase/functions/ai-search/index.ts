@@ -18,7 +18,10 @@ const SYSTEM = `أنت مساعد بحث ذكي في موقع "وهم التطو
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { query, posts } = await req.json();
+    const { query, posts, lang } = await req.json();
+    const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
+    const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
+    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site language is ${langName}. Write the "answer" field ENTIRELY in ${langName}, regardless of the language of the user's query.`;
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
     const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
