@@ -77,14 +77,14 @@ Deno.serve(async (req: Request) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: VERIFY_PROMPT }] },
+            systemInstruction: { parts: [{ text: VERIFY_USE }] },
             contents: [{ role: "user", parts: [{ text: `الرد المراد تدقيقه:\n\n${verify}` }] }],
           }),
         });
         if (!gr.ok) {
           if (GROQ_KEY) {
             try {
-              const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+              const out = await groqJSON(VERIFY_USE, `الرد المراد تدقيقه:\n\n${verify}`);
               return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
             } catch (_e) { /* fall through */ }
           }
@@ -97,7 +97,7 @@ Deno.serve(async (req: Request) => {
       }
       if (GROQ_KEY) {
         try {
-          const out = await groqJSON(VERIFY_PROMPT, `الرد المراد تدقيقه:\n\n${verify}`);
+          const out = await groqJSON(VERIFY_USE, `الرد المراد تدقيقه:\n\n${verify}`);
           return new Response(JSON.stringify({ verification: out }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         } catch (_e) { /* fall through */ }
       }
@@ -113,7 +113,7 @@ Deno.serve(async (req: Request) => {
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",
             messages: [
-              { role: "system", content: VERIFY_PROMPT },
+              { role: "system", content: VERIFY_USE },
               { role: "user", content: `الرد المراد تدقيقه:\n\n${verify}` },
             ],
           }),
@@ -161,7 +161,7 @@ Deno.serve(async (req: Request) => {
 
     // Groq streaming helper for critique mode
     const streamFromGroq = async () => {
-      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const sys = SYS_USE + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
       const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
@@ -176,7 +176,7 @@ Deno.serve(async (req: Request) => {
     };
 
     if (GEMINI_KEY) {
-      const sys = SYSTEM_PROMPT + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+      const sys = SYS_USE + siteContext + "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
       const contents = (messages ?? []).map((m: any) => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
@@ -242,7 +242,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT + siteContext },
+            { role: "system", content: SYS_USE + siteContext },
             ...(messages ?? []),
           ],
           stream: true,
