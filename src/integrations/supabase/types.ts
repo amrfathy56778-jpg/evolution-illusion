@@ -89,6 +89,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_subscriptions: {
+        Row: {
+          all_categories: boolean
+          categories: Database["public"]["Enums"]["post_category"][]
+          created_at: string
+          email: string
+          id: string
+          kind: Database["public"]["Enums"]["subscription_kind"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          all_categories?: boolean
+          categories?: Database["public"]["Enums"]["post_category"][]
+          created_at?: string
+          email: string
+          id?: string
+          kind?: Database["public"]["Enums"]["subscription_kind"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          all_categories?: boolean
+          categories?: Database["public"]["Enums"]["post_category"][]
+          created_at?: string
+          email?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["subscription_kind"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string | null
@@ -193,6 +226,7 @@ export type Database = {
         | "evolution_basics"
         | "genetics"
         | "creation_marvels"
+      subscription_kind: "reader" | "publisher" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -328,6 +362,7 @@ export const Constants = {
         "genetics",
         "creation_marvels",
       ],
+      subscription_kind: ["reader", "publisher", "staff"],
     },
   },
 } as const
