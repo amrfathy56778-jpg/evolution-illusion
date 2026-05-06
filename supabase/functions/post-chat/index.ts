@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     } catch (_e) { /* non-fatal */ }
 
     const baseMessages: any[] = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: SYS_USE },
       { role: "user", content: articleContext + relatedContext },
     ];
 
