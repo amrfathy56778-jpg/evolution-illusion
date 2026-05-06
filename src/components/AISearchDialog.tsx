@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Result = { id: string; title: string; reason?: string };
 
+export function getSiteLang(): string {
+  if (typeof document === "undefined") return "ar";
+  const m = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+  if (m?.[1]) return m[1];
+  try { return localStorage.getItem("siteLang") || "ar"; } catch { return "ar"; }
+}
+
 export function AISearchButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
   return (
