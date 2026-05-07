@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Trash2, ArrowRight, Pencil, Save, X, Eye, ImagePlus, ImageOff } from "lucide-react";
 import { RichEditor, RichContent } from "@/components/RichEditor";
+import { RephraseButton } from "@/components/RephraseButton";
 import { PostAIButton } from "@/components/PostAIChat";
 import { RelatedPosts } from "@/components/RelatedPosts";
 
@@ -150,6 +151,9 @@ function PostPage() {
           </div>
           {eCover && <img src={eCover} alt="غلاف" className="w-full max-h-72 object-cover rounded-2xl"/>}
           <RichEditor value={eContent} onChange={setEContent} placeholder="عدّل المحتوى…"/>
+          <div className="flex justify-end">
+            <RephraseButton html={eContent} onRephrased={setEContent}/>
+          </div>
           <div className="flex gap-2">
             <button onClick={save} disabled={busy}
               className="flex-1 rounded-xl py-2.5 font-bold text-sm bg-primary text-primary-foreground inline-flex items-center justify-center gap-1.5 disabled:opacity-50">
