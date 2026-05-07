@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PenLine, Send, CheckCircle2, ShieldCheck, Loader2, AlertTriangle, XCircle } from "lucide-react";
 import { RichEditor } from "@/components/RichEditor";
 import { AiReport } from "@/components/AiReport";
+import { RephraseButton } from "@/components/RephraseButton";
 
 export const Route = createFileRoute("/_app/guest-post")({
   component: GuestPost,
@@ -158,6 +159,9 @@ function GuestPost() {
           placeholder="عنوان المنشور" value={form.title} onChange={e=>setForm({...form, title: e.target.value})}/>
         <RichEditor value={form.content} onChange={(html)=>setForm({...form, content: html})}
           placeholder="اكتب محتوى منشورك… يمكنك إضافة صور وفيديوهات من جهازك وروابط وتنسيق النص."/>
+        <div className="flex justify-end">
+          <RephraseButton html={form.content} onRephrased={(html)=>setForm({...form, content: html})}/>
+        </div>
         <button type="submit" disabled={loading}
           className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-sm hover:opacity-90 transition glow-warm flex items-center justify-center gap-2 disabled:opacity-50"
           style={{ background: "var(--c-guest)", color: "oklch(0.15 0.05 50)" }}>

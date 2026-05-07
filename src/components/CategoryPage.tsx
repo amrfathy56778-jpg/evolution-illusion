@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Plus, X, ImagePlus, ImageOff, ChevronRight, ChevronLeft, Sparkles, Loader2 } from "lucide-react";
 import { RichEditor } from "@/components/RichEditor";
+import { RephraseButton } from "@/components/RephraseButton";
 
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 const PAGE_SIZE = 10;
@@ -166,6 +167,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
           </div>
           {cover && <img src={cover} alt="غلاف" className="w-full max-h-60 object-cover rounded-2xl"/>}
           <RichEditor value={c} onChange={setC} placeholder="اكتب المحتوى هنا… يمكنك إضافة صور وفيديوهات وروابط وتنسيق النص"/>
+          <div className="flex justify-end">
+            <RephraseButton html={c} onRephrased={setC} color={color}/>
+          </div>
           <button type="submit" disabled={busy} className="w-full rounded-xl py-2.5 font-bold text-sm disabled:opacity-50"
             style={{ background: color, color: "oklch(0.15 0.05 200)" }}>
             {busy ? "جارٍ النشر…" : "نشر"}
