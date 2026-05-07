@@ -243,14 +243,6 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   }
   .animate-pop-in { animation: pop-in 0.18s ease-out both; }
 
-  /* Emerald glow on theme button press (no fullscreen animation) */
-  @keyframes theme-press-glow {
-    0%   { box-shadow: 0 0 0 0 oklch(0.85 0.18 165 / 0.0), 0 0 0 0 oklch(0.85 0.18 165 / 0); }
-    20%  { box-shadow: 0 0 18px 2px oklch(0.85 0.18 165 / 0.85), inset 0 0 14px oklch(0.85 0.18 165 / 0.55); }
-    100% { box-shadow: 0 0 0 0 oklch(0.85 0.18 165 / 0), inset 0 0 0 oklch(0.85 0.18 165 / 0); }
-  }
-  .theme-press-glow { animation: theme-press-glow 0.55s ease-out; }
-
   /* Language sweep */
   @keyframes lang-sweep {
     0% { transform: translateX(-100%); opacity: 0; }
