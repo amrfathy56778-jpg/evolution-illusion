@@ -21,6 +21,7 @@ export default function Layout() {
   const showNav = path === "/" || ["/critique", "/evolution", "/genetics", "/creation", "/guest-post"].some(p => path === p || path.startsWith(p + "/"));
   // Reading-focused pages should maximize horizontal space
   const isReadingFocus = path.startsWith("/post/") || path === "/critic";
+  const minimalHeader = isReadingFocus;
 
   const [theme, setTheme] = useState<"dark" | "light">(() => (typeof window !== "undefined" && localStorage.getItem("theme") === "light") ? "light" : "dark");
   useEffect(() => {
@@ -28,15 +29,8 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Theme toggle — instant flip, with a tasteful emerald glow on the button itself.
-  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const btn = e.currentTarget;
-    btn.classList.remove("theme-press-glow");
-    // restart the animation
-    void btn.offsetWidth;
-    btn.classList.add("theme-press-glow");
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  // Theme toggle — instant flip, no animation.
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
     <div className="ambient-orbs relative min-h-screen">
@@ -47,17 +41,19 @@ export default function Layout() {
           </Link>
 
           <div className="flex items-center gap-2">
-            {showNav && <SectionsButton current={path}/>}
-            <Link to="/notifications" title="إشعاراتي"
-              className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
-              <Bell className="h-3.5 w-3.5" />
-            </Link>
+            {showNav && !minimalHeader && <SectionsButton current={path}/>}
+            {!minimalHeader && (
+              <Link to="/notifications" title="إشعاراتي"
+                className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
+                <Bell className="h-3.5 w-3.5" />
+              </Link>
+            )}
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
               className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
               {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
-            <TranslateButton />
+            {!minimalHeader && <TranslateButton />}
             {isStaff && (
               <Link to="/admin" title={isOwner ? "لوحة المالك" : "لوحة المشرف"}
                 className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold">
@@ -66,12 +62,14 @@ export default function Layout() {
               </Link>
             )}
             {user ? (
-              <button onClick={signOut} className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold">
-                <LogOut className="h-3.5 w-3.5" /> خروج
+              <button onClick={signOut} title="خروج" aria-label="خروج"
+                className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full text-destructive">
+                <LogOut className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <Link to="/auth" className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-primary">
-                <LogIn className="h-3.5 w-3.5" /> دخول
+              <Link to="/auth" title="دخول" aria-label="دخول"
+                className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full text-primary">
+                <LogIn className="h-3.5 w-3.5" />
               </Link>
             )}
           </div>
