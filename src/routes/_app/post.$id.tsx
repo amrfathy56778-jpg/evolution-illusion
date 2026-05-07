@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,7 @@ const CAT: Record<string, { l: string; c: string }> = {
 
 function PostPage() {
   const { id } = useParams({ from: "/_app/post/$id" });
+  const router = useRouter();
   const { isStaff } = useAuth();
   const [p, setP] = useState<any>(null);
   const [nf, setNf] = useState(false);
@@ -95,9 +96,15 @@ function PostPage() {
   return (
     <article className="w-full space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowRight className="h-3.5 w-3.5"/> الرئيسية
-        </Link>
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) window.history.back();
+            else router.navigate({ to: "/" });
+          }}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowRight className="h-3.5 w-3.5"/> رجوع
+        </button>
         {isStaff && !edit && (
           <div className="flex gap-2 text-xs">
             <button onClick={startEdit} className="inline-flex items-center gap-1 glass rounded-full px-3 py-1.5 hover:bg-white/10">
