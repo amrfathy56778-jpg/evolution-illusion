@@ -2,15 +2,10 @@ import { useState, useEffect } from "react";
 import { Search, Sparkles, X, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { getSiteLang } from "@/lib/lang";
+export { getSiteLang } from "@/lib/lang";
 
 type Result = { id: string; title: string; reason?: string };
-
-export function getSiteLang(): string {
-  if (typeof document === "undefined") return "ar";
-  const m = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
-  if (m?.[1]) return m[1];
-  try { return localStorage.getItem("siteLang") || "ar"; } catch { return "ar"; }
-}
 
 export function AISearchButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
