@@ -40,14 +40,17 @@ function PostPage() {
     });
   }, [id]);
 
-  // Increment view count once per session/post
+  // Increment view count once per session/post. Optimistically bump the local
+  // counter so the user sees the change immediately even though the RPC is async.
   useEffect(() => {
     if (!id || viewedRef.current) return;
     const key = `viewed:${id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
     viewedRef.current = true;
-    supabase.rpc("increment_post_views", { _post_id: id });
+    supabase.rpc("increment_post_views", { _post_id: id }).then(({ error }) => {
+      if (!error) setP((prev: any) => prev ? { ...prev, views_count: (prev.views_count ?? 0) + 1 } : prev);
+    });
   }, [id]);
 
   const del = async () => {

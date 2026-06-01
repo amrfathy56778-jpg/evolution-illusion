@@ -62,10 +62,6 @@ function Admin() {
     if (error) toast.error(error.message);
     else {
       toast.success(approve ? "تم النشر" : "تم الرفض");
-      if (approve && newPostId) {
-        supabase.functions.invoke("notify-subscribers", { body: { type: "new_post", post: { id: newPostId, title: g.title, category: g.category } } });
-        if (g.guest_email) supabase.functions.invoke("notify-subscribers", { body: { type: "guest_approved", to: g.guest_email, title: g.title, post_id: newPostId } });
-      }
       load();
     }
   };
