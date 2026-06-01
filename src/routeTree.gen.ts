@@ -11,11 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
 import { Route as AppGeneticsRouteImport } from './routes/_app/genetics'
 import { Route as AppEvolutionRouteImport } from './routes/_app/evolution'
-import { Route as AppDonateRouteImport } from './routes/_app/donate'
 import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
 import { Route as AppCriticRouteImport } from './routes/_app/critic'
 import { Route as AppCreationRouteImport } from './routes/_app/creation'
@@ -32,11 +30,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppNotificationsRoute = AppNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppGuestPostRoute = AppGuestPostRouteImport.update({
   id: '/guest-post',
   path: '/guest-post',
@@ -50,11 +43,6 @@ const AppGeneticsRoute = AppGeneticsRouteImport.update({
 const AppEvolutionRoute = AppEvolutionRouteImport.update({
   id: '/evolution',
   path: '/evolution',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDonateRoute = AppDonateRouteImport.update({
-  id: '/donate',
-  path: '/donate',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCritiqueRoute = AppCritiqueRouteImport.update({
@@ -95,11 +83,9 @@ export interface FileRoutesByFullPath {
   '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
   '/critique': typeof AppCritiqueRoute
-  '/donate': typeof AppDonateRoute
   '/evolution': typeof AppEvolutionRoute
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
-  '/notifications': typeof AppNotificationsRoute
   '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesByTo {
@@ -108,11 +94,9 @@ export interface FileRoutesByTo {
   '/creation': typeof AppCreationRoute
   '/critic': typeof AppCriticRoute
   '/critique': typeof AppCritiqueRoute
-  '/donate': typeof AppDonateRoute
   '/evolution': typeof AppEvolutionRoute
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
-  '/notifications': typeof AppNotificationsRoute
   '/': typeof AppIndexRoute
   '/post/$id': typeof AppPostIdRoute
 }
@@ -124,11 +108,9 @@ export interface FileRoutesById {
   '/_app/creation': typeof AppCreationRoute
   '/_app/critic': typeof AppCriticRoute
   '/_app/critique': typeof AppCritiqueRoute
-  '/_app/donate': typeof AppDonateRoute
   '/_app/evolution': typeof AppEvolutionRoute
   '/_app/genetics': typeof AppGeneticsRoute
   '/_app/guest-post': typeof AppGuestPostRoute
-  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/post/$id': typeof AppPostIdRoute
 }
@@ -141,11 +123,9 @@ export interface FileRouteTypes {
     | '/creation'
     | '/critic'
     | '/critique'
-    | '/donate'
     | '/evolution'
     | '/genetics'
     | '/guest-post'
-    | '/notifications'
     | '/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,11 +134,9 @@ export interface FileRouteTypes {
     | '/creation'
     | '/critic'
     | '/critique'
-    | '/donate'
     | '/evolution'
     | '/genetics'
     | '/guest-post'
-    | '/notifications'
     | '/'
     | '/post/$id'
   id:
@@ -169,11 +147,9 @@ export interface FileRouteTypes {
     | '/_app/creation'
     | '/_app/critic'
     | '/_app/critique'
-    | '/_app/donate'
     | '/_app/evolution'
     | '/_app/genetics'
     | '/_app/guest-post'
-    | '/_app/notifications'
     | '/_app/'
     | '/_app/post/$id'
   fileRoutesById: FileRoutesById
@@ -198,13 +174,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/notifications': {
-      id: '/_app/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AppNotificationsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/guest-post': {
       id: '/_app/guest-post'
       path: '/guest-post'
@@ -224,13 +193,6 @@ declare module '@tanstack/react-router' {
       path: '/evolution'
       fullPath: '/evolution'
       preLoaderRoute: typeof AppEvolutionRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/donate': {
-      id: '/_app/donate'
-      path: '/donate'
-      fullPath: '/donate'
-      preLoaderRoute: typeof AppDonateRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/critique': {
@@ -284,11 +246,9 @@ interface AppRouteChildren {
   AppCreationRoute: typeof AppCreationRoute
   AppCriticRoute: typeof AppCriticRoute
   AppCritiqueRoute: typeof AppCritiqueRoute
-  AppDonateRoute: typeof AppDonateRoute
   AppEvolutionRoute: typeof AppEvolutionRoute
   AppGeneticsRoute: typeof AppGeneticsRoute
   AppGuestPostRoute: typeof AppGuestPostRoute
-  AppNotificationsRoute: typeof AppNotificationsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppPostIdRoute: typeof AppPostIdRoute
 }
@@ -299,11 +259,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppCreationRoute: AppCreationRoute,
   AppCriticRoute: AppCriticRoute,
   AppCritiqueRoute: AppCritiqueRoute,
-  AppDonateRoute: AppDonateRoute,
   AppEvolutionRoute: AppEvolutionRoute,
   AppGeneticsRoute: AppGeneticsRoute,
   AppGuestPostRoute: AppGuestPostRoute,
-  AppNotificationsRoute: AppNotificationsRoute,
   AppIndexRoute: AppIndexRoute,
   AppPostIdRoute: AppPostIdRoute,
 }

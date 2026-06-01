@@ -18,8 +18,5 @@ verify_jwt = false
 [functions.smart-title]
 verify_jwt = false
 
-[functions.notify-subscribers]
-verify_jwt = false
-
 [functions.rephrase-article]
 verify_jwt = false

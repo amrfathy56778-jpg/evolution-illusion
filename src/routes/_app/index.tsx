@@ -44,7 +44,7 @@ function Home() {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [searchBusy, setSearchBusy] = useState(false);
-  const TYPED_TEXT = "تجمع عربي يضم نخبة من المختصين والمؤهلين لنقد التطور";
+  const TYPED_TEXT = "الدفاع عن الحقيقة في مواجهة الأوهام";
   const [typed, setTyped] = useState("");
 
   useEffect(() => {
@@ -53,15 +53,8 @@ function Home() {
     const tick = () => {
       i++;
       setTyped(TYPED_TEXT.slice(0, i));
-      if (i < TYPED_TEXT.length) {
-        timeout = setTimeout(tick, 70);
-      } else {
-        timeout = setTimeout(() => {
-          i = 0;
-          setTyped("");
-          timeout = setTimeout(tick, 400);
-        }, 2400);
-      }
+      if (i < TYPED_TEXT.length) timeout = setTimeout(tick, 70);
+      // stop at end — no repeat
     };
     timeout = setTimeout(tick, 500);
     return () => clearTimeout(timeout);
@@ -123,9 +116,11 @@ function Home() {
           >
             وهم التطور
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto min-h-[1.75rem]" aria-label={TYPED_TEXT}>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto min-h-[1.75rem] whitespace-nowrap overflow-hidden text-ellipsis" aria-label={TYPED_TEXT}>
             <span>{typed}</span>
-            <span className="inline-block w-[2px] h-[1em] align-[-0.15em] mx-1 bg-primary animate-pulse" />
+            {typed.length < TYPED_TEXT.length && (
+              <span className="inline-block w-[2px] h-[1em] align-[-0.15em] mx-1 bg-primary animate-pulse" />
+            )}
           </p>
           <p className="text-xs text-muted-foreground/80">لا تنسونا من صالح دعائكم</p>
           <div className="mx-auto h-[2px] w-40 rounded-full" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)", boxShadow: "0 0 18px var(--primary)" }} />

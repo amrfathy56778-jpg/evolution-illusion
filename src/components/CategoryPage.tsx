@@ -3,9 +3,11 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Plus, X, ImagePlus, ImageOff, ChevronRight, ChevronLeft, Sparkles, Loader2 } from "lucide-react";
+import { Plus, X, ImagePlus, ImageOff, Sparkles, Loader2 } from "lucide-react";
 import { RichEditor } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
+import { Pagination } from "@/components/Pagination";
+import { uploadCoverImage } from "@/lib/upload";
 
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 const PAGE_SIZE = 10;
@@ -15,7 +17,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const { isStaff, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const initialPage = (() => {
+  const pageFromUrl = (() => {
     const raw = (location.search as any)?.page;
     const n = typeof raw === "number" ? raw : parseInt(String(raw ?? "1"), 10);
     return isNaN(n) || n < 1 ? 0 : n - 1;
@@ -28,11 +30,10 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const [authorName, setAuthorName] = useState("");
   const [titleBusy, setTitleBusy] = useState(false);
   const coverRef = useRef<HTMLInputElement>(null);
-  const [page, setPageState] = useState(initialPage);
+  // Page state is derived from the URL so browser back/forward keeps it in sync.
+  const page = pageFromUrl;
   const [total, setTotal] = useState(0);
-
   const setPage = (p: number) => {
-    setPageState(p);
     navigate({
       to: location.pathname,
       search: (prev: any) => ({ ...prev, page: p === 0 ? undefined : p + 1 }),
@@ -93,9 +94,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("تم النشر");
-    if (created?.id) {
-      supabase.functions.invoke("notify-subscribers", { body: { type: "new_post", post: { id: created.id, title: t.trim(), category } } });
-    }
+    void created;
     const ring = document.createElement("div"); ring.className = "confetti-ring";
     document.body.appendChild(ring); setTimeout(() => ring.remove(), 900);
     setT(""); setC(""); setCover(null); setOpen(false); load();
@@ -104,15 +103,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const onCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; e.target.value = "";
     if (!f) return;
-    if (f.size > 8 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 8MB"); return; }
-    try {
-      const ext = f.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `covers/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type });
-      if (error) throw error;
-      const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-      setCover(data.publicUrl);
-    } catch (err: any) { toast.error("تعذّر رفع الغلاف: " + err.message); }
+    try { const url = await uploadCoverImage(f); if (url) setCover(url); }
+    catch (err: any) { toast.error("تعذّر رفع الغلاف: " + err.message); }
   };
 
   return (
@@ -209,44 +201,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
             </article>
           ))}
         </div>
-        <Pagination page={page} total={total} onChange={setPage}/>
+        <Pagination page={page} total={total} pageSize={PAGE_SIZE} onChange={setPage}/>
         </>
       )}
-    </div>
-  );
-}
-
-function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const go = (p: number) => {
-    onChange(Math.max(0, Math.min(pages - 1, p)));
-    setTimeout(() => {
-      const el = document.getElementById("posts-list");
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  };
-  // Build window of up to 5 numbered buttons around current
-  const start = Math.max(0, Math.min(page - 2, pages - 5));
-  const end = Math.min(pages, start + 5);
-  const nums = Array.from({ length: end - start }, (_, i) => start + i);
-  return (
-    <div className="flex items-center justify-center gap-1.5 pt-4 flex-wrap">
-      <button onClick={()=>go(page-1)} disabled={page===0}
-        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
-        <ChevronRight className="h-3.5 w-3.5"/>
-      </button>
-      {nums.map(n => (
-        <button key={n} onClick={()=>go(n)}
-          className="liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none"
-          style={n === page ? { background: "var(--primary)", color: "var(--primary-foreground)" } : undefined}>
-          <span className="block">{n + 1}</span>
-        </button>
-      ))}
-      <button onClick={()=>go(page+1)} disabled={page>=pages-1}
-        className="liquid-glass h-9 w-9 rounded-full grid place-items-center disabled:opacity-30 disabled:cursor-not-allowed">
-        <ChevronLeft className="h-3.5 w-3.5"/>
-      </button>
-      <span className="text-[10px] text-muted-foreground basis-full text-center">صفحة {page+1} من {pages}</span>
     </div>
   );
 }
