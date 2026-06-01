@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, Heart, Bell } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 
@@ -32,22 +32,43 @@ export default function Layout() {
   // Theme toggle — instant flip, no animation.
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
+  // Collapsible header controls. Auto-collapse on reading-focused pages.
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => { setCollapsed(isReadingFocus); }, [isReadingFocus]);
+
   return (
     <div className="ambient-orbs relative min-h-screen">
       <header className="site-header sticky top-0 z-20">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2 group">
-            <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
-          </Link>
-
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              title={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
+              aria-label={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
+              aria-expanded={!collapsed}
+              className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full"
+            >
+              <ChevronLeft
+                className="h-3.5 w-3.5 transition-transform duration-300 ease-out"
+                style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+            </button>
+            <Link to="/" className="flex items-center gap-2 group">
+              <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
+            </Link>
+          </div>
+
+          <div
+            className="flex items-center gap-2 overflow-hidden transition-all duration-300 ease-out"
+            style={{
+              maxWidth: collapsed ? 0 : 720,
+              opacity: collapsed ? 0 : 1,
+              transform: collapsed ? "translateX(8px)" : "translateX(0)",
+              pointerEvents: collapsed ? "none" : "auto",
+            }}
+            aria-hidden={collapsed}
+          >
             {showNav && !minimalHeader && <SectionsButton current={path}/>}
-            {!minimalHeader && (
-              <Link to="/notifications" title="إشعاراتي"
-                className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
-                <Bell className="h-3.5 w-3.5" />
-              </Link>
-            )}
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
               className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
@@ -81,11 +102,6 @@ export default function Layout() {
       </main>
 
       <footer className="relative z-10 mx-auto max-w-6xl px-4 py-8 text-center text-xs text-muted-foreground">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <Link to="/donate" className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-primary">
-            <Heart className="h-3 w-3" /> ادعم الموقع
-          </Link>
-        </div>
         وهم التطور · منصة علمية للنقد المنهجي · {new Date().getFullYear()}
       </footer>
       {/* Hidden anchor required by Google Translate script */}
