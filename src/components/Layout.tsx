@@ -38,28 +38,14 @@ export default function Layout() {
 
   return (
     <div className="ambient-orbs relative min-h-screen">
-      <header className="site-header sticky top-0 z-20">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCollapsed(c => !c)}
-              title={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
-              aria-label={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
-              aria-expanded={!collapsed}
-              className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full"
-            >
-              <ChevronLeft
-                className="h-3.5 w-3.5 transition-transform duration-300 ease-out"
-                style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)" }}
-              />
-            </button>
-            <Link to="/" className="flex items-center gap-2 group">
-              <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
-            </Link>
-          </div>
+      <header className="site-header relative z-20">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
+          </Link>
 
           <div
-            className="flex items-center gap-2 overflow-hidden transition-all duration-300 ease-out"
+            className="flex-1 flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out"
             style={{
               maxWidth: collapsed ? 0 : 720,
               opacity: collapsed ? 0 : 1,
@@ -94,6 +80,19 @@ export default function Layout() {
               </Link>
             )}
           </div>
+
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
+            aria-label={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
+            aria-expanded={!collapsed}
+            className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full shrink-0"
+          >
+            <ChevronLeft
+              className="h-3.5 w-3.5 transition-transform duration-300 ease-out"
+              style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
         </div>
       </header>
 
