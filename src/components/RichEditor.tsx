@@ -15,7 +15,7 @@ import {
   AlignRight, AlignCenter, AlignLeft, AlignJustify, Undo2, Redo2, Minus, Palette,
   Video, Upload, Maximize2, Minimize2,
 } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -432,6 +432,15 @@ export function RichEditor({ value, onChange, placeholder }:
     },
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
+
+  // Sync external value changes (e.g. AI rephrase) into the editor.
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value || "", { emitUpdate: false });
+    }
+  }, [value, editor]);
 
   // Register paste/drop interceptor once editor is ready
   if (editor && !(editor as any)._pasteUploadRegistered) {
