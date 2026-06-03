@@ -30,8 +30,16 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastMsgRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, loading]);
+  // Pin newest message to top instead of auto-scrolling while it streams.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const c = scrollRef.current;
+    const el = lastMsgRef.current;
+    if (!c || !el) return;
+    c.scrollTo({ top: el.offsetTop - c.offsetTop, behavior: "smooth" });
+  }, [messages.length]);
 
   // Signal to Layout that the AI dialog is open — it will hide the categories nav.
   useEffect(() => {
@@ -120,7 +128,9 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
               </button>
             </div>
           ) : messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
+            <div key={i}
+                 ref={i === messages.length - 1 ? lastMsgRef : undefined}
+                 className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
               <AIBubble m={m} loading={loading && i === messages.length - 1}/>
             </div>
           ))}
