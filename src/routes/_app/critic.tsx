@@ -140,7 +140,7 @@ function CriticPage() {
     <div className="space-y-4 max-w-3xl mx-auto notranslate" translate="no">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-critic)" }}>
-          <Brain className="h-3.5 w-3.5" /> تحقق علمي تلقائي
+          <span className="font-black tracking-wider">AI</span> تحقق علمي تلقائي
         </div>
         <h1 className="text-3xl font-black text-gradient-emerald">ناقد التطور الذكي</h1>
         <p className="text-xs text-muted-foreground max-w-lg mx-auto">
@@ -151,7 +151,7 @@ function CriticPage() {
       <div ref={scrollRef} className="glass rounded-3xl p-4 sm:p-6 min-h-[400px] max-h-[60vh] overflow-y-auto space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground text-sm py-12">
-            <Brain className="h-10 w-10 mx-auto mb-3 opacity-50" style={{ color: "var(--c-critic)" }}/>
+            <div className="mx-auto mb-3 opacity-60 grid place-items-center h-12 w-12 rounded-full border border-current font-black text-base tracking-widest" style={{ color: "var(--c-critic)" }}>AI</div>
             ابدأ بسؤال مثل: <em>"هل تؤدي الطفرات للتطور؟"</em>
           </div>
         )}
