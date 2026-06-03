@@ -150,7 +150,7 @@ function SectionsButton({ current }: { current: string }) {
                       style={{ background: `color-mix(in oklab, ${item.color} 22%, transparent)`, color: item.color }}>
                       <Icon className="h-4 w-4"/>
                     </div>
-                    <span className="text-xs font-bold" style={{ color: item.color }}>{item.label}</span>
+                    <span data-section-label className="text-xs font-bold" style={{ color: item.color }}>{item.label}</span>
                   </Link>
                 );
               })}
