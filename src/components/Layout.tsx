@@ -2,6 +2,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import logo from "@/assets/logo.png";
 
 const NAV = [
@@ -126,7 +127,7 @@ function SectionsButton({ current }: { current: string }) {
         <LayoutGrid className="h-3.5 w-3.5"/>
         <span className="hidden sm:inline">الأقسام</span>
       </button>
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
@@ -155,7 +156,8 @@ function SectionsButton({ current }: { current: string }) {
               })}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
@@ -301,7 +303,7 @@ function TranslateButton() {
         className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
         <Globe className="h-3.5 w-3.5" />
       </button>
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
              onClick={() => setOpen(false)}>
           <div onClick={e => e.stopPropagation()}
@@ -330,7 +332,8 @@ function TranslateButton() {
               ))}
             </ul>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
