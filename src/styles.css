@@ -441,3 +441,8 @@ body {
 html { top: 0 !important; }
 /* the visible bar Google injects directly into the body */
 body > .skiptranslate { display: none !important; }
+
+/* Sections menu: darker label text in light mode for legibility */
+.light [data-section-label] {
+  color: oklch(0.25 0.05 250) !important;
+}
