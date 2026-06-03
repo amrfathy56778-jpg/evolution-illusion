@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { Brain, Send, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Send, Loader2, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
@@ -24,6 +24,17 @@ function CriticPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastMsgRef = useRef<HTMLDivElement>(null);
+
+  // Pin the latest message to the top of the chat container when it appears,
+  // instead of continuously scrolling while tokens stream.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const c = scrollRef.current;
+    const el = lastMsgRef.current;
+    if (!c || !el) return;
+    c.scrollTo({ top: el.offsetTop - c.offsetTop, behavior: "smooth" });
+  }, [messages.length]);
 
   const send = async () => {
     const text = input.trim();
@@ -44,7 +55,7 @@ function CriticPage() {
         }
         return [...prev, { role: "assistant", content: acc }];
       });
-      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }));
+      // No auto-scroll while streaming — message stays pinned at the top.
     };
 
     try {
@@ -145,12 +156,14 @@ function CriticPage() {
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
+          <div key={i}
+               ref={i === messages.length - 1 ? lastMsgRef : undefined}
+               className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
             <div className={`max-w-[85%] rounded-2xl p-4 ${m.role === "user" ? "glass-input" : "glass-strong"}`}
                  style={m.role === "assistant" ? { borderColor: "color-mix(in oklab, var(--c-critic) 40%, transparent)" } : undefined}>
               {m.role === "assistant" && (
                 <div className="flex items-center gap-1.5 text-[10px] font-bold mb-2" style={{ color: "var(--c-critic)" }}>
-                  🧠 ناقد التطور
+                  <span className="font-black tracking-wider">AI</span> ناقد التطور
                 </div>
               )}
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
