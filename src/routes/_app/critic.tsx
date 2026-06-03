@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { Brain, Send, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Send, Loader2, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
@@ -24,6 +24,17 @@ function CriticPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastMsgRef = useRef<HTMLDivElement>(null);
+
+  // Pin the latest message to the top of the chat container when it appears,
+  // instead of continuously scrolling while tokens stream.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const c = scrollRef.current;
+    const el = lastMsgRef.current;
+    if (!c || !el) return;
+    c.scrollTo({ top: el.offsetTop - c.offsetTop, behavior: "smooth" });
+  }, [messages.length]);
 
   const send = async () => {
     const text = input.trim();
@@ -44,7 +55,7 @@ function CriticPage() {
         }
         return [...prev, { role: "assistant", content: acc }];
       });
-      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }));
+      // No auto-scroll while streaming — message stays pinned at the top.
     };
 
     try {
@@ -129,7 +140,7 @@ function CriticPage() {
     <div className="space-y-4 max-w-3xl mx-auto notranslate" translate="no">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-critic)" }}>
-          <Brain className="h-3.5 w-3.5" /> تحقق علمي تلقائي
+          <span className="font-black tracking-wider">AI</span> تحقق علمي تلقائي
         </div>
         <h1 className="text-3xl font-black text-gradient-emerald">ناقد التطور الذكي</h1>
         <p className="text-xs text-muted-foreground max-w-lg mx-auto">
@@ -140,17 +151,19 @@ function CriticPage() {
       <div ref={scrollRef} className="glass rounded-3xl p-4 sm:p-6 min-h-[400px] max-h-[60vh] overflow-y-auto space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground text-sm py-12">
-            <Brain className="h-10 w-10 mx-auto mb-3 opacity-50" style={{ color: "var(--c-critic)" }}/>
+            <div className="mx-auto mb-3 opacity-60 grid place-items-center h-12 w-12 rounded-full border border-current font-black text-base tracking-widest" style={{ color: "var(--c-critic)" }}>AI</div>
             ابدأ بسؤال مثل: <em>"هل تؤدي الطفرات للتطور؟"</em>
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
+          <div key={i}
+               ref={i === messages.length - 1 ? lastMsgRef : undefined}
+               className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
             <div className={`max-w-[85%] rounded-2xl p-4 ${m.role === "user" ? "glass-input" : "glass-strong"}`}
                  style={m.role === "assistant" ? { borderColor: "color-mix(in oklab, var(--c-critic) 40%, transparent)" } : undefined}>
               {m.role === "assistant" && (
                 <div className="flex items-center gap-1.5 text-[10px] font-bold mb-2" style={{ color: "var(--c-critic)" }}>
-                  🧠 ناقد التطور
+                  <span className="font-black tracking-wider">AI</span> ناقد التطور
                 </div>
               )}
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">

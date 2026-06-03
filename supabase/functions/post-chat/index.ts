@@ -36,9 +36,10 @@ Deno.serve(async (req) => {
     const plain = String(article.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 8000);
     const articleContext = `عنوان المقال: ${article.title}\n\nنص المقال:\n${plain}`;
 
-    // Fetch related site articles for RAG context (excluding current)
+    // Fetch related site articles for RAG context (excluding current) — only for chat mode.
+    // In summarize mode we must summarize ONLY the article itself, without injecting other articles.
     let relatedContext = "";
-    try {
+    if (mode !== "summarize") try {
       const sb = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -63,7 +64,7 @@ Deno.serve(async (req) => {
     ];
 
     if (mode === "summarize") {
-      baseMessages.push({ role: "user", content: "لخّص المقال السابق في نقاط واضحة." });
+      baseMessages.push({ role: "user", content: "لخّص المقال السابق فقط، دون إضافة معلومات من خارجه، في 5-8 نقاط واضحة، من منظورك كناقد للتطور: أبرز نقاط المقال الأساسية، ثم سلّط الضوء على ما فيه من نقد للتطور أو ما يمكن استخلاصه ضدّ التطور من محتواه. لا تستشهد بمقالات أخرى ولا تخرج عن نص المقال." });
     } else if (Array.isArray(messages)) {
       for (const m of messages) {
         if (m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string") {
