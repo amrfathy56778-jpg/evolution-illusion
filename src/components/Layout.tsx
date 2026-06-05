@@ -33,8 +33,6 @@ export default function Layout() {
   // Theme toggle — instant flip, no animation.
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  // Header buttons are always visible — collapse arrow removed per user request.
-  const collapsed = false;
 
   return (
     <div className="ambient-orbs relative min-h-screen">
