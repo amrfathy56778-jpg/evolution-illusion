@@ -44,16 +44,7 @@ export default function Layout() {
             <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
           </Link>
 
-          <div
-            className="flex-1 flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out"
-            style={{
-              maxWidth: collapsed ? 0 : 720,
-              opacity: collapsed ? 0 : 1,
-              transform: collapsed ? "translateX(8px)" : "translateX(0)",
-              pointerEvents: collapsed ? "none" : "auto",
-            }}
-            aria-hidden={collapsed}
-          >
+          <div className="flex-1 flex items-center justify-end gap-2 flex-wrap">
             {showNav && !minimalHeader && <SectionsButton current={path}/>}
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
