@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import logo from "@/assets/logo.png";
