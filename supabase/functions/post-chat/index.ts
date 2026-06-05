@@ -64,13 +64,16 @@ Deno.serve(async (req) => {
     ];
 
     if (mode === "summarize") {
-      baseMessages.push({ role: "user", content: "لخّص المقال السابق فقط، دون إضافة معلومات من خارجه، في 5-8 نقاط واضحة، من منظورك كناقد للتطور: أبرز نقاط المقال الأساسية، ثم سلّط الضوء على ما فيه من نقد للتطور أو ما يمكن استخلاصه ضدّ التطور من محتواه. لا تستشهد بمقالات أخرى ولا تخرج عن نص المقال." });
+      baseMessages.push({ role: "user", content: "لخّص المقال السابق فقط، معتمداً على نصّه وحده دون إضافة معلومات من خارجه ولا الاستشهاد بمقالات أخرى، في 5-8 نقاط واضحة، **من منظورك كناقد حادّ لنظرية التطور**: استخرج أبرز أفكار المقال، وأظهر بوضوح كيف تُضعِف التطورَ أو تكشف ثغراته، واختم بخلاصة نقدية ضدّ التطور مستخلَصة من المقال نفسه. لا تُحايد ولا تُدافع عن التطور إطلاقاً." });
+      // Seed an assistant turn marker so any follow-up chat keeps the critic stance.
     } else if (Array.isArray(messages)) {
       for (const m of messages) {
         if (m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string") {
           baseMessages.push({ role: m.role, content: m.content.slice(0, 4000) });
         }
       }
+      // Reinforce critic stance on every follow-up turn, even after a summary.
+      baseMessages.push({ role: "system", content: "تذكير صارم: أنت ناقد لنظرية التطور. أجب عن سؤال المستخدم بنفس روح النقد الحادّ ضدّ التطور، ولا تتحول إلى موقف محايد أو مدافع، حتى لو كانت الأسئلة متابعة لتلخيص سابق." });
     }
 
     // Helper: stream from Groq using OpenAI-compatible chat completions

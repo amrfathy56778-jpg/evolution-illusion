@@ -1,6 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import logo from "@/assets/logo.png";
@@ -33,9 +33,8 @@ export default function Layout() {
   // Theme toggle — instant flip, no animation.
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  // Collapsible header controls. Auto-collapse on reading-focused pages.
-  const [collapsed, setCollapsed] = useState(false);
-  useEffect(() => { setCollapsed(isReadingFocus); }, [isReadingFocus]);
+  // Header buttons are always visible — collapse arrow removed per user request.
+  const collapsed = false;
 
   return (
     <div className="ambient-orbs relative min-h-screen">
@@ -82,18 +81,6 @@ export default function Layout() {
             )}
           </div>
 
-          <button
-            onClick={() => setCollapsed(c => !c)}
-            title={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
-            aria-label={collapsed ? "إظهار الأزرار" : "إخفاء الأزرار"}
-            aria-expanded={!collapsed}
-            className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full shrink-0"
-          >
-            <ChevronLeft
-              className="h-3.5 w-3.5 transition-transform duration-300 ease-out"
-              style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
         </div>
       </header>
 
