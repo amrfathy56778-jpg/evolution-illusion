@@ -205,9 +205,9 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     }
     .glass { background: oklch(0.18 0.03 248 / 0.86); }
     .glass-strong { background: oklch(0.16 0.03 248 / 0.92); }
+    html.light .glass { background: oklch(0.98 0.01 248 / 0.92); }
+    html.light .glass-strong { background: oklch(0.96 0.02 248 / 0.95); }
   }
-  html.light .glass { background: oklch(0.98 0.01 248 / 0.92); }
-  html.light .glass-strong { background: oklch(0.96 0.02 248 / 0.95); }
 
   /* Liquid glass — refractive pill surface */
   .liquid-glass {
