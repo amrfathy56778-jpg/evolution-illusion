@@ -1,7 +1,9 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid } from "lucide-react";
+import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, BookOpen, RefreshCw, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { createPortal } from "react-dom";
 import logo from "@/assets/logo.png";
 
@@ -89,6 +91,7 @@ export default function Layout() {
 /** Button that pops a stunning ring of section links instead of consuming screen space. */
 function SectionsButton({ current }: { current: string }) {
   const [open, setOpen] = useState(false);
+  const [indexOpen, setIndexOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
@@ -131,11 +134,119 @@ function SectionsButton({ current }: { current: string }) {
                 );
               })}
             </div>
+            <button
+              onClick={() => { setOpen(false); setIndexOpen(true); }}
+              className="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-bold border border-white/10 hover:bg-white/10 transition"
+              style={{ background: "color-mix(in oklab, var(--primary) 14%, transparent)", color: "var(--primary)" }}>
+              <BookOpen className="h-4 w-4"/>
+              الفهرس (بالذكاء الاصطناعي)
+            </button>
           </div>
         </div>,
         document.body
       )}
+      {indexOpen && <IndexModal onClose={() => setIndexOpen(false)} />}
     </>
+  );
+}
+
+type IndexCategory = { name: string; items: { id: string; title: string }[] };
+
+function IndexModal({ onClose }: { onClose: () => void }) {
+  const { isStaff } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<IndexCategory[]>([]);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const load = async () => {
+    setLoading(true);
+    const { data: row } = await supabase.from("ai_index").select("data, generated_at").eq("id", 1).maybeSingle();
+    setData(((row?.data as unknown) as IndexCategory[]) ?? []);
+    setGeneratedAt(row?.generated_at ?? null);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const refresh = async () => {
+    if (!isStaff || refreshing) return;
+    setRefreshing(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke("generate-index");
+      if (error) throw error;
+      if (r?.error) throw new Error(r.error);
+      setData((r?.data as IndexCategory[]) ?? []);
+      setGeneratedAt(new Date().toISOString());
+      toast.success("تم تحديث الفهرس");
+    } catch (e) {
+      toast.error("تعذّر تحديث الفهرس: " + ((e as Error)?.message ?? "خطأ"));
+    } finally { setRefreshing(false); }
+  };
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-pop-in"
+         onClick={onClose}>
+      <div onClick={e => e.stopPropagation()}
+        className="w-full max-w-lg glass-strong rounded-3xl shadow-2xl border border-white/10 flex flex-col"
+        style={{ maxHeight: "85vh" }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <BookOpen className="h-4 w-4 text-primary"/> فهرس المقالات
+            <span className="text-[10px] font-normal text-muted-foreground">بالذكاء الاصطناعي</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {isStaff && (
+              <button onClick={refresh} disabled={refreshing} title="إعادة تحديث الفهرس"
+                className="liquid-glass inline-flex items-center gap-1 px-2.5 h-8 rounded-full text-[11px] font-bold disabled:opacity-50">
+                {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <RefreshCw className="h-3.5 w-3.5"/>}
+                تحديث
+              </button>
+            )}
+            <button onClick={onClose} className="p-1 rounded-md hover:bg-white/10"><X className="h-3.5 w-3.5"/></button>
+          </div>
+        </div>
+        <div className="overflow-y-auto px-4 py-3 scrollbar-thin">
+          {loading ? (
+            <div className="py-10 text-center text-muted-foreground text-xs"><Loader2 className="h-5 w-5 animate-spin inline"/></div>
+          ) : data.length === 0 ? (
+            <div className="py-10 text-center text-muted-foreground text-sm">
+              لم يُولَّد الفهرس بعد.{isStaff ? " اضغط زر التحديث لإنشائه." : ""}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {data.map((cat, i) => (
+                <div key={i} className="space-y-1.5">
+                  <h3 className="text-sm font-extrabold text-primary border-b border-white/10 pb-1.5">{cat.name}</h3>
+                  <ul className="space-y-0.5">
+                    {cat.items.map((it) => (
+                      <li key={it.id}>
+                        <Link to="/post/$id" params={{ id: it.id }} onClick={onClose}
+                          className="block px-2 py-1.5 rounded-lg text-xs hover:bg-white/10 transition text-right">
+                          • {it.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {generatedAt && (
+          <div className="px-4 py-2 border-t border-white/10 text-[10px] text-muted-foreground text-center">
+            آخر تحديث: {new Date(generatedAt).toLocaleString("ar")}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
   );
 }
 
