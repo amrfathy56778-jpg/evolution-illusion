@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_index: {
+        Row: {
+          created_at: string
+          data: Json
+          generated_at: string | null
+          generated_by: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       guest_posts: {
         Row: {
           ai_refs: Json | null

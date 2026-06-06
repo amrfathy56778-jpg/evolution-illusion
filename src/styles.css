@@ -194,6 +194,21 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   .glow-emerald { box-shadow: 0 10px 40px -10px oklch(0.78 0.15 195 / 0.5); }
   .glow-warm { box-shadow: 0 10px 40px -10px oklch(0.82 0.16 55 / 0.5); }
 
+  /* Mobile scroll-FPS fix: backdrop-filter on many stacked elements is brutally expensive
+     during scroll (especially with TipTap-rendered article content). Disable it on small
+     screens and fall back to a slightly more opaque solid background so the surface still
+     reads as a "glass card". */
+  @media (max-width: 767px) {
+    .glass, .glass-strong, .glass-input, .liquid-glass {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .glass { background: oklch(0.18 0.03 248 / 0.86); }
+    .glass-strong { background: oklch(0.16 0.03 248 / 0.92); }
+    html.light .glass { background: oklch(0.98 0.01 248 / 0.92); }
+    html.light .glass-strong { background: oklch(0.96 0.02 248 / 0.95); }
+  }
+
   /* Liquid glass — refractive pill surface */
   .liquid-glass {
     position: relative;
@@ -333,6 +348,11 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
   .ambient-orbs::after {
     background: oklch(0.6 0.22 295);
     bottom: -15%; left: -10%;
+  }
+  /* Disable the heavy blurred ambient orbs on small screens — they tank scroll FPS on mobile */
+  @media (max-width: 1023px) {
+    .ambient-orbs::before,
+    .ambient-orbs::after { display: none; }
   }
   /* Animate only on larger screens & when motion allowed — improves mobile FPS */
   @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
