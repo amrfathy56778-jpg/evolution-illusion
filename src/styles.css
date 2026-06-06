@@ -334,6 +334,11 @@ html.light .text-gradient-emerald { background: linear-gradient(135deg, oklch(0.
     background: oklch(0.6 0.22 295);
     bottom: -15%; left: -10%;
   }
+  /* Disable the heavy blurred ambient orbs on small screens — they tank scroll FPS on mobile */
+  @media (max-width: 1023px) {
+    .ambient-orbs::before,
+    .ambient-orbs::after { display: none; }
+  }
   /* Animate only on larger screens & when motion allowed — improves mobile FPS */
   @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
     .ambient-orbs::before,
