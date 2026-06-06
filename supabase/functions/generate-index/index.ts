@@ -23,16 +23,19 @@ Deno.serve(async (req) => {
     const { data: isStaff } = await admin.rpc("is_staff", { _user_id: uid });
     if (!isStaff) return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
 
-    // Fetch all published posts
+    // Fetch all posts
     const { data: posts, error: pErr } = await admin
-      .from("posts").select("id,title,category,excerpt").eq("published", true).order("created_at", { ascending: false }).limit(500);
+      .from("posts").select("id,title,category,content").order("created_at", { ascending: false }).limit(500);
     if (pErr) throw pErr;
     if (!posts || posts.length === 0) {
       await admin.from("ai_index").upsert({ id: 1, data: [], generated_at: new Date().toISOString(), generated_by: uid });
       return new Response(JSON.stringify({ data: [] }), { headers: { ...cors, "Content-Type": "application/json" } });
     }
 
-    const list = posts.map((p) => `- [${p.id}] (${p.category}) ${p.title}${p.excerpt ? " — " + String(p.excerpt).slice(0, 120) : ""}`).join("\n");
+    const list = posts.map((p) => {
+      const plain = String(p.content ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 140);
+      return `- [${p.id}] (${p.category}) ${p.title}${plain ? " — " + plain : ""}`;
+    }).join("\n");
 
     const sys = `أنت مفهرس خبير لموقع "وهم التطور" المتخصّص في نقد نظرية التطور.
 مهمتك: تصنيف المقالات إلى مجموعات موضوعية واضحة باللغة العربية الفصحى، مثل:

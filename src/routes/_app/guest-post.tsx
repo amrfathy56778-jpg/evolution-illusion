@@ -130,7 +130,7 @@ function GuestPost() {
         <p className="text-xs text-muted-foreground">يمكنك إضافة صور وفيديوهات من جهازك وتنسيق النص بحرية</p>
       </div>
 
-      <form onSubmit={submit} className="glass rounded-3xl p-2 sm:p-4 space-y-3">
+      <form onSubmit={submit} className="editor-host glass rounded-3xl p-2 sm:p-4 space-y-3">
         {/* Submit button (top) */}
         <button type="submit" disabled={loading}
           className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-sm hover:opacity-90 transition glow-warm flex items-center justify-center gap-2 disabled:opacity-50"
