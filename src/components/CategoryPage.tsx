@@ -45,7 +45,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     const { data, count } = await supabase
-      .from("posts").select("*", { count: "exact" })
+      .from("posts")
+      .select("id,title,category,created_at,author_name,cover_image_url,content", { count: "exact" })
       .eq("category", category).order("created_at", { ascending: false })
       .range(from, to);
     setPosts(data ?? []);
