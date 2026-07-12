@@ -183,7 +183,8 @@ function PostPage() {
             <span className="ms-auto"><PostAIButton post={{ id: p.id, title: p.title, content: p.content }} /></span>
           </div>
           {p.cover_image_url && (
-            <img src={p.cover_image_url} alt={p.title} className="w-full max-h-96 object-cover rounded-3xl"/>
+            <img src={p.cover_image_url} alt={p.title} loading="lazy" decoding="async"
+              className="w-full max-h-96 object-cover rounded-3xl"/>
           )}
           <div className="glass rounded-3xl p-5 sm:p-7">
             <RichContent html={p.content}/>
