@@ -12,8 +12,8 @@ import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
-  AlignRight, AlignCenter, AlignLeft, AlignJustify, Undo2, Redo2, Minus, Palette,
-  Video, Upload, Maximize2, Minimize2,
+  AlignRight, AlignCenter, AlignLeft, Undo2, Redo2, Minus, Palette,
+  Video, Upload, Minimize2,
 } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -180,7 +180,6 @@ function FloatingToolbar({ editor }: { editor: Editor }) {
         <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-3.5 w-3.5"/></Btn>
         <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-3.5 w-3.5"/></Btn>
         <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-3.5 w-3.5"/></Btn>
-        <Btn title="ضبط" active={editor.isActive({ textAlign: "justify" })} onClick={() => editor.chain().focus().setTextAlign("justify").run()}><AlignJustify className="h-3.5 w-3.5"/></Btn>
         <div className="w-px h-5 bg-white/15 mx-1"/>
         <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-3.5 w-3.5"/></Btn>
         <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-3.5 w-3.5"/></Btn>
@@ -219,13 +218,18 @@ function MediaBubble({ editor }: { editor: Editor }) {
       options={{ placement: "top", offset: 56 }}
       shouldShow={({ editor }) => editor.isActive("image") || editor.isActive("video")}
     >
-      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-10 max-w-[95vw]">
-        <span className="text-[10px] text-muted-foreground px-1">حجم:</span>
-        <Btn title="30%" onClick={() => setMediaWidth("30%")}><span className="text-[10px] font-bold">30٪</span></Btn>
-        <Btn title="50%" onClick={() => setMediaWidth("50%")}><span className="text-[10px] font-bold">50٪</span></Btn>
-        <Btn title="75%" onClick={() => setMediaWidth("75%")}><span className="text-[10px] font-bold">75٪</span></Btn>
-        <Btn title="كامل" onClick={() => setMediaWidth("100%")}><Maximize2 className="h-3.5 w-3.5"/></Btn>
-        <Btn title="أصلي" onClick={() => setMediaWidth(null)}><Minimize2 className="h-3.5 w-3.5"/></Btn>
+      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex items-center gap-2 p-2 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-10 max-w-[95vw]">
+        <span className="text-[10px] text-muted-foreground px-1 shrink-0">حجم الوسائط</span>
+        <input
+          type="range" min={10} max={100} step={1}
+          defaultValue={(() => {
+            const raw = (editor.getAttributes(editor.isActive("image") ? "image" : "video")?.width as string | null) ?? "";
+            const m = /^(\d+)%$/.exec(raw ?? ""); return m ? Number(m[1]) : 100;
+          })()}
+          onChange={(e) => setMediaWidth(`${e.target.value}%`)}
+          className="accent-primary w-40 max-w-[45vw]"
+        />
+        <Btn title="إعادة للحجم الأصلي" onClick={() => setMediaWidth(null)}><Minimize2 className="h-3.5 w-3.5"/></Btn>
       </div>
     </BubbleMenu>
   );
