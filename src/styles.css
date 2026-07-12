@@ -371,7 +371,12 @@ body { top: 0 !important; }
 
 /* === Rich content (TipTap output) === */
 @layer components {
-  .prose-content { color: var(--foreground); word-break: break-word; }
+  .prose-content { color: var(--foreground); word-break: break-word; word-spacing: normal; }
+  /* Override any legacy `text-align: justify` on old posts — a single trailing
+     space at line end would otherwise stretch into a huge visual gap in RTL. */
+  .prose-content [style*="justify"],
+  .prose-content p[style*="justify"],
+  .prose-content div[style*="justify"] { text-align: right !important; }
   .prose-content h1 { font-size: 1.75rem; font-weight: 900; margin: 1rem 0 0.6rem; color: var(--primary); }
   .prose-content h2 { font-size: 1.4rem; font-weight: 800; margin: 0.9rem 0 0.5rem; color: var(--primary); }
   .prose-content h3 { font-size: 1.15rem; font-weight: 700; margin: 0.8rem 0 0.4rem; }

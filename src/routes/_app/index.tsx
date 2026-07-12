@@ -75,7 +75,11 @@ function Home() {
     (async () => {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
-      const { data } = await supabase.from("posts").select("*").order("created_at", { ascending: false }).range(from, to);
+      const { data } = await supabase
+        .from("posts")
+        .select("id,title,category,created_at,author_name,cover_image_url,content")
+        .order("created_at", { ascending: false })
+        .range(from, to);
       setLatest(data ?? []);
     })();
   }, [page]);
@@ -90,7 +94,7 @@ function Home() {
       const like = `%${q.replace(/[%_]/g, "")}%`;
       const { data } = await supabase
         .from("posts")
-        .select("*")
+        .select("id,title,category,created_at,author_name,cover_image_url,content")
         .or(`title.ilike.${like},content.ilike.${like}`)
         .order("created_at", { ascending: false })
         .limit(50);

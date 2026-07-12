@@ -45,7 +45,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     const { data, count } = await supabase
-      .from("posts").select("*", { count: "exact" })
+      .from("posts")
+      .select("id,title,category,created_at,author_name,cover_image_url,content", { count: "exact" })
       .eq("category", category).order("created_at", { ascending: false })
       .range(from, to);
     setPosts(data ?? []);
@@ -180,7 +181,8 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in"
               style={{ animationDelay: `${idx * 60}ms`, borderColor: `color-mix(in oklab, ${color} 25%, transparent)` }}>
               {p.cover_image_url && (
-                <img src={p.cover_image_url} alt={p.title} className="w-full max-h-48 object-cover rounded-xl mb-3"/>
+                <img src={p.cover_image_url} alt={p.title} loading="lazy" decoding="async"
+                  className="w-full max-h-48 object-cover rounded-xl mb-3"/>
               )}
               <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
                 <h3 className="font-bold mb-1.5">{p.title}</h3>
