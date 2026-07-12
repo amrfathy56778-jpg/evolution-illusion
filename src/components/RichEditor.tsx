@@ -474,6 +474,9 @@ export function RichContent({ html }: { html: string }) {
   // Strip dead blob: image/video sources (they expire after the upload session)
   const cleaned = html
     .replace(/<img[^>]*src=["']blob:[^"']*["'][^>]*>/gi, '<p class="text-xs text-muted-foreground italic">[صورة فُقدت — يرجى من الكاتب إعادة رفعها]</p>')
-    .replace(/<video[^>]*src=["']blob:[^"']*["'][^>]*>(.*?<\/video>)?/gi, '<p class="text-xs text-muted-foreground italic">[فيديو فُقد — يرجى من الكاتب إعادة رفعه]</p>');
+    .replace(/<video[^>]*src=["']blob:[^"']*["'][^>]*>(.*?<\/video>)?/gi, '<p class="text-xs text-muted-foreground italic">[فيديو فُقد — يرجى من الكاتب إعادة رفعه]</p>')
+    // Lazy-load user-content images/videos for faster page loads.
+    .replace(/<img\b(?![^>]*\bloading=)/gi, '<img loading="lazy" decoding="async"')
+    .replace(/<video\b(?![^>]*\bpreload=)/gi, '<video preload="metadata"');
   return <div className="prose-content text-sm leading-loose" dangerouslySetInnerHTML={{ __html: cleaned }}/>;
 }
