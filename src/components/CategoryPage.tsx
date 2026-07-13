@@ -184,6 +184,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               {p.cover_image_url && (
                 <img src={thumb(p.cover_image_url, 800)} alt={p.title} loading="lazy" decoding="async"
                   width={800} height={320}
+                  onError={(e) => { const img = e.currentTarget; if (img.src !== p.cover_image_url) img.src = p.cover_image_url; }}
                   className="w-full max-h-48 object-cover rounded-xl mb-3 bg-white/5"/>
               )}
               <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
