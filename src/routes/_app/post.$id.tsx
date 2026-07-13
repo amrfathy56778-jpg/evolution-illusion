@@ -8,6 +8,7 @@ import { RichEditor, RichContent } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
 import { PostAIButton } from "@/components/PostAIChat";
 import { RelatedPosts } from "@/components/RelatedPosts";
+import { thumb } from "@/lib/img";
 
 export const Route = createFileRoute("/_app/post/$id")({
   component: PostPage,
@@ -183,8 +184,10 @@ function PostPage() {
             <span className="ms-auto"><PostAIButton post={{ id: p.id, title: p.title, content: p.content }} /></span>
           </div>
           {p.cover_image_url && (
-            <img src={p.cover_image_url} alt={p.title} loading="lazy" decoding="async"
-              className="w-full max-h-96 object-cover rounded-3xl"/>
+            <img src={thumb(p.cover_image_url, 1200, 75)} alt={p.title}
+              loading="eager" decoding="async" fetchPriority="high"
+              width={1200} height={630}
+              className="w-full max-h-96 object-cover rounded-3xl bg-white/5"/>
           )}
           <div className="glass rounded-3xl p-5 sm:p-7">
             <RichContent html={p.content}/>
