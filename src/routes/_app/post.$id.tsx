@@ -187,6 +187,7 @@ function PostPage() {
             <img src={thumb(p.cover_image_url, 1200, 75)} alt={p.title}
               loading="eager" decoding="async" fetchPriority="high"
               width={1200} height={630}
+              onError={(e) => { const img = e.currentTarget; if (img.src !== p.cover_image_url) img.src = p.cover_image_url; }}
               className="w-full max-h-96 object-cover rounded-3xl bg-white/5"/>
           )}
           <div className="glass rounded-3xl p-5 sm:p-7">
