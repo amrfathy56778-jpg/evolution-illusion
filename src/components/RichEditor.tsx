@@ -472,11 +472,23 @@ export function RichContent({ html }: { html: string }) {
     return <div className="prose-content text-sm leading-loose whitespace-pre-wrap">{html}</div>;
   }
   // Strip dead blob: image/video sources (they expire after the upload session)
-  const cleaned = html
+  let cleaned = html
     .replace(/<img[^>]*src=["']blob:[^"']*["'][^>]*>/gi, '<p class="text-xs text-muted-foreground italic">[صورة فُقدت — يرجى من الكاتب إعادة رفعها]</p>')
     .replace(/<video[^>]*src=["']blob:[^"']*["'][^>]*>(.*?<\/video>)?/gi, '<p class="text-xs text-muted-foreground italic">[فيديو فُقد — يرجى من الكاتب إعادة رفعه]</p>')
     // Lazy-load user-content images/videos for faster page loads.
     .replace(/<img\b(?![^>]*\bloading=)/gi, '<img loading="lazy" decoding="async"')
     .replace(/<video\b(?![^>]*\bpreload=)/gi, '<video preload="metadata"');
+  // Route in-article Supabase images through the on-the-fly transformer
+  // so old posts with heavy originals load as compact WebP thumbnails.
+  cleaned = cleaned.replace(
+    /<img\b([^>]*?)\bsrc=(["'])([^"']+)\2/gi,
+    (_m, attrs: string, q: string, src: string) => {
+      if (!/\/storage\/v1\/object\/public\//.test(src)) return `<img${attrs} src=${q}${src}${q}`;
+      if (/\.(gif|svg)(\?|$)/i.test(src)) return `<img${attrs} src=${q}${src}${q}`;
+      const rendered = src.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
+      const sep = rendered.includes("?") ? "&" : "?";
+      return `<img${attrs} src=${q}${rendered}${sep}width=900&quality=72&resize=contain${q}`;
+    }
+  );
   return <div className="prose-content text-sm leading-loose" dangerouslySetInnerHTML={{ __html: cleaned }}/>;
 }
