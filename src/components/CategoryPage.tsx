@@ -8,6 +8,7 @@ import { RichEditor } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
 import { Pagination } from "@/components/Pagination";
 import { uploadCoverImage } from "@/lib/upload";
+import { thumb } from "@/lib/img";
 
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 const PAGE_SIZE = 10;
@@ -181,8 +182,9 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               className="glass rounded-2xl p-5 hover:bg-white/5 transition animate-pop-in"
               style={{ animationDelay: `${idx * 60}ms`, borderColor: `color-mix(in oklab, ${color} 25%, transparent)` }}>
               {p.cover_image_url && (
-                <img src={p.cover_image_url} alt={p.title} loading="lazy" decoding="async"
-                  className="w-full max-h-48 object-cover rounded-xl mb-3"/>
+                <img src={thumb(p.cover_image_url, 800)} alt={p.title} loading="lazy" decoding="async"
+                  width={800} height={320}
+                  className="w-full max-h-48 object-cover rounded-xl mb-3 bg-white/5"/>
               )}
               <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
                 <h3 className="font-bold mb-1.5">{p.title}</h3>
