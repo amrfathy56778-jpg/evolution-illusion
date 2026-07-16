@@ -469,3 +469,25 @@ body > .skiptranslate { display: none !important; }
 .light [data-section-label] {
   color: oklch(0.25 0.05 250) !important;
 }
+
+/* ===== Appearance: disable visual effects (blur, glow, gradients) ===== */
+.fx-off,
+.fx-off body { background: var(--background) !important; }
+.fx-off .ambient-orbs::before,
+.fx-off .ambient-orbs::after,
+.fx-off .ambient-orbs > .orb { display: none !important; }
+.fx-off .liquid-glass,
+.fx-off .glass,
+.fx-off .glass-strong,
+.fx-off .glass-input,
+.fx-off .site-header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: color-mix(in oklab, var(--card) 92%, transparent) !important;
+  box-shadow: none !important;
+}
+.fx-off * {
+  text-shadow: none !important;
+  filter: none !important;
+}
+.fx-off .drop-shadow-\[0_0_12px_rgba\(250\,200\,80\,0\.45\)\] { filter: none !important; }
