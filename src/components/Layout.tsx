@@ -1,6 +1,8 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { LogIn, LogOut, Home, Sparkles, Dna, Leaf, Microscope, Shield, Sun, Moon, Globe, Check, X, LayoutGrid, BookOpen, RefreshCw, Loader2 } from "lucide-react";
+import AppearanceMenu from "@/components/AppearanceMenu";
+import { loadAppearance } from "@/lib/appearance";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -32,6 +34,9 @@ export default function Layout() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Load persisted appearance (theme tokens + FX toggle) once on mount.
+  useEffect(() => { loadAppearance(); }, []);
+
   // Theme toggle — instant flip, no animation.
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
@@ -46,6 +51,7 @@ export default function Layout() {
 
           <div className="flex-1 flex items-center justify-end gap-2 flex-wrap">
             {showNav && !minimalHeader && <SectionsButton current={path}/>}
+            {!minimalHeader && <AppearanceMenu />}
             <button onClick={toggleTheme}
               title={theme === "dark" ? "وضع نهاري" : "وضع ليلي"}
               className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full">
