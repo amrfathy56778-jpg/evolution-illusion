@@ -61,7 +61,7 @@ function AppearanceDialog({ onClose }: { onClose: () => void }) {
       applyTokens(tokens);
       // Persist
       const { data: row, error: insErr } = await supabase.from("user_themes")
-        .insert([{ user_id: user.id, name, tokens: tokens as unknown as Record<string, unknown> }])
+        .insert([{ user_id: user.id, name, tokens: tokens as unknown as any }])
         .select("id, name, tokens").single();
       if (insErr) throw insErr;
       setSaved(s => [row as SavedTheme, ...s]);
