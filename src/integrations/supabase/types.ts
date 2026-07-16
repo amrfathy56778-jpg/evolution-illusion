@@ -230,6 +230,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_themes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tokens: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tokens: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tokens?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
