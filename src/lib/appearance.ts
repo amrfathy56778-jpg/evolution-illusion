@@ -1,4 +1,4 @@
-// Site appearance: theme tokens + visual-effects toggle.
+// Site appearance: theme tokens (dark+light) + design style + visual-effects toggle.
 export type ThemeTokens = {
   background: string;
   foreground: string;
@@ -10,146 +10,175 @@ export type ThemeTokens = {
   gradient?: string;
 };
 
-export type ThemePreset = { id: string; name: string; tokens: ThemeTokens };
+export type ThemeVariant = { dark: ThemeTokens; light: ThemeTokens };
+export type ThemePreset = { id: string; name: string } & ThemeVariant;
+
+// Design "styles" — apply as `style-<id>` class on <html>. Styles affect
+// surfaces (glass vs flat vs brutal), rounding, shadows, fonts. Colors are
+// independent (from PRESETS/AI). Users can mix any style with any palette.
+export type DesignStyle = { id: string; name: string; description: string };
+export const STYLES: DesignStyle[] = [
+  { id: "glass", name: "زجاجي (الافتراضي)", description: "تمويه ولمعان زجاجي" },
+  { id: "flat", name: "مسطّح ناعم", description: "أسطح صلبة، ظلال خفيفة" },
+  { id: "editorial", name: "أنيق تحريري", description: "خطوط راقية، حواف مربّعة" },
+  { id: "brutal", name: "بروتاليست", description: "حواف حادة، ظلال قوية" },
+  { id: "papyrus", name: "بردية كلاسيكية", description: "نسيج ورقي دافئ" },
+  { id: "neon", name: "نيون سايبر", description: "إضاءة نيون قوية" },
+];
+
+const mkTokens = (
+  dbg: string, dfg: string, dcard: string, dpri: string, dacc: string, dmut: string, dgrad: string,
+  lbg: string, lfg: string, lcard: string, lpri: string, lacc: string, lmut: string, lgrad: string,
+): ThemeVariant => ({
+  dark:  { background: dbg, foreground: dfg, card: dcard, primary: dpri, accent: dacc, muted: dmut, border: "oklch(1 0 0 / 18%)", gradient: dgrad },
+  light: { background: lbg, foreground: lfg, card: lcard, primary: lpri, accent: lacc, muted: lmut, border: "oklch(0.2 0.03 246 / 16%)", gradient: lgrad },
+});
 
 export const PRESETS: ThemePreset[] = [
   {
-    id: "default",
-    name: "الافتراضي (زجاجي أخضر)",
-    tokens: {
-      background: "oklch(0.14 0.03 246)",
-      foreground: "oklch(0.98 0.01 255)",
-      card: "oklch(0.2 0.04 248)",
-      primary: "oklch(0.8 0.16 185)",
-      accent: "oklch(0.3 0.06 215)",
-      muted: "oklch(0.24 0.03 248)",
-      border: "oklch(1 0 0 / 18%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), radial-gradient(ellipse 760px 580px at 84% 18%, oklch(0.44 0.11 220 / 0.2), transparent 56%), radial-gradient(ellipse 720px 560px at 70% 92%, oklch(0.42 0.14 285 / 0.2), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
-    },
+    id: "default", name: "زجاجي أخضر (افتراضي)",
+    ...mkTokens(
+      "oklch(0.14 0.03 246)", "oklch(0.98 0.01 255)", "oklch(0.2 0.04 248)", "oklch(0.8 0.16 185)", "oklch(0.3 0.06 215)", "oklch(0.24 0.03 248)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
+      "oklch(0.985 0.005 240)", "oklch(0.18 0.03 246)", "oklch(0.97 0.008 240)", "oklch(0.55 0.16 185)", "oklch(0.92 0.04 215)", "oklch(0.94 0.01 240)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.78 0.12 185 / 0.18), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 240), oklch(0.96 0.01 220))",
+    ),
   },
   {
-    id: "forest",
-    name: "غابة الخلق",
-    tokens: {
-      background: "oklch(0.16 0.03 155)",
-      foreground: "oklch(0.97 0.02 130)",
-      card: "oklch(0.22 0.05 155)",
-      primary: "oklch(0.78 0.18 145)",
-      accent: "oklch(0.32 0.08 145)",
-      muted: "oklch(0.24 0.04 155)",
-      border: "oklch(1 0 0 / 16%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.42 0.16 145 / 0.28), transparent 58%), radial-gradient(ellipse 760px 580px at 85% 90%, oklch(0.4 0.14 100 / 0.22), transparent 56%), linear-gradient(165deg, oklch(0.16 0.03 155), oklch(0.12 0.03 170))",
-    },
+    id: "forest", name: "غابة الخلق",
+    ...mkTokens(
+      "oklch(0.16 0.03 155)", "oklch(0.97 0.02 130)", "oklch(0.22 0.05 155)", "oklch(0.78 0.18 145)", "oklch(0.32 0.08 145)", "oklch(0.24 0.04 155)",
+      "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.42 0.16 145 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.16 0.03 155), oklch(0.12 0.03 170))",
+      "oklch(0.97 0.02 130)", "oklch(0.2 0.05 155)", "oklch(0.95 0.03 130)", "oklch(0.5 0.16 145)", "oklch(0.9 0.06 130)", "oklch(0.93 0.03 130)",
+      "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.85 0.12 145 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.97 0.02 130), oklch(0.93 0.03 130))",
+    ),
   },
   {
-    id: "sand",
-    name: "رمل الصحراء",
-    tokens: {
-      background: "oklch(0.96 0.02 85)",
-      foreground: "oklch(0.2 0.03 60)",
-      card: "oklch(0.98 0.015 80)",
-      primary: "oklch(0.55 0.16 55)",
-      accent: "oklch(0.9 0.06 70)",
-      muted: "oklch(0.92 0.02 80)",
-      border: "oklch(0.2 0.03 60 / 16%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.85 0.11 65 / 0.35), transparent 58%), radial-gradient(ellipse 760px 580px at 84% 18%, oklch(0.85 0.08 40 / 0.28), transparent 56%), linear-gradient(165deg, oklch(0.97 0.02 85), oklch(0.93 0.03 65))",
-    },
+    id: "sand", name: "رمل الصحراء",
+    ...mkTokens(
+      "oklch(0.18 0.03 60)", "oklch(0.97 0.02 70)", "oklch(0.24 0.05 55)", "oklch(0.78 0.16 65)", "oklch(0.32 0.08 55)", "oklch(0.26 0.04 60)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.45 0.14 55 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.18 0.03 60), oklch(0.14 0.03 55))",
+      "oklch(0.96 0.02 85)", "oklch(0.2 0.03 60)", "oklch(0.98 0.015 80)", "oklch(0.55 0.16 55)", "oklch(0.9 0.06 70)", "oklch(0.92 0.02 80)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.85 0.11 65 / 0.35), transparent 58%), linear-gradient(165deg, oklch(0.97 0.02 85), oklch(0.93 0.03 65))",
+    ),
   },
   {
-    id: "cosmos",
-    name: "أعماق الكون",
-    tokens: {
-      background: "oklch(0.1 0.04 285)",
-      foreground: "oklch(0.98 0.01 280)",
-      card: "oklch(0.18 0.06 285)",
-      primary: "oklch(0.78 0.19 300)",
-      accent: "oklch(0.32 0.1 260)",
-      muted: "oklch(0.22 0.05 285)",
-      border: "oklch(1 0 0 / 18%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.45 0.2 300 / 0.32), transparent 58%), radial-gradient(ellipse 760px 580px at 85% 90%, oklch(0.4 0.2 260 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.1 0.04 285), oklch(0.08 0.04 260))",
-    },
+    id: "cosmos", name: "أعماق الكون",
+    ...mkTokens(
+      "oklch(0.1 0.04 285)", "oklch(0.98 0.01 280)", "oklch(0.18 0.06 285)", "oklch(0.78 0.19 300)", "oklch(0.32 0.1 260)", "oklch(0.22 0.05 285)",
+      "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.45 0.2 300 / 0.32), transparent 58%), linear-gradient(165deg, oklch(0.1 0.04 285), oklch(0.08 0.04 260))",
+      "oklch(0.97 0.01 280)", "oklch(0.18 0.06 285)", "oklch(0.95 0.015 280)", "oklch(0.5 0.19 300)", "oklch(0.88 0.06 280)", "oklch(0.93 0.02 280)",
+      "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.82 0.14 300 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.97 0.01 280), oklch(0.93 0.02 260))",
+    ),
   },
   {
-    id: "ocean",
-    name: "المحيط العميق",
-    tokens: {
-      background: "oklch(0.14 0.05 235)",
-      foreground: "oklch(0.98 0.01 220)",
-      card: "oklch(0.2 0.06 235)",
-      primary: "oklch(0.78 0.16 220)",
-      accent: "oklch(0.32 0.08 215)",
-      muted: "oklch(0.24 0.05 235)",
-      border: "oklch(1 0 0 / 16%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.4 0.16 220 / 0.32), transparent 58%), radial-gradient(ellipse 760px 580px at 80% 90%, oklch(0.4 0.14 195 / 0.24), transparent 58%), linear-gradient(165deg, oklch(0.14 0.05 235), oklch(0.1 0.05 220))",
-    },
+    id: "ocean", name: "المحيط العميق",
+    ...mkTokens(
+      "oklch(0.14 0.05 235)", "oklch(0.98 0.01 220)", "oklch(0.2 0.06 235)", "oklch(0.78 0.16 220)", "oklch(0.32 0.08 215)", "oklch(0.24 0.05 235)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.4 0.16 220 / 0.32), transparent 58%), linear-gradient(165deg, oklch(0.14 0.05 235), oklch(0.1 0.05 220))",
+      "oklch(0.97 0.015 220)", "oklch(0.18 0.05 235)", "oklch(0.95 0.02 220)", "oklch(0.5 0.16 220)", "oklch(0.88 0.06 215)", "oklch(0.93 0.02 220)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.82 0.12 220 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.97 0.015 220), oklch(0.93 0.025 210))",
+    ),
   },
   {
-    id: "papyrus",
-    name: "بردية قديمة",
-    tokens: {
-      background: "oklch(0.93 0.03 75)",
-      foreground: "oklch(0.22 0.04 45)",
-      card: "oklch(0.96 0.02 75)",
-      primary: "oklch(0.45 0.15 35)",
-      accent: "oklch(0.85 0.08 55)",
-      muted: "oklch(0.9 0.03 75)",
-      border: "oklch(0.22 0.04 45 / 18%)",
-      gradient:
-        "radial-gradient(ellipse 900px 650px at 10% 10%, oklch(0.82 0.1 55 / 0.4), transparent 58%), radial-gradient(ellipse 760px 580px at 90% 90%, oklch(0.75 0.13 35 / 0.28), transparent 56%), linear-gradient(165deg, oklch(0.94 0.03 75), oklch(0.9 0.04 65))",
-    },
+    id: "papyrus", name: "بردية قديمة",
+    ...mkTokens(
+      "oklch(0.2 0.03 45)", "oklch(0.97 0.02 75)", "oklch(0.26 0.04 45)", "oklch(0.7 0.15 45)", "oklch(0.34 0.07 40)", "oklch(0.24 0.03 45)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.45 0.14 40 / 0.3), transparent 58%), linear-gradient(165deg, oklch(0.2 0.03 45), oklch(0.16 0.03 40))",
+      "oklch(0.93 0.03 75)", "oklch(0.22 0.04 45)", "oklch(0.96 0.02 75)", "oklch(0.45 0.15 35)", "oklch(0.85 0.08 55)", "oklch(0.9 0.03 75)",
+      "radial-gradient(ellipse 900px 650px at 10% 10%, oklch(0.82 0.1 55 / 0.4), transparent 58%), linear-gradient(165deg, oklch(0.94 0.03 75), oklch(0.9 0.04 65))",
+    ),
+  },
+  {
+    id: "crimson", name: "قرمزي أنيق",
+    ...mkTokens(
+      "oklch(0.14 0.03 15)", "oklch(0.98 0.01 20)", "oklch(0.2 0.05 15)", "oklch(0.7 0.2 25)", "oklch(0.32 0.08 15)", "oklch(0.24 0.04 15)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.42 0.18 25 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.03 15), oklch(0.1 0.03 10))",
+      "oklch(0.98 0.005 20)", "oklch(0.18 0.03 15)", "oklch(0.96 0.01 20)", "oklch(0.5 0.2 25)", "oklch(0.9 0.05 15)", "oklch(0.94 0.01 20)",
+      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.85 0.12 25 / 0.22), transparent 58%), linear-gradient(165deg, oklch(0.98 0.005 20), oklch(0.94 0.01 15))",
+    ),
   },
 ];
 
-const CUSTOM_KEY = "site.customTheme";
+const CUSTOM_KEY = "site.customTheme.v2"; // stores { dark, light }
 const THEME_KEY = "site.themeId";
+const STYLE_KEY = "site.styleId";
 const FX_KEY = "site.fxOff";
+const DEFAULT_STYLE = "glass";
 
-export function applyTokens(tokens: ThemeTokens) {
+function isLight(): boolean {
+  return typeof document !== "undefined" && document.documentElement.classList.contains("light");
+}
+
+export function applyVariant(v: ThemeVariant) {
+  const tokens = isLight() ? v.light : v.dark;
   const r = document.documentElement.style;
-  r.setProperty("--background", tokens.background);
-  r.setProperty("--foreground", tokens.foreground);
-  r.setProperty("--card", tokens.card);
-  r.setProperty("--card-foreground", tokens.foreground);
-  r.setProperty("--popover", tokens.card);
-  r.setProperty("--popover-foreground", tokens.foreground);
-  r.setProperty("--primary", tokens.primary);
-  r.setProperty("--accent", tokens.accent);
-  r.setProperty("--muted", tokens.muted);
-  r.setProperty("--muted-foreground", tokens.foreground);
-  r.setProperty("--secondary", tokens.muted);
-  r.setProperty("--secondary-foreground", tokens.foreground);
-  if (tokens.border) r.setProperty("--border", tokens.border);
-  if (tokens.gradient) r.setProperty("--gradient-bg", tokens.gradient);
+  const set = (k: string, val?: string) => { if (val) r.setProperty(k, val); };
+  set("--background", tokens.background);
+  set("--foreground", tokens.foreground);
+  set("--card", tokens.card);
+  set("--card-foreground", tokens.foreground);
+  set("--popover", tokens.card);
+  set("--popover-foreground", tokens.foreground);
+  set("--primary", tokens.primary);
+  set("--accent", tokens.accent);
+  set("--accent-foreground", tokens.foreground);
+  set("--muted", tokens.muted);
+  set("--muted-foreground", tokens.foreground);
+  set("--secondary", tokens.muted);
+  set("--secondary-foreground", tokens.foreground);
+  set("--border", tokens.border);
+  set("--input", tokens.border);
+  set("--ring", tokens.primary);
+  set("--gradient-bg", tokens.gradient);
 }
 
 export function resetTokens() {
   const r = document.documentElement.style;
-  ["--background","--foreground","--card","--card-foreground","--popover","--popover-foreground","--primary","--accent","--muted","--muted-foreground","--secondary","--secondary-foreground","--border","--gradient-bg"].forEach(p => r.removeProperty(p));
+  ["--background","--foreground","--card","--card-foreground","--popover","--popover-foreground",
+   "--primary","--accent","--accent-foreground","--muted","--muted-foreground",
+   "--secondary","--secondary-foreground","--border","--input","--ring","--gradient-bg"]
+    .forEach(p => r.removeProperty(p));
 }
 
 export function applyFx(off: boolean) {
   document.documentElement.classList.toggle("fx-off", off);
 }
 
+function applyStyleClass(styleId: string) {
+  const el = document.documentElement;
+  STYLES.forEach(s => el.classList.remove(`style-${s.id}`));
+  if (styleId && styleId !== DEFAULT_STYLE) el.classList.add(`style-${styleId}`);
+  // Always add default style class too so CSS can hook if needed.
+  el.classList.add(`style-${styleId || DEFAULT_STYLE}`);
+}
+
+// Re-apply current theme tokens whenever html.light toggles (dark/light swap).
+let mo: MutationObserver | null = null;
+function watchMode() {
+  if (mo || typeof document === "undefined") return;
+  mo = new MutationObserver(() => reapplyCurrent());
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+}
+function reapplyCurrent() {
+  const id = getThemeId();
+  if (!id || id === "default") { resetTokens(); return; }
+  if (id === "custom") {
+    const raw = localStorage.getItem(CUSTOM_KEY);
+    if (raw) { try { applyVariant(JSON.parse(raw)); } catch {} }
+    return;
+  }
+  const preset = PRESETS.find(p => p.id === id);
+  if (preset) applyVariant(preset);
+}
+
 export function loadAppearance() {
   if (typeof window === "undefined") return;
   try {
-    const fx = localStorage.getItem(FX_KEY) === "1";
-    applyFx(fx);
-    const id = localStorage.getItem(THEME_KEY);
-    if (!id || id === "default") { resetTokens(); return; }
-    if (id === "custom") {
-      const raw = localStorage.getItem(CUSTOM_KEY);
-      if (raw) applyTokens(JSON.parse(raw));
-      return;
-    }
-    const preset = PRESETS.find(p => p.id === id);
-    if (preset) applyTokens(preset.tokens);
+    applyFx(localStorage.getItem(FX_KEY) === "1");
+    applyStyleClass(localStorage.getItem(STYLE_KEY) || DEFAULT_STYLE);
+    reapplyCurrent();
+    watchMode();
   } catch { /* ignore */ }
 }
 
@@ -157,13 +186,22 @@ export function setThemePreset(id: string) {
   localStorage.setItem(THEME_KEY, id);
   if (id === "default") { resetTokens(); return; }
   const preset = PRESETS.find(p => p.id === id);
-  if (preset) applyTokens(preset.tokens);
+  if (preset) applyVariant(preset);
 }
 
-export function setCustomTheme(tokens: ThemeTokens) {
+export function setCustomTheme(variant: ThemeVariant) {
   localStorage.setItem(THEME_KEY, "custom");
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(tokens));
-  applyTokens(tokens);
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(variant));
+  applyVariant(variant);
+}
+
+export function setDesignStyle(styleId: string) {
+  localStorage.setItem(STYLE_KEY, styleId);
+  applyStyleClass(styleId);
+}
+export function getDesignStyle(): string {
+  if (typeof window === "undefined") return DEFAULT_STYLE;
+  return localStorage.getItem(STYLE_KEY) || DEFAULT_STYLE;
 }
 
 export function getFxOff(): boolean {
@@ -177,4 +215,10 @@ export function setFxOff(off: boolean) {
 export function getThemeId(): string {
   if (typeof window === "undefined") return "default";
   return localStorage.getItem(THEME_KEY) ?? "default";
+}
+
+// Backward compatibility for legacy calls
+export function applyTokens(tokens: ThemeTokens) {
+  // Treat legacy single-tokens object as dark; derive minimal light fallback.
+  applyVariant({ dark: tokens, light: tokens });
 }
