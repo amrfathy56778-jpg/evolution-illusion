@@ -256,6 +256,8 @@ export function setCustomTheme(variant: ThemeVariant) {
 export function setDesignStyle(styleId: string) {
   localStorage.setItem(STYLE_KEY, styleId);
   applyStyleClass(styleId);
+  const design = STYLES.find(s => s.id === styleId);
+  if (design?.preset) setThemePreset(design.preset);
 }
 export function getDesignStyle(): string {
   if (typeof window === "undefined") return DEFAULT_STYLE;
