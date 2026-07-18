@@ -128,10 +128,10 @@ function AppearanceDialog({ onClose }: { onClose: () => void }) {
             </span>
           </button>
 
-          {/* Design Styles */}
+          {/* Full Site Designs */}
           <div>
             <h3 className="text-xs font-bold text-primary mb-2 flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5"/> أنماط التصميم
+              <Layers className="h-3.5 w-3.5"/> تصاميم كاملة للموقع
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {STYLES.map(s => {
