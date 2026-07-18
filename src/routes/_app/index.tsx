@@ -307,8 +307,8 @@ function HomePagination({ page, total, onChange }: { page: number; total: number
       </button>
       {nums.map(n => (
         <button key={n} onClick={()=>go(n)}
-          className={`liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "text-primary-foreground" : ""}`}
-          style={n === page ? { background: "var(--primary)", color: "var(--primary-foreground)" } : undefined}>
+          aria-current={n === page ? "page" : undefined}
+          className={`liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "pagination-active" : ""}`}>
           <span className="block">{n + 1}</span>
         </button>
       ))}
