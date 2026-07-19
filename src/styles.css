@@ -755,8 +755,8 @@ body > .skiptranslate { display: none !important; }
 /* Ensure decorative overlays never trap clicks and stay behind content */
 .style-d1 body, .style-d2 body, .style-d3 body,
 .style-d4 body, .style-d5 body, .style-d6 body { position: relative; }
-.style-d1 body > *, .style-d2 body > *, .style-d3 body > *,
-.style-d4 body > *, .style-d5 body > *, .style-d6 body > * { position: relative; z-index: 1; }
+.style-d1 body > .ambient-orbs, .style-d2 body > .ambient-orbs, .style-d3 body > .ambient-orbs,
+.style-d4 body > .ambient-orbs, .style-d5 body > .ambient-orbs, .style-d6 body > .ambient-orbs { position: relative; z-index: 1; }
 
 /* ================================================================
    Pagination active state — ensure the current page is unmistakable
