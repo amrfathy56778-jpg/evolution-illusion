@@ -39,7 +39,7 @@ const mkTokens = (
 
 export const PRESETS: ThemePreset[] = [
   {
-    id: "d1-scientific-dark", name: "تصميم 1 · نقد علمي داكن",
+    id: "d1-scientific-dark", name: "نقد علمي داكن",
     ...mkTokens(
       "oklch(0.14 0.02 150)", "oklch(0.97 0.02 130)", "oklch(0.19 0.03 150)", "oklch(0.78 0.18 155)", "oklch(0.32 0.08 150)", "oklch(0.22 0.03 150)",
       "radial-gradient(ellipse 900px 650px at 15% 8%, oklch(0.42 0.16 155 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.02 150), oklch(0.1 0.02 160))",
@@ -48,16 +48,7 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
-    id: "d2-nature-light", name: "تصميم 2 · طبيعة فاتحة",
-    ...mkTokens(
-      "oklch(0.2 0.04 145)", "oklch(0.97 0.02 130)", "oklch(0.26 0.05 145)", "oklch(0.62 0.18 145)", "oklch(0.34 0.09 140)", "oklch(0.26 0.04 145)",
-      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.5 0.16 140 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.2 0.04 145), oklch(0.16 0.04 155))",
-      "oklch(0.98 0.02 130)", "oklch(0.2 0.05 145)", "oklch(0.99 0.01 130)", "oklch(0.5 0.18 145)", "oklch(0.88 0.08 130)", "oklch(0.94 0.02 130)",
-      "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.88 0.12 140 / 0.35), transparent 58%), linear-gradient(165deg, oklch(0.99 0.01 130), oklch(0.95 0.03 145))",
-    ),
-  },
-  {
-    id: "d3-cyan-dark", name: "تصميم 3 · سماوي داكن",
+    id: "d3-cyan-dark", name: "سماوي داكن",
     ...mkTokens(
       "oklch(0.14 0.04 220)", "oklch(0.98 0.01 220)", "oklch(0.19 0.05 220)", "oklch(0.78 0.16 200)", "oklch(0.32 0.08 210)", "oklch(0.22 0.04 220)",
       "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.45 0.16 200 / 0.32), transparent 58%), linear-gradient(165deg, oklch(0.14 0.04 220), oklch(0.1 0.04 210))",
@@ -66,7 +57,7 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
-    id: "d4-papyrus", name: "تصميم 4 · بردية كلاسيكية",
+    id: "d4-papyrus", name: "بردية كلاسيكية",
     ...mkTokens(
       "oklch(0.22 0.04 55)", "oklch(0.96 0.03 75)", "oklch(0.28 0.05 55)", "oklch(0.62 0.14 45)", "oklch(0.36 0.08 50)", "oklch(0.26 0.04 55)",
       "radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.45 0.14 45 / 0.35), transparent 58%), linear-gradient(165deg, oklch(0.22 0.04 55), oklch(0.16 0.03 45))",
@@ -75,7 +66,7 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
-    id: "d5-mint-light", name: "تصميم 5 · نعناعي فاتح",
+    id: "d5-mint-light", name: "نعناعي فاتح",
     ...mkTokens(
       "oklch(0.15 0.03 180)", "oklch(0.97 0.01 180)", "oklch(0.2 0.04 180)", "oklch(0.62 0.15 175)", "oklch(0.32 0.08 180)", "oklch(0.22 0.03 180)",
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.45 0.14 175 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 180), oklch(0.11 0.03 175))",
@@ -84,7 +75,7 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
-    id: "d6-violet-dark", name: "تصميم 6 · بنفسجي داكن",
+    id: "d6-violet-dark", name: "بنفسجي داكن",
     ...mkTokens(
       "oklch(0.14 0.04 305)", "oklch(0.98 0.01 300)", "oklch(0.19 0.06 305)", "oklch(0.72 0.19 305)", "oklch(0.32 0.1 295)", "oklch(0.22 0.05 305)",
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.45 0.2 305 / 0.3), transparent 58%), linear-gradient(165deg, oklch(0.14 0.04 305), oklch(0.1 0.04 290))",
