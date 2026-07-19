@@ -22,12 +22,11 @@ export type DesignStyle = { id: string; name: string; description: string; prese
 // with a matching color preset that is auto-applied when the design is picked.
 export const STYLES: DesignStyle[] = [
   { id: "glass",     name: "افتراضي · زجاجي",       description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
-  { id: "d1",        name: "تصميم 1 · مختبر داكن",   description: "شبكات علمية وإضاءة زمرّدية",         preset: "d1-scientific-dark" },
-  { id: "d2",        name: "تصميم 2 · طبيعة فاتحة", description: "أوراق شجر ولمسات كلاسيكية",          preset: "d2-nature-light" },
-  { id: "d3",        name: "تصميم 3 · مجرّة سماوية", description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
-  { id: "d4",        name: "تصميم 4 · بردية أثرية",  description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
-  { id: "d5",        name: "تصميم 5 · نعناع مجلة",  description: "مجلة نعناعية أنيقة",                  preset: "d5-mint-light" },
-  { id: "d6",        name: "تصميم 6 · نيون بنفسجي", description: "إضاءة نيون بنفسجية سايبر",           preset: "d6-violet-dark" },
+  { id: "d1",        name: "مختبر داكن",            description: "شبكات علمية وإضاءة زمرّدية",         preset: "d1-scientific-dark" },
+  { id: "d3",        name: "مجرّة سماوية",          description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
+  { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
+  { id: "d5",        name: "نعناع مجلة",            description: "مجلة نعناعية أنيقة",                  preset: "d5-mint-light" },
+  { id: "d6",        name: "نيون بنفسجي",           description: "إضاءة نيون بنفسجية سايبر",           preset: "d6-violet-dark" },
 ];
 
 const mkTokens = (
