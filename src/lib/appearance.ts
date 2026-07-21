@@ -39,6 +39,15 @@ const mkTokens = (
 
 export const PRESETS: ThemePreset[] = [
   {
+    id: "default", name: "الأخضر الأصلي",
+    ...mkTokens(
+      "oklch(0.14 0.03 246)", "oklch(0.98 0.01 255)", "oklch(0.2 0.04 248)", "oklch(0.8 0.16 185)", "oklch(0.3 0.06 215)", "oklch(0.24 0.03 248)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
+      "oklch(0.985 0.005 240)", "oklch(0.18 0.03 246)", "oklch(0.97 0.008 240)", "oklch(0.55 0.16 185)", "oklch(0.92 0.04 215)", "oklch(0.94 0.01 240)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.78 0.12 185 / 0.18), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 240), oklch(0.96 0.01 220))",
+    ),
+  },
+  {
     id: "d1-scientific-dark", name: "نقد علمي داكن",
     ...mkTokens(
       "oklch(0.14 0.02 150)", "oklch(0.97 0.02 130)", "oklch(0.19 0.03 150)", "oklch(0.78 0.18 155)", "oklch(0.32 0.08 150)", "oklch(0.22 0.03 150)",
@@ -81,15 +90,6 @@ export const PRESETS: ThemePreset[] = [
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.45 0.2 305 / 0.3), transparent 58%), linear-gradient(165deg, oklch(0.14 0.04 305), oklch(0.1 0.04 290))",
       "oklch(0.97 0.01 300)", "oklch(0.2 0.06 305)", "oklch(0.95 0.02 300)", "oklch(0.5 0.2 305)", "oklch(0.88 0.06 300)", "oklch(0.93 0.02 300)",
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.85 0.14 305 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.97 0.01 300), oklch(0.94 0.02 295))",
-    ),
-  },
-  {
-    id: "default", name: "زجاجي أخضر (افتراضي)",
-    ...mkTokens(
-      "oklch(0.14 0.03 246)", "oklch(0.98 0.01 255)", "oklch(0.2 0.04 248)", "oklch(0.8 0.16 185)", "oklch(0.3 0.06 215)", "oklch(0.24 0.03 248)",
-      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
-      "oklch(0.985 0.005 240)", "oklch(0.18 0.03 246)", "oklch(0.97 0.008 240)", "oklch(0.55 0.16 185)", "oklch(0.92 0.04 215)", "oklch(0.94 0.01 240)",
-      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.78 0.12 185 / 0.18), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 240), oklch(0.96 0.01 220))",
     ),
   },
   {
