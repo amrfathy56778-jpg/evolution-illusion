@@ -803,7 +803,7 @@ nav [aria-label="pagination"] .liquid-glass:not(.pagination-active):not([aria-cu
 .style-d3 #hero {
   background-image:
     radial-gradient(ellipse 500px 400px at 85% 50%, oklch(0.35 0.16 210 / 0.35), transparent 60%),
-    url("/src/assets/hero-dna-cyan.png");
+    url("/hero-dna-cyan.png");
   background-repeat: no-repeat;
   background-position: right center, calc(100% - 8px) center;
   background-size: auto, 45% auto;
