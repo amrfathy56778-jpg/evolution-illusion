@@ -773,3 +773,49 @@ button[aria-current="page"] {
 }
 .light .pagination-active,
 .light button[aria-current="page"] { color: oklch(0.99 0.005 240) !important; }
+
+/* Non-active page buttons: glow so they stay legible on any background */
+.liquid-glass.pagination-active,
+.liquid-glass[aria-current="page"] { }
+nav [aria-label="pagination"] .liquid-glass:not(.pagination-active):not([aria-current="page"]),
+.pagination-glow {
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 10px color-mix(in oklab, var(--primary) 55%, transparent),
+               0 0 2px color-mix(in oklab, var(--primary) 70%, transparent);
+}
+/* Generic: any small round liquid-glass button that only contains a number */
+.liquid-glass.page-num {
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 10px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+.fx-off .liquid-glass.page-num,
+.fx-off .pagination-glow {
+  text-shadow: none !important;
+  border: 1.5px solid var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* ================================================================
+   Style D3 — سماوي داكن with DNA hero background (matches mockup)
+   ================================================================ */
+.style-d3 #hero {
+  background-image:
+    radial-gradient(ellipse 500px 400px at 85% 50%, oklch(0.35 0.16 210 / 0.35), transparent 60%),
+    url("/hero-dna-cyan.png");
+  background-repeat: no-repeat;
+  background-position: right center, calc(100% - 8px) center;
+  background-size: auto, 45% auto;
+}
+@media (max-width: 640px) {
+  .style-d3 #hero {
+    background-size: auto, 55% auto;
+    background-position: right center, right -20px center;
+    background-blend-mode: normal;
+  }
+}
+.style-d3.light #hero {
+  filter: none;
+}
+.style-d3 #hero > * { position: relative; z-index: 2; }

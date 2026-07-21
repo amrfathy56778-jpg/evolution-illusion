@@ -105,7 +105,7 @@ function Home() {
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-[2rem] glass-strong px-5 py-8 sm:px-8 sm:py-10 text-center space-y-5">
+     <section id="hero" className="relative overflow-hidden rounded-[2rem] glass-strong px-5 py-8 sm:px-8 sm:py-10 text-center space-y-5">
         <div className="absolute inset-0 pointer-events-none opacity-70" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--c-critic) 18%, transparent), transparent 35%, color-mix(in oklab, var(--c-genetics) 12%, transparent) 100%)" }} />
         <div className="relative space-y-4">
           <p className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-[11px] font-bold tracking-wide text-primary">
@@ -308,7 +308,7 @@ function HomePagination({ page, total, onChange }: { page: number; total: number
       {nums.map(n => (
         <button key={n} onClick={()=>go(n)}
           aria-current={n === page ? "page" : undefined}
-          className={`liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "pagination-active" : ""}`}>
+          className={`liquid-glass page-num h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "pagination-active" : ""}`}>
           <span className="block">{n + 1}</span>
         </button>
       ))}

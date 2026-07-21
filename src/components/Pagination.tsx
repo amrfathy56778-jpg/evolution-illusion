@@ -24,7 +24,7 @@ export function Pagination({ page, total, pageSize, onChange, scrollAnchor = "po
       {nums.map(n => (
         <button key={n} onClick={() => go(n)}
           aria-current={n === page ? "page" : undefined}
-          className={`liquid-glass h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "pagination-active" : ""}`}>
+          className={`liquid-glass page-num h-9 w-9 rounded-full grid place-items-center text-xs font-bold leading-none ${n === page ? "pagination-active" : ""}`}>
           <span className="block">{n + 1}</span>
         </button>
       ))}
