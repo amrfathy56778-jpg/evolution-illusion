@@ -26,6 +26,39 @@ function NotFoundComponent() {
   );
 }
 
+const antiFouc = `(function(){try{
+  var d=document.documentElement;
+  var ls=window.localStorage;
+  // Theme mode
+  var mode=ls.getItem('theme');
+  if(mode==='light'){d.classList.add('light');d.classList.remove('dark');}
+  else if(mode==='dark'){d.classList.add('dark');d.classList.remove('light');}
+  // Design style
+  var style=ls.getItem('site.styleId')||'glass';
+  ['glass','d1','d3','d4','d5','d6'].forEach(function(s){d.classList.remove('style-'+s);});
+  d.classList.add('style-'+style);
+  // FX toggle
+  if(ls.getItem('site.fxOff')==='1') d.classList.add('fx-off');
+  // Language
+  var lang=ls.getItem('siteLang');
+  var m=document.cookie.match(/googtrans=\\/[^/]+\\/([^;]+)/);
+  if(m&&m[1]) lang=m[1];
+  if(lang){d.setAttribute('lang',lang);d.setAttribute('dir',lang==='ar'||lang==='he'||lang==='fa'||lang==='ur'?'rtl':'ltr');}
+  // Preset tokens (minimal set) to prevent color flash
+  var P={
+    'd1-scientific-dark':{bg:'oklch(0.14 0.02 150)',fg:'oklch(0.97 0.02 130)',pri:'oklch(0.78 0.18 155)',card:'oklch(0.19 0.03 150)'},
+    'd3-cyan-dark':{bg:'oklch(0.14 0.04 220)',fg:'oklch(0.98 0.01 220)',pri:'oklch(0.78 0.16 200)',card:'oklch(0.19 0.05 220)'},
+    'd4-papyrus':{bg:'oklch(0.22 0.04 55)',fg:'oklch(0.96 0.03 75)',pri:'oklch(0.62 0.14 45)',card:'oklch(0.28 0.05 55)'},
+    'd5-mint-light':{bg:'oklch(0.99 0.005 180)',fg:'oklch(0.2 0.03 180)',pri:'oklch(0.52 0.15 175)',card:'oklch(1 0 0)'},
+    'd6-violet-dark':{bg:'oklch(0.14 0.04 305)',fg:'oklch(0.98 0.01 300)',pri:'oklch(0.72 0.19 305)',card:'oklch(0.19 0.06 305)'}
+  };
+  var id=ls.getItem('site.themeId');
+  var t=null;
+  if(id==='custom'){try{var raw=ls.getItem('site.customTheme.v2');if(raw){var v=JSON.parse(raw);var isL=d.classList.contains('light');var tk=isL?v.light:v.dark;if(tk)t={bg:tk.background,fg:tk.foreground,pri:tk.primary,card:tk.card};}}catch(e){}}
+  else if(id&&P[id]) t=P[id];
+  if(t){var s=d.style;s.setProperty('--background',t.bg);s.setProperty('--foreground',t.fg);s.setProperty('--primary',t.pri);s.setProperty('--card',t.card);}
+}catch(e){}})();`;
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -70,6 +103,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: antiFouc }} />
         <HeadContent />
       </head>
       <body>
