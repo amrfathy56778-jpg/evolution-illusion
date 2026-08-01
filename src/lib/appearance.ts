@@ -49,6 +49,24 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
+    id: "red", name: "أحمر",
+    ...mkTokens(
+      "oklch(0.14 0.03 20)", "oklch(0.98 0.01 20)", "oklch(0.2 0.05 20)", "oklch(0.65 0.24 27)", "oklch(0.32 0.09 20)", "oklch(0.24 0.04 20)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.45 0.22 27 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.03 20), oklch(0.1 0.03 15))",
+      "oklch(0.985 0.005 20)", "oklch(0.18 0.03 20)", "oklch(0.97 0.008 20)", "oklch(0.52 0.23 27)", "oklch(0.92 0.05 20)", "oklch(0.94 0.01 20)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.8 0.15 27 / 0.2), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 20), oklch(0.96 0.012 15))",
+    ),
+  },
+  {
+    id: "blue", name: "أزرق",
+    ...mkTokens(
+      "oklch(0.14 0.04 260)", "oklch(0.98 0.01 250)", "oklch(0.2 0.05 260)", "oklch(0.68 0.19 255)", "oklch(0.32 0.09 255)", "oklch(0.24 0.04 260)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.45 0.2 255 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.04 260), oklch(0.1 0.04 250))",
+      "oklch(0.985 0.005 250)", "oklch(0.18 0.04 260)", "oklch(0.97 0.008 250)", "oklch(0.5 0.2 255)", "oklch(0.92 0.05 255)", "oklch(0.94 0.012 250)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.8 0.14 255 / 0.2), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 250), oklch(0.96 0.012 250))",
+    ),
+  },
+  {
     id: "d1-scientific-dark", name: "نقد علمي داكن",
     ...mkTokens(
       "oklch(0.14 0.02 150)", "oklch(0.97 0.02 130)", "oklch(0.19 0.03 150)", "oklch(0.78 0.18 155)", "oklch(0.32 0.08 150)", "oklch(0.22 0.03 150)",
