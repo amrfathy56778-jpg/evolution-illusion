@@ -21,7 +21,8 @@ export type DesignStyle = { id: string; name: string; description: string; prese
 // distinctive style class (fonts, surfaces, decorative accents, layout tweaks)
 // with a matching color preset that is auto-applied when the design is picked.
 export const STYLES: DesignStyle[] = [
-  { id: "glass",     name: "افتراضي · زجاجي",       description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
+  { id: "glass",     name: "زجاجي (الأصلي)",        description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
+  { id: "dna",       name: "حمض نووي",              description: "خلفية DNA سماوية خلف البطاقات",      preset: "d3-cyan-dark" },
   { id: "d1",        name: "مختبر داكن",            description: "شبكات علمية وإضاءة زمرّدية",         preset: "d1-scientific-dark" },
   { id: "d3",        name: "مجرّة سماوية",          description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
   { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
