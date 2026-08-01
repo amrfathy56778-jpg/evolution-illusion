@@ -35,7 +35,7 @@ const antiFouc = `(function(){try{
   else if(mode==='dark'){d.classList.add('dark');d.classList.remove('light');}
   // Design style
   var style=ls.getItem('site.styleId')||'glass';
-  ['glass','d1','d3','d4','d5','d6'].forEach(function(s){d.classList.remove('style-'+s);});
+  ['glass','dna','d1','d3','d4','d5','d6'].forEach(function(s){d.classList.remove('style-'+s);});
   d.classList.add('style-'+style);
   // FX toggle
   if(ls.getItem('site.fxOff')==='1') d.classList.add('fx-off');
