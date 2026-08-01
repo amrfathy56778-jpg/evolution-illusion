@@ -761,18 +761,20 @@ body > .skiptranslate { display: none !important; }
 /* ================================================================
    Pagination active state — ensure the current page is unmistakable
    ================================================================ */
+/* Only the digits glow — the circle itself stays subtle. */
 .pagination-active,
 button[aria-current="page"] {
-  background: var(--primary) !important;
-  color: oklch(0.12 0.02 246) !important;
-  border: 2px solid color-mix(in oklab, var(--primary) 60%, white) !important;
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent),
-              0 6px 18px color-mix(in oklab, var(--primary) 40%, transparent) !important;
+  background: transparent !important;
+  color: var(--primary) !important;
+  border: 1.5px solid color-mix(in oklab, var(--primary) 55%, transparent) !important;
+  box-shadow: none !important;
   font-weight: 900 !important;
-  transform: scale(1.08);
+  transform: scale(1.06);
+  text-shadow: 0 0 14px var(--primary), 0 0 26px color-mix(in oklab, var(--primary) 70%, transparent),
+               0 0 3px color-mix(in oklab, var(--primary) 85%, transparent) !important;
 }
 .light .pagination-active,
-.light button[aria-current="page"] { color: oklch(0.99 0.005 240) !important; }
+.light button[aria-current="page"] { color: var(--primary) !important; }
 
 /* Non-active page buttons: glow so they stay legible on any background */
 .liquid-glass.pagination-active,
@@ -796,26 +798,44 @@ nav [aria-label="pagination"] .liquid-glass:not(.pagination-active):not([aria-cu
   border: 1.5px solid var(--primary) !important;
   color: var(--primary) !important;
 }
+.fx-off .pagination-active,
+.fx-off button[aria-current="page"] {
+  text-shadow: none !important;
+  border: 2px solid var(--primary) !important;
+  color: var(--primary) !important;
+}
 
 /* ================================================================
-   Style D3 — سماوي داكن with DNA hero background (matches mockup)
+   Style DNA — «حمض نووي»: fixed DNA page backdrop behind all cards
    ================================================================ */
-.style-d3 #hero {
+.style-dna { font-family: "Sora", "Cairo", system-ui, sans-serif; }
+.style-dna body { position: relative; }
+.style-dna body > .ambient-orbs { position: relative; z-index: 1; }
+.style-dna body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
-    radial-gradient(ellipse 500px 400px at 85% 50%, oklch(0.35 0.16 210 / 0.35), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 15% 10%, oklch(0.55 0.2 200 / 0.25), transparent 65%),
     url("/hero-dna-cyan.png");
-  background-repeat: no-repeat;
-  background-position: right center, calc(100% - 8px) center;
-  background-size: auto, 45% auto;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center right;
+  background-size: auto, cover;
+  opacity: 0.55;
 }
 @media (max-width: 640px) {
-  .style-d3 #hero {
-    background-size: auto, 55% auto;
-    background-position: right center, right -20px center;
-    background-blend-mode: normal;
+  .style-dna body::before {
+    background-size: auto, 150% auto;
+    background-position: center, center right;
+    opacity: 0.4;
   }
 }
-.style-d3.light #hero {
-  filter: none;
+.style-dna .liquid-glass, .style-dna .glass, .style-dna .glass-strong, .style-dna .site-header {
+  border: 1px solid oklch(0.7 0.18 200 / 0.4) !important;
+  box-shadow: 0 0 20px oklch(0.7 0.18 200 / 0.2) !important;
 }
-.style-d3 #hero > * { position: relative; z-index: 2; }
+.style-preview-dna {
+  background:
+    radial-gradient(circle at 70% 45%, oklch(0.7 0.2 200 / 0.7), transparent 55%),
+    linear-gradient(135deg, oklch(0.14 0.04 220), oklch(0.1 0.04 210));
+  box-shadow: inset 0 0 14px oklch(0.6 0.2 200 / 0.45);
+}
