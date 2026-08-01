@@ -40,7 +40,7 @@ const mkTokens = (
 
 export const PRESETS: ThemePreset[] = [
   {
-    id: "default", name: "الأخضر الأصلي",
+    id: "default", name: "أخضر (الأصلي)",
     ...mkTokens(
       "oklch(0.14 0.03 246)", "oklch(0.98 0.01 255)", "oklch(0.2 0.04 248)", "oklch(0.8 0.16 185)", "oklch(0.3 0.06 215)", "oklch(0.24 0.03 248)",
       "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
