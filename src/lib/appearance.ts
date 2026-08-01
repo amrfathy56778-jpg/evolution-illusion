@@ -21,7 +21,8 @@ export type DesignStyle = { id: string; name: string; description: string; prese
 // distinctive style class (fonts, surfaces, decorative accents, layout tweaks)
 // with a matching color preset that is auto-applied when the design is picked.
 export const STYLES: DesignStyle[] = [
-  { id: "glass",     name: "افتراضي · زجاجي",       description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
+  { id: "glass",     name: "زجاجي (الأصلي)",        description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
+  { id: "dna",       name: "حمض نووي",              description: "خلفية DNA سماوية خلف البطاقات",      preset: "d3-cyan-dark" },
   { id: "d1",        name: "مختبر داكن",            description: "شبكات علمية وإضاءة زمرّدية",         preset: "d1-scientific-dark" },
   { id: "d3",        name: "مجرّة سماوية",          description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
   { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
@@ -39,12 +40,30 @@ const mkTokens = (
 
 export const PRESETS: ThemePreset[] = [
   {
-    id: "default", name: "الأخضر الأصلي",
+    id: "default", name: "أخضر (الأصلي)",
     ...mkTokens(
       "oklch(0.14 0.03 246)", "oklch(0.98 0.01 255)", "oklch(0.2 0.04 248)", "oklch(0.8 0.16 185)", "oklch(0.3 0.06 215)", "oklch(0.24 0.03 248)",
       "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%), linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255))",
       "oklch(0.985 0.005 240)", "oklch(0.18 0.03 246)", "oklch(0.97 0.008 240)", "oklch(0.55 0.16 185)", "oklch(0.92 0.04 215)", "oklch(0.94 0.01 240)",
       "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.78 0.12 185 / 0.18), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 240), oklch(0.96 0.01 220))",
+    ),
+  },
+  {
+    id: "red", name: "أحمر",
+    ...mkTokens(
+      "oklch(0.14 0.03 20)", "oklch(0.98 0.01 20)", "oklch(0.2 0.05 20)", "oklch(0.65 0.24 27)", "oklch(0.32 0.09 20)", "oklch(0.24 0.04 20)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.45 0.22 27 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.03 20), oklch(0.1 0.03 15))",
+      "oklch(0.985 0.005 20)", "oklch(0.18 0.03 20)", "oklch(0.97 0.008 20)", "oklch(0.52 0.23 27)", "oklch(0.92 0.05 20)", "oklch(0.94 0.01 20)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.8 0.15 27 / 0.2), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 20), oklch(0.96 0.012 15))",
+    ),
+  },
+  {
+    id: "blue", name: "أزرق",
+    ...mkTokens(
+      "oklch(0.14 0.04 260)", "oklch(0.98 0.01 250)", "oklch(0.2 0.05 260)", "oklch(0.68 0.19 255)", "oklch(0.32 0.09 255)", "oklch(0.24 0.04 260)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.45 0.2 255 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.14 0.04 260), oklch(0.1 0.04 250))",
+      "oklch(0.985 0.005 250)", "oklch(0.18 0.04 260)", "oklch(0.97 0.008 250)", "oklch(0.5 0.2 255)", "oklch(0.92 0.05 255)", "oklch(0.94 0.012 250)",
+      "radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.8 0.14 255 / 0.2), transparent 58%), linear-gradient(165deg, oklch(0.985 0.005 250), oklch(0.96 0.012 250))",
     ),
   },
   {
