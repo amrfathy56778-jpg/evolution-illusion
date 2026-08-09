@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Send, Loader2, ShieldCheck } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
+import { cleanAiText } from "@/lib/aiText";
 
 export const Route = createFileRoute("/_app/critic")({
   component: CriticPage,
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/_app/critic")({
   }),
 });
 
-type Msg = { role: "user" | "assistant"; content: string; verification?: string; verifying?: boolean };
+type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/evolution-critic`;
 
@@ -100,51 +101,17 @@ function CriticPage() {
     } catch (e: any) {
       toast.error("فشل الاتصال بالذكاء الاصطناعي");
     } finally { setLoading(false); }
-
-    // مراجعة ذاتية تلقائية
-    if (acc.trim()) {
-      setMessages((prev) => prev.map((m, i) =>
-        i === prev.length - 1 && m.role === "assistant" ? { ...m, verifying: true } : m
-      ));
-      try {
-        const vResp = await fetch(CHAT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ verify: acc, lang: getSiteLang() }),
-        });
-        if (vResp.ok) {
-          const vData = await vResp.json();
-          const verification = (vData?.verification ?? "").trim();
-          setMessages((prev) => prev.map((m, i) =>
-            i === prev.length - 1 && m.role === "assistant"
-              ? { ...m, verifying: false, verification: verification || "✅ تمت المراجعة — ولا توجد تعقيبات" }
-              : m
-          ));
-        } else {
-          setMessages((prev) => prev.map((m, i) =>
-            i === prev.length - 1 && m.role === "assistant" ? { ...m, verifying: false } : m
-          ));
-        }
-      } catch {
-        setMessages((prev) => prev.map((m, i) =>
-          i === prev.length - 1 && m.role === "assistant" ? { ...m, verifying: false } : m
-        ));
-      }
-    }
   };
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto notranslate" translate="no">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-semibold" style={{ color: "var(--c-critic)" }}>
-          <span className="font-black tracking-wider">AI</span> تحقق علمي تلقائي
+          <span className="font-black tracking-wider">AI</span> نقد علمي فوري
         </div>
         <h1 className="text-3xl font-black text-gradient-emerald">ناقد التطور الذكي</h1>
         <p className="text-xs text-muted-foreground max-w-lg mx-auto">
-          اطرح ادعاء تطورياً وسيُفنّده الذكاء بحدّة علمية، ثم يُراجع نفسه تلقائياً للتحقق من دقته
+          اطرح ادعاءً تطورياً وسيُفنّده الذكاء الاصطناعي بحدّة علمية ووضوح
         </p>
       </div>
 
@@ -167,27 +134,8 @@ function CriticPage() {
                 </div>
               )}
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
-                <ReactMarkdown>{m.content}</ReactMarkdown>
+                <ReactMarkdown>{cleanAiText(m.content)}</ReactMarkdown>
               </div>
-              {m.role === "assistant" && (m.verifying || m.verification) && (
-                <div className="mt-3 pt-3 border-t border-white/10">
-                  {m.verifying ? (
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      مراجع ناقد ثانٍ يدقق الرد…
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold mb-1.5" style={{ color: "var(--c-critic)" }}>
-                        <ShieldCheck className="h-3 w-3" /> مراجعة الناقد الثاني
-                      </div>
-                      <div className="prose prose-sm prose-invert max-w-none text-xs leading-relaxed opacity-90">
-                        <ReactMarkdown>{m.verification!}</ReactMarkdown>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         ))}
