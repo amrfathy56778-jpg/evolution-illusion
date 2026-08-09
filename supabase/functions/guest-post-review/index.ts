@@ -58,7 +58,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
+    const GEMINI_KEYS = [
+      Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
+      Deno.env.get("GEMINI_API_KEY"),
+    ].filter(Boolean) as string[];
+    const GEMINI_KEY = GEMINI_KEYS[0];
+    const fetch = async (input: any, init?: any): Promise<Response> => {
+      const u = String(input);
+      if (u.includes("generativelanguage.googleapis.com") && GEMINI_KEYS.length > 1) {
+        let last: Response | null = null;
+        for (const k of GEMINI_KEYS) {
+          const r = await globalThis.fetch(u.replace(/key=[^&]*/, `key=${k}`), init);
+          if (r.ok) return r;
+          last = r;
+        }
+        return last as Response;
+      }
+      return globalThis.fetch(input as any, init);
+    };
     const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!GEMINI_KEY && !GROQ_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
