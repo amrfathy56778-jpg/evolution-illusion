@@ -3,6 +3,7 @@ import { Search, Sparkles, X, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteLang } from "@/lib/lang";
+import { cleanAiText } from "@/lib/aiText";
 export { getSiteLang } from "@/lib/lang";
 
 type Result = { id: string; title: string; reason?: string };
@@ -116,7 +117,7 @@ function AISearchDialog({ onClose }: { onClose: () => void }) {
           {answer && (
             <div className="glass rounded-2xl p-4 text-sm leading-relaxed">
               <div className="text-[11px] font-bold text-primary mb-1.5">✦ ملخص الذكاء الاصطناعي</div>
-              {answer}
+              {cleanAiText(answer)}
             </div>
           )}
 

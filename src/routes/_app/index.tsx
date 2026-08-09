@@ -156,7 +156,7 @@ function Home() {
               ناقد التطور الذكي
             </h3>
             <p className="text-xs text-muted-foreground">
-              تحقق علمي مزدوج
+              نقد علمي فوري
             </p>
             <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-critic)" }}>
               ابدأ النقاش <ArrowLeft className="h-3 w-3" />
