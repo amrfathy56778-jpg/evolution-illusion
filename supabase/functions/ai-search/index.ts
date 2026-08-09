@@ -25,7 +25,7 @@ Deno.serve(async (req: Request) => {
     const { query, posts, lang } = await req.json();
     const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
     const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
-    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site language is ${langName}. Write the "answer" field ENTIRELY in ${langName}, regardless of the language of the user's query.`;
+    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site language is ${langName}. Write the "answer" field ENTIRELY in ${langName}, regardless of the language of the user's query.` + `\n\nFORMAT RULE: Never begin the "answer" or any line inside it with the characters * or **. Do not use asterisks for emphasis or bullets; write plain prose, and use "-" if a list is truly needed.`;
     const GEMINI_KEYS = [
       Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
       Deno.env.get("GEMINI_API_KEY"),

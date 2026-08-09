@@ -49,7 +49,8 @@ Deno.serve(async (req: Request) => {
     };
     const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
     const langDirective = `\n\nIMPORTANT: Respond ENTIRELY in ${langName}. The site is currently displayed in ${langName} — ignore any other language detected in the user's message.`;
-    const SYS_USE = SYSTEM_PROMPT + langDirective;
+    const NO_STARS = `\n\nFORMAT RULE: Never begin a reply, a line, or a paragraph with the characters * or **. Do not use asterisks for emphasis or bullets at all; write plain flowing prose, and use "-" if a list is truly needed.`;
+    const SYS_USE = SYSTEM_PROMPT + langDirective + NO_STARS;
     const VERIFY_USE = VERIFY_PROMPT + langDirective;
     // مفاتيح Google بالترتيب: المفتاح الأساسي ثم الاحتياطي
     const GEMINI_KEYS = [
