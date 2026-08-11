@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Sparkles, X, Send, Loader2, BookOpenCheck, Languages } from "lucide-react";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
-import { cleanAiText } from "@/lib/aiText";
+import { stripStars } from "@/lib/aiText";
+import { usePostIndex, linkifyAi } from "@/lib/aiLinks";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -156,6 +157,7 @@ function AIBubble({ m, loading }: { m: Msg; loading: boolean }) {
   const [translated, setTranslated] = useState<string | null>(null);
   const [tLoading, setTLoading] = useState(false);
   const isUser = m.role === "user";
+  const index = usePostIndex();
 
   const translate = async () => {
     if (tLoading) return;
@@ -174,7 +176,7 @@ function AIBubble({ m, loading }: { m: Msg; loading: boolean }) {
     <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
       isUser ? "bg-primary/20 border border-primary/40" : "glass"
     }`}>
-      <div>{cleanAiText(m.content) || (loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null)}</div>
+      <div>{m.content ? linkifyAi(stripStars(m.content), index) : (loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null)}</div>
       {!isUser && m.content && (
         <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center gap-2">
           <button onClick={translate} disabled={tLoading}
