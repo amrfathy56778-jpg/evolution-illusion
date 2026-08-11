@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
 import { cleanAiText } from "@/lib/aiText";
+import { usePostIndex, toMarkdownLinks } from "@/lib/aiLinks";
 
 export const Route = createFileRoute("/_app/critic")({
   component: CriticPage,
@@ -22,6 +23,7 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/evolution-cr
 
 function CriticPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
+  const postIndex = usePostIndex();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -134,7 +136,21 @@ function CriticPage() {
                 </div>
               )}
               <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
-                <ReactMarkdown>{cleanAiText(m.content)}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    a: ({ href, children }) =>
+                      href?.startsWith("/post/") ? (
+                        <Link to="/post/$id" params={{ id: href.replace("/post/", "") }}
+                          className="font-bold text-primary underline decoration-primary/50">
+                          {children}
+                        </Link>
+                      ) : (
+                        <a href={href} target="_blank" rel="noreferrer">{children}</a>
+                      ),
+                  }}
+                >
+                  {toMarkdownLinks(cleanAiText(m.content), postIndex)}
+                </ReactMarkdown>
               </div>
             </div>
           </div>

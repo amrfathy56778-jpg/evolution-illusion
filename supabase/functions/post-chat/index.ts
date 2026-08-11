@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const { article, mode, messages, lang } = await req.json();
     const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
     const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
-    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site is currently displayed in ${langName}. Respond ENTIRELY in ${langName}, regardless of the language of the article or user's message.` + `\n\nFORMAT RULE: Never begin a reply, a line, or a paragraph with the characters * or **. Do not use asterisks for emphasis or bullets; write plain prose, and use "-" if a list is truly needed.`;
+    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site is currently displayed in ${langName}. Respond ENTIRELY in ${langName}, regardless of the language of the article or user's message.` + `\n\nFORMAT RULE: Never use the characters * or ** anywhere in your reply — not at the start of a line, not for emphasis, not for bullets. Write plain prose, and use "-" if a list is truly needed.` + `\n\nSOURCES RULE: لا تكتب قائمة مصادر ولا قسم "المصادر" في نهاية الرد. استشهد فقط داخل النص بصيغة [مقال: العنوان] بالعنوان الحرفي للمقال كما ورد في المقالات المرفقة.`;
     const GEMINI_KEYS = [
       Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
       Deno.env.get("GEMINI_API_KEY"),
