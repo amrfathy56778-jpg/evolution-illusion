@@ -8,6 +8,7 @@ import { RichEditor, RichContent } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
 import { PostAIButton } from "@/components/PostAIChat";
 import { RelatedPosts } from "@/components/RelatedPosts";
+import { FlipBook, countImages } from "@/components/FlipBook";
 import { thumb } from "@/lib/img";
 
 export const Route = createFileRoute("/_app/post/$id")({
@@ -69,7 +70,9 @@ function PostPage() {
 
   const save = async () => {
     const plain = eContent.replace(/<[^>]+>/g, "").trim();
-    if (eTitle.trim().length < 3 || plain.length < 20) { toast.error("العنوان أو المحتوى قصير"); return; }
+    const hasMedia = /<(img|video|iframe)\b/i.test(eContent);
+    if (eTitle.trim().length < 3) { toast.error("العنوان قصير"); return; }
+    if (!hasMedia && plain.length < 20) { toast.error("المحتوى قصير"); return; }
     setBusy(true);
     const { data, error } = await supabase.from("posts")
       .update({ title: eTitle.trim(), content: eContent, cover_image_url: eCover, updated_at: new Date().toISOString() })
@@ -190,9 +193,13 @@ function PostPage() {
               onError={(e) => { const img = e.currentTarget; if (img.src !== p.cover_image_url) img.src = p.cover_image_url; }}
               className="w-full max-h-96 object-cover rounded-3xl bg-white/5"/>
           )}
-          <div className="glass rounded-3xl p-5 sm:p-7">
-            <RichContent html={p.content}/>
-          </div>
+          {countImages(p.content) > 1 ? (
+            <FlipBook html={p.content} title={p.title}/>
+          ) : (
+            <div className="glass rounded-3xl p-5 sm:p-7">
+              <RichContent html={p.content}/>
+            </div>
+          )}
           <RelatedPosts postId={p.id} category={p.category} title={p.title} />
         </>
       )}

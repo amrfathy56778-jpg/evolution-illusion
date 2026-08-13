@@ -82,7 +82,12 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     const plain = c.replace(/<[^>]+>/g, "").trim();
-    if (t.trim().length < 3 || plain.length < 20) { toast.error("العنوان والمحتوى قصيران"); return; }
+    // Images/videos alone are a valid post (turned into a page-flip book on read).
+    const hasMedia = /<(img|video|iframe)\b/i.test(c);
+    if (!hasMedia && (t.trim().length < 3 || plain.length < 20)) { toast.error("أضف نصاً أطول أو صورة على الأقل"); return; }
+    const finalTitle = t.trim().length >= 3
+      ? t.trim()
+      : `صور · ${new Date().toLocaleDateString("ar")}`;
     const finalName = authorName.trim() || "مشرف";
     setBusy(true);
     // Persist chosen name to the profile so it auto-fills next time
@@ -90,7 +95,7 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
       await supabase.from("profiles").update({ display_name: authorName.trim() }).eq("id", user!.id);
     }
     const { data: created, error } = await supabase.from("posts").insert({
-      title: t.trim(), content: c.trim(), category, cover_image_url: cover,
+      title: finalTitle, content: c.trim(), category, cover_image_url: cover,
       author_id: user!.id, author_name: finalName,
     }).select("id").single();
     setBusy(false);
