@@ -7,16 +7,16 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
-import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
+import { BubbleMenu } from "@tiptap/react/menus";
 import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Code, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
+  List, ListOrdered, Quote, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
   AlignRight, AlignCenter, AlignLeft, Undo2, Redo2, Minus, Palette,
-  Video, Upload, Minimize2,
+  Video, Upload, Minimize2, Type, PlusCircle, ChevronDown,
 } from "lucide-react";
-import { useRef, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { uploadToBucket } from "@/lib/upload";
 import { toast } from "sonner";
 
 // Resizable image: stores width as percentage so it survives serialization
@@ -48,14 +48,12 @@ const VideoNode = Node.create({
   },
 });
 
-const COLORS = [
-  "#ffffff", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#94a3b8",
-];
+const COLORS = ["#ffffff", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#94a3b8"];
 
 function Btn({ onClick, active, disabled, title, children }:
   { onClick: () => void; active?: boolean; disabled?: boolean; title: string; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} title={title}
+    <button type="button" onClick={onClick} disabled={disabled} title={title} aria-label={title}
       className={`p-1.5 rounded-md text-xs transition disabled:opacity-30 disabled:cursor-not-allowed
         ${active ? "bg-primary/30 text-primary" : "hover:bg-white/10 text-foreground/80"}`}>
       {children}
@@ -63,310 +61,196 @@ function Btn({ onClick, active, disabled, title, children }:
   );
 }
 
-function useEditorActions(editor: Editor) {
-  const setLink = () => {
+/** Small grouped dropdown — plain absolute positioning, no floating-ui instances. */
+function Group({ label, icon, open, onToggle, children }:
+  { label: string; icon: React.ReactNode; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <button type="button" onClick={onToggle}
+        className={`px-2 py-1.5 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition
+          ${open ? "bg-primary/25 text-primary" : "hover:bg-white/10 text-foreground/80"}`}>
+        {icon}<span className="hidden sm:inline">{label}</span>
+        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`}/>
+      </button>
+      {open && <div className="rt-pop" dir="rtl">{children}</div>}
+    </div>
+  );
+}
+
+/** Shared media/link helpers for an editor instance. */
+function useMedia(editor: Editor) {
+  const insertImage = useCallback((url: string) => {
+    editor.chain().focus().setImage({ src: url }).createParagraphNear().run();
+  }, [editor]);
+
+  const insertVideo = useCallback((url: string) => {
+    editor.chain().focus()
+      .insertContent(`<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`).run();
+  }, [editor]);
+
+  const pickImages = useCallback(async (files: File[]) => {
+    const ok = files.filter(f => f.size <= 10 * 1024 * 1024);
+    if (ok.length < files.length) toast.error("تم تجاهل صور تجاوزت 10MB");
+    if (ok.length > 1) toast.info(`جارٍ رفع ${ok.length} صور…`);
+    for (const f of ok) {
+      try { insertImage(await uploadToBucket(f)); }
+      catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
+    }
+    if (ok.length > 1) toast.success("تم رفع جميع الصور");
+  }, [insertImage]);
+
+  const pickVideo = useCallback(async (f: File) => {
+    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
+    try { insertVideo(await uploadToBucket(f)); }
+    catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
+  }, [insertVideo]);
+
+  const setLink = useCallback(() => {
     const prev = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("أدخل الرابط (اتركه فارغاً للإزالة):", prev ?? "https://");
     if (url === null) return;
     if (url === "") { editor.chain().focus().extendMarkRange("link").unsetLink().run(); return; }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url, target: "_blank" }).run();
-  };
+  }, [editor]);
 
-  const addImageUrl = () => {
+  const addImageUrl = useCallback(() => {
     const url = window.prompt("رابط الصورة:");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
-  };
+    if (url) insertImage(url);
+  }, [insertImage, editor]);
 
-  const addYoutube = () => {
+  const addVideoUrl = useCallback(() => {
+    const url = window.prompt("رابط فيديو (mp4):");
+    if (url) insertVideo(url);
+  }, [insertVideo]);
+
+  const addYoutube = useCallback(() => {
     const url = window.prompt("رابط فيديو يوتيوب:");
     if (url) editor.commands.setYoutubeVideo({ src: url, width: 560, height: 315 });
-  };
+  }, [editor]);
 
-  const uploadToBucket = async (f: File) => {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("post-media").upload(path, f, {
-      contentType: f.type, upsert: false,
-    });
-    if (error) throw error;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return data.publicUrl;
-  };
-
-  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); return; }
-    try {
-      const url = await uploadToBucket(f);
-      editor.chain().focus().setImage({ src: url }).run();
-    } catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
-  };
-
-  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
-    try {
-      const url = await uploadToBucket(f);
-      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
-      editor.chain().focus().insertContent(html).run();
-    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
-  };
-
-  const setMediaWidth = (w: string | null) => {
+  const setMediaWidth = useCallback((w: string | null) => {
     if (editor.isActive("image")) editor.chain().focus().updateAttributes("image", { width: w }).run();
     else if (editor.isActive("video")) editor.chain().focus().updateAttributes("video", { width: w }).run();
-    else toast.info("اختر صورة أو فيديو أولاً");
-  };
-  return { setLink, addImageUrl, addYoutube, setMediaWidth, uploadToBucket };
+  }, [editor]);
+
+  return { pickImages, pickVideo, setLink, addImageUrl, addVideoUrl, addYoutube, setMediaWidth };
 }
 
-/** Floating bubble toolbar — appears on text selection. */
-function FloatingToolbar({ editor }: { editor: Editor }) {
-  const { setLink, addImageUrl, addYoutube } = useEditorActions(editor);
+/** Single compact toolbar: essentials inline + two grouped dropdowns. */
+function Toolbar({ editor }: { editor: Editor }) {
+  const m = useMedia(editor);
+  const [open, setOpen] = useState<null | "text" | "insert">(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const vidRef = useRef<HTMLInputElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
-  const uploadToBucket = async (f: File) => {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type, upsert: false });
-    if (error) throw error;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return data.publicUrl;
-  };
-  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []); e.target.value = "";
-    if (files.length === 0) return;
-    for (const f of files) {
-      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: تجاوز 10MB`); continue; }
-      try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); }
-      catch (err: any) { toast.error("تعذّر الرفع: " + err.message); }
-    }
-  };
-  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
-    try {
-      const url = await uploadToBucket(f);
-      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
-      editor.chain().focus().insertContent(html).run();
-    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
-  };
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as any)) setOpen(null);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [open]);
+
+  const toggle = (k: "text" | "insert") => setOpen(prev => (prev === k ? null : k));
+
   return (
-    <BubbleMenu
-      editor={editor}
-      options={{ placement: "top", offset: 56 }}
-      shouldShow={({ editor, from, to }) => {
-        // show only when there is a non-empty text selection
-        if (from === to) return false;
-        if (editor.isActive("image") || editor.isActive("video")) return false;
-        return editor.isEditable;
-      }}
-    >
-      <div dir="rtl" style={{ zIndex: 2147483647, position: "relative" }} className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-10 max-w-[95vw]">
-        <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
-        <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
-        <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-3.5 w-3.5"/></Btn>
-        <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-3.5 w-3.5"/></Btn>
-        <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-3.5 w-3.5"/></Btn>
-        <Btn title="مشطوب" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-3.5 w-3.5"/></Btn>
-        <Btn title="كود" active={editor.isActive("code")} onClick={() => editor.chain().focus().toggleCode().run()}><Code className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-3.5 w-3.5"/></Btn>
-        <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-3.5 w-3.5"/></Btn>
-        <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-3.5 w-3.5"/></Btn>
-        <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-3.5 w-3.5"/></Btn>
-        <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <Btn title="رابط" active={editor.isActive("link")} onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
-        <Btn title="إزالة الرابط" disabled={!editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()}><Link2Off className="h-3.5 w-3.5"/></Btn>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <Btn title="رفع صور" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
-        <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
-        <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
-        <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onUploadImage}/>
-        <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
-        <div className="w-px h-5 bg-white/15 mx-1"/>
-        <div className="flex items-center gap-0.5">
-          <Palette className="h-3.5 w-3.5 text-muted-foreground mx-0.5"/>
+    <div ref={wrapRef} dir="rtl"
+      className="sticky top-0 z-20 flex items-center gap-1 p-2 border-b border-white/10 bg-background/90 backdrop-blur-md rounded-t-xl">
+      <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4"/></Btn>
+      <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4"/></Btn>
+      <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-4 w-4"/></Btn>
+
+      <Group label="نص" icon={<Type className="h-3.5 w-3.5"/>} open={open === "text"} onToggle={() => toggle("text")}>
+        <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-4 w-4"/></Btn>
+        <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-4 w-4"/></Btn>
+        <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-4 w-4"/></Btn>
+        <Btn title="مشطوب" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-4 w-4"/></Btn>
+        <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-4 w-4"/></Btn>
+        <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-4 w-4"/></Btn>
+        <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-4 w-4"/></Btn>
+        <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-4 w-4"/></Btn>
+        <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-4 w-4"/></Btn>
+        <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-4 w-4"/></Btn>
+        <Btn title="فاصل أفقي" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="h-4 w-4"/></Btn>
+        <div className="flex items-center gap-1 w-full pt-1 border-t border-white/10 mt-1">
+          <Palette className="h-3.5 w-3.5 text-muted-foreground"/>
           {COLORS.map(c => (
             <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
-              className="w-3.5 h-3.5 rounded-full border border-white/20 hover:scale-125 transition" style={{ background: c }}/>
+              className="w-4 h-4 rounded-full border border-white/20 hover:scale-125 transition" style={{ background: c }}/>
           ))}
           <button type="button" title="إزالة اللون" onClick={() => editor.chain().focus().unsetColor().run()}
             className="text-[10px] px-1 text-muted-foreground hover:text-foreground">×</button>
         </div>
+      </Group>
+
+      <Group label="إدراج" icon={<PlusCircle className="h-3.5 w-3.5"/>} open={open === "insert"} onToggle={() => toggle("insert")}>
+        <Btn title="رفع صور من الجهاز" onClick={() => imgRef.current?.click()}><Upload className="h-4 w-4"/></Btn>
+        <Btn title="صورة من رابط" onClick={m.addImageUrl}><ImageIcon className="h-4 w-4"/></Btn>
+        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-4 w-4"/></Btn>
+        <Btn title="فيديو من رابط" onClick={m.addVideoUrl}><Video className="h-4 w-4 opacity-60"/></Btn>
+        <Btn title="فيديو يوتيوب" onClick={m.addYoutube}><YtIcon className="h-4 w-4"/></Btn>
+        <Btn title="رابط" active={editor.isActive("link")} onClick={m.setLink}><Link2 className="h-4 w-4"/></Btn>
+        <Btn title="إزالة الرابط" disabled={!editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()}><Link2Off className="h-4 w-4"/></Btn>
+      </Group>
+
+      <div className="ms-auto flex items-center gap-1">
+        <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()}><Undo2 className="h-4 w-4"/></Btn>
+        <Btn title="إعادة" onClick={() => editor.chain().focus().redo().run()}><Redo2 className="h-4 w-4"/></Btn>
       </div>
-    </BubbleMenu>
+
+      <input ref={imgRef} type="file" accept="image/*" multiple className="hidden"
+        onChange={e => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; if (fs.length) void m.pickImages(fs); }}/>
+      <input ref={vidRef} type="file" accept="video/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void m.pickVideo(f); }}/>
+    </div>
   );
 }
 
-/** Floating bubble for image/video selection — resize controls. */
-function MediaBubble({ editor }: { editor: Editor }) {
-  const { setMediaWidth } = useEditorActions(editor);
+/** One contextual bubble: formatting for text selection, size slider for media. */
+function ContextBubble({ editor }: { editor: Editor }) {
+  const m = useMedia(editor);
+  const isMedia = editor.isActive("image") || editor.isActive("video");
   return (
     <BubbleMenu
       editor={editor}
-      options={{ placement: "top", offset: 56 }}
-      shouldShow={({ editor }) => editor.isActive("image") || editor.isActive("video")}
+      options={{ placement: "top", offset: 44 }}
+      shouldShow={({ editor, from, to }) =>
+        editor.isEditable && (editor.isActive("image") || editor.isActive("video") || from !== to)}
     >
-      <div dir="rtl" style={{ zIndex: 99999 }} className="relative z-[99999] flex items-center gap-2 p-2 rounded-xl border border-white/20 bg-background/98 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] -translate-y-10 max-w-[95vw]">
-        <span className="text-[10px] text-muted-foreground px-1 shrink-0">حجم الوسائط</span>
-        <input
-          type="range" min={10} max={100} step={1}
-          defaultValue={(() => {
-            const raw = (editor.getAttributes(editor.isActive("image") ? "image" : "video")?.width as string | null) ?? "";
-            const m = /^(\d+)%$/.exec(raw ?? ""); return m ? Number(m[1]) : 100;
-          })()}
-          onChange={(e) => setMediaWidth(`${e.target.value}%`)}
-          className="accent-primary w-40 max-w-[45vw]"
-        />
-        <Btn title="إعادة للحجم الأصلي" onClick={() => setMediaWidth(null)}><Minimize2 className="h-3.5 w-3.5"/></Btn>
+      <div dir="rtl" style={{ zIndex: 2147483647, position: "relative" }}
+        className="flex items-center gap-1 p-1.5 rounded-2xl border border-white/20 bg-background/95 backdrop-blur-md shadow-[0_18px_50px_-18px_rgba(0,0,0,0.9)] max-w-[92vw]">
+        {isMedia ? (
+          <>
+            <span className="text-[10px] text-muted-foreground px-1 shrink-0">الحجم</span>
+            <input type="range" min={10} max={100} step={1}
+              defaultValue={(() => {
+                const raw = (editor.getAttributes(editor.isActive("image") ? "image" : "video")?.width as string | null) ?? "";
+                const mm = /^(\d+)%$/.exec(raw ?? ""); return mm ? Number(mm[1]) : 100;
+              })()}
+              onChange={e => m.setMediaWidth(`${e.target.value}%`)}
+              className="accent-primary w-36 max-w-[42vw]"/>
+            <Btn title="الحجم الأصلي" onClick={() => m.setMediaWidth(null)}><Minimize2 className="h-4 w-4"/></Btn>
+          </>
+        ) : (
+          <>
+            <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4"/></Btn>
+            <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4"/></Btn>
+            <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-4 w-4"/></Btn>
+            <Btn title="عنوان" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-4 w-4"/></Btn>
+            <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-4 w-4"/></Btn>
+            <Btn title="رابط" active={editor.isActive("link")} onClick={m.setLink}><Link2 className="h-4 w-4"/></Btn>
+          </>
+        )}
       </div>
     </BubbleMenu>
-  );
-}
-
-/** FloatingMenu — appears at cursor on an empty line for quick media/link insert. */
-function EmptyLineMenu({ editor }: { editor: Editor }) {
-  const { setLink, addImageUrl, addYoutube } = useEditorActions(editor);
-  const imgRef = useRef<HTMLInputElement>(null);
-  const vidRef = useRef<HTMLInputElement>(null);
-  const uploadToBucket = async (f: File) => {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type, upsert: false });
-    if (error) throw error;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return data.publicUrl;
-  };
-  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); return; }
-    try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); }
-    catch (err: any) { toast.error("تعذّر الرفع: " + err.message); }
-  };
-  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
-    try {
-      const url = await uploadToBucket(f);
-      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
-      editor.chain().focus().insertContent(html).run();
-    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
-  };
-  return (
-    <FloatingMenu editor={editor} options={{ placement: "right-start", offset: 8 }}>
-      <div dir="rtl" className="flex items-center gap-0.5 p-1 rounded-full border border-white/20 bg-background/95 backdrop-blur-xl shadow-lg">
-        <Btn title="رفع صورة" onClick={() => imgRef.current?.click()}><ImageIcon className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
-        <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رابط صورة" onClick={addImageUrl}><Upload className="h-3.5 w-3.5"/></Btn>
-        <Btn title="رابط" onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
-        <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={onUploadImage}/>
-        <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
-      </div>
-    </FloatingMenu>
-  );
-}
-
-/** Compact persistent insert bar — actions that don't require a selection. */
-function InsertBar({ editor }: { editor: Editor }) {
-  const { addImageUrl, addYoutube, setLink } = useEditorActions(editor);
-  const imgRef = useRef<HTMLInputElement>(null);
-  const vidRef = useRef<HTMLInputElement>(null);
-
-  const uploadToBucket = async (f: File) => {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("post-media").upload(path, f, { contentType: f.type, upsert: false });
-    if (error) throw error;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return data.publicUrl;
-  };
-  const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []); e.target.value = "";
-    if (files.length === 0) return;
-    const big = files.filter(f => f.size > 10 * 1024 * 1024);
-    if (big.length) toast.error(`${big.length} صورة تجاوزت 10MB وتم تجاهلها`);
-    const ok = files.filter(f => f.size <= 10 * 1024 * 1024);
-    if (ok.length > 1) toast.info(`جارٍ رفع ${ok.length} صور…`);
-    for (const f of ok) {
-      try { const url = await uploadToBucket(f); editor.chain().focus().setImage({ src: url }).run(); editor.chain().focus().createParagraphNear().run(); }
-      catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
-    }
-    if (ok.length > 1) toast.success("تم رفع جميع الصور");
-  };
-  const onUploadVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; e.target.value = "";
-    if (!f) return;
-    if (f.size > 25 * 1024 * 1024) { toast.error("حجم الفيديو الأقصى 25MB"); return; }
-    try {
-      const url = await uploadToBucket(f);
-      const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
-      editor.chain().focus().insertContent(html).run();
-    } catch (err: any) { toast.error("تعذّر رفع الفيديو: " + err.message); }
-  };
-
-  return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 p-2 border-b border-white/10 bg-background/85 backdrop-blur-xl rounded-t-xl">
-      <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5"/></Btn>
-      <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5"/></Btn>
-      <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-3.5 w-3.5"/></Btn>
-      <div className="w-px h-5 bg-white/10 mx-1"/>
-      <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-3.5 w-3.5"/></Btn>
-      <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-3.5 w-3.5"/></Btn>
-      <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-3.5 w-3.5"/></Btn>
-      <Btn title="مشطوب" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-3.5 w-3.5"/></Btn>
-      <div className="w-px h-5 bg-white/10 mx-1"/>
-      <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-3.5 w-3.5"/></Btn>
-      <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-3.5 w-3.5"/></Btn>
-      <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-3.5 w-3.5"/></Btn>
-      <Btn title="رابط" active={editor.isActive("link")} onClick={setLink}><Link2 className="h-3.5 w-3.5"/></Btn>
-      <div className="w-px h-5 bg-white/10 mx-1"/>
-      <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-3.5 w-3.5"/></Btn>
-      <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-3.5 w-3.5"/></Btn>
-      <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-3.5 w-3.5"/></Btn>
-      <div className="w-px h-5 bg-white/10 mx-1"/>
-      <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="h-3.5 w-3.5"/></Btn>
-      <Btn title="إعادة" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="h-3.5 w-3.5"/></Btn>
-      <div className="w-px h-5 bg-white/10 mx-1"/>
-      <Btn title="فاصل أفقي" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="h-3.5 w-3.5"/></Btn>
-      <Btn title="صورة من رابط" onClick={addImageUrl}><ImageIcon className="h-3.5 w-3.5"/></Btn>
-      <Btn title="رفع صور (متعدد)" onClick={() => imgRef.current?.click()}><Upload className="h-3.5 w-3.5"/></Btn>
-      <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-3.5 w-3.5"/></Btn>
-      <Btn title="فيديو يوتيوب" onClick={addYoutube}><YtIcon className="h-3.5 w-3.5"/></Btn>
-      <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onUploadImage}/>
-      <input ref={vidRef} type="file" accept="video/*" className="hidden" onChange={onUploadVideo}/>
-    </div>
   );
 }
 
 export function RichEditor({ value, onChange, placeholder }:
   { value: string; onChange: (html: string) => void; placeholder?: string }) {
-  // Upload helper used by paste/drop interception
-  const uploadFile = async (f: File): Promise<string> => {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("post-media").upload(path, f, {
-      contentType: f.type, upsert: false,
-    });
-    if (error) throw error;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return data.publicUrl;
-  };
-
-  // Plugin: intercept pasted/dropped images so they upload to storage instead of becoming blob: URLs
+  // Plugin: intercept pasted/dropped media so files upload to storage instead of blob: URLs
   const PasteUploadPlugin = () =>
     new Plugin({
       props: {
@@ -378,7 +262,7 @@ export function RichEditor({ value, onChange, placeholder }:
             for (const f of files) {
               if (f.size > 10 * 1024 * 1024) { toast.error("حجم الصورة الأقصى 10MB"); continue; }
               try {
-                const url = await uploadFile(f);
+                const url = await uploadToBucket(f);
                 const node = view.state.schema.nodes.image.create({ src: url });
                 view.dispatch(view.state.tr.replaceSelectionWith(node));
               } catch (err: any) { toast.error("تعذّر رفع الصورة: " + err.message); }
@@ -387,7 +271,8 @@ export function RichEditor({ value, onChange, placeholder }:
           return true;
         },
         handleDrop(view, event) {
-          const files = Array.from((event as DragEvent).dataTransfer?.files ?? []).filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+          const files = Array.from((event as DragEvent).dataTransfer?.files ?? [])
+            .filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
           if (files.length === 0) return false;
           event.preventDefault();
           (async () => {
@@ -396,12 +281,10 @@ export function RichEditor({ value, onChange, placeholder }:
               const max = isVideo ? 25 : 10;
               if (f.size > max * 1024 * 1024) { toast.error(`الحجم الأقصى ${max}MB`); continue; }
               try {
-                const url = await uploadFile(f);
+                const url = await uploadToBucket(f);
                 if (isVideo) {
-                  const html = `<video src="${url}" controls class="rounded-xl my-3 mx-auto max-w-full"></video><p></p>`;
-                  view.dispatch(view.state.tr.insertText("")); // ensure cursor
-                  (view as any).pasteHTML?.(html);
-                  // Fallback: use editor command via ref later
+                  const node = view.state.schema.nodes.video?.create({ src: url });
+                  if (node) view.dispatch(view.state.tr.replaceSelectionWith(node));
                 } else {
                   const node = view.state.schema.nodes.image.create({ src: url });
                   view.dispatch(view.state.tr.replaceSelectionWith(node));
@@ -456,10 +339,8 @@ export function RichEditor({ value, onChange, placeholder }:
 
   return (
     <div className="rounded-xl overflow-hidden border border-white/10 bg-background/40">
-      <InsertBar editor={editor}/>
-      <FloatingToolbar editor={editor}/>
-      <MediaBubble editor={editor}/>
-      <EmptyLineMenu editor={editor}/>
+      <Toolbar editor={editor}/>
+      <ContextBubble editor={editor}/>
       <EditorContent editor={editor}/>
     </div>
   );
