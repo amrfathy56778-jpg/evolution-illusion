@@ -62,7 +62,13 @@ function GuestPost() {
     const finalForm = anonymous
       ? { ...form, guest_name: "مجهول", guest_email: "anonymous@example.com" }
       : form;
-    const parsed = schema.safeParse({ ...finalForm, content: plain.length >= 20 ? form.content : "" });
+    // A post made of images only is allowed too.
+    const hasMedia = /<(img|video|iframe)\b/i.test(form.content);
+    const contentOk = plain.length >= 20 || hasMedia;
+    const parsed = schema.safeParse({
+      ...finalForm,
+      content: contentOk ? (plain.length >= 20 ? form.content : form.content + " ".repeat(20)) : "",
+    });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setLoading(true);
 
