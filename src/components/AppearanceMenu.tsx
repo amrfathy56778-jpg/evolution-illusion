@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Palette, X, Sparkles, Check, Trash2, Loader2, Eye, EyeOff, Wand2, Layers } from "lucide-react";
+import { Palette, X, Check, Trash2, Eye, EyeOff, Layers } from "lucide-react";
 import {
   PRESETS, STYLES, setThemePreset, setCustomTheme, getThemeId, getFxOff, setFxOff,
   applyVariant, setDesignStyle, getDesignStyle, type ThemeVariant, type ThemeTokens,
@@ -40,8 +40,6 @@ function AppearanceDialog({ onClose }: { onClose: () => void }) {
   const [styleId, setStyleIdState] = useState<string>(getDesignStyle());
   const [fxOff, setFxOffState] = useState<boolean>(getFxOff());
   const [saved, setSaved] = useState<SavedTheme[]>([]);
-  const [prompt, setPrompt] = useState("");
-  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -60,37 +58,6 @@ function AppearanceDialog({ onClose }: { onClose: () => void }) {
   const pickSaved = (t: SavedTheme) => { setCustomTheme(t.variant); setThemeIdState("custom"); };
   const pickStyle = (id: string) => { setDesignStyle(id); setStyleIdState(id); };
   const toggleFx = () => { const v = !fxOff; setFxOff(v); setFxOffState(v); };
-
-  const generate = async () => {
-    if (!prompt.trim() || generating) return;
-    if (!user) { toast.error("سجّل الدخول أولاً لحفظ التصميم"); return; }
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-theme", { body: { prompt } });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      // Accept new shape { name, dark, light } or legacy { name, tokens }
-      const dark = data.dark ?? data.tokens;
-      const light = data.light ?? data.tokens ?? dark;
-      if (!dark) throw new Error("استجابة غير مكتملة");
-      const variant: ThemeVariant = { dark, light };
-      const name = String(data.name ?? "تصميم مخصّص").slice(0, 60);
-      applyVariant(variant);
-      const { data: row, error: insErr } = await supabase.from("user_themes")
-        .insert([{ user_id: user.id, name, tokens: variant as unknown as any }])
-        .select("id, name, tokens").single();
-      if (insErr) throw insErr;
-      setSaved(s => [normalize(row as SavedRow), ...s]);
-      setCustomTheme(variant);
-      setThemeIdState("custom");
-      setPrompt("");
-      toast.success("تم إنشاء التصميم وحفظه");
-    } catch (e) {
-      toast.error("تعذّر التوليد: " + ((e as Error)?.message ?? "خطأ"));
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("user_themes").delete().eq("id", id);
@@ -194,31 +161,6 @@ function AppearanceDialog({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           )}
-
-          {/* AI generator */}
-          <div>
-            <h3 className="text-xs font-bold text-primary mb-2 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5"/> إنشاء تصميم بالذكاء الاصطناعي
-            </h3>
-            {!user ? (
-              <p className="text-xs text-muted-foreground p-3 rounded-xl bg-white/5 border border-white/10">
-                سجّل الدخول لحفظ تصاميمك الخاصّة.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
-                  placeholder="مثال: تصميم شبيه بأعماق الأرض بألوان دافئة ذهبية"
-                  rows={3}
-                  className="w-full glass-input rounded-xl p-2.5 text-xs resize-none focus:outline-none"/>
-                <button onClick={generate} disabled={generating || !prompt.trim()}
-                  className="w-full liquid-glass inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
-                  style={{ background: "color-mix(in oklab, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                  {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <Wand2 className="h-3.5 w-3.5"/>}
-                  {generating ? "جارِ التوليد…" : "أنشئ التصميم"}
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>,
