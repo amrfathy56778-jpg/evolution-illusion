@@ -212,6 +212,20 @@ function Toolbar({ editor }: { editor: Editor }) {
 function ContextBubble({ editor }: { editor: Editor }) {
   const m = useMedia(editor);
   const isMedia = editor.isActive("image") || editor.isActive("video");
+  // Local slider state + rAF-throttled commit: writing the width attribute on
+  // every pointer move re-serializes the whole document and made zooming lag.
+  const attrW = isMedia
+    ? ((editor.getAttributes(editor.isActive("image") ? "image" : "video")?.width as string | null) ?? "")
+    : "";
+  const parsed = (() => { const mm = /^(\d+)%$/.exec(attrW ?? ""); return mm ? Number(mm[1]) : 100; })();
+  const [size, setSize] = useState<number>(parsed);
+  const rafRef = useRef<number | null>(null);
+  useEffect(() => { setSize(parsed); }, [parsed, isMedia]);
+  const onSlide = (v: number) => {
+    setSize(v);
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => { rafRef.current = null; m.setMediaWidth(`${v}%`); });
+  };
   return (
     <BubbleMenu
       editor={editor}
@@ -225,13 +239,10 @@ function ContextBubble({ editor }: { editor: Editor }) {
           <>
             <span className="text-[10px] text-muted-foreground px-1 shrink-0">الحجم</span>
             <input type="range" min={10} max={100} step={1}
-              defaultValue={(() => {
-                const raw = (editor.getAttributes(editor.isActive("image") ? "image" : "video")?.width as string | null) ?? "";
-                const mm = /^(\d+)%$/.exec(raw ?? ""); return mm ? Number(mm[1]) : 100;
-              })()}
-              onChange={e => m.setMediaWidth(`${e.target.value}%`)}
+              value={size}
+              onChange={e => onSlide(Number(e.target.value))}
               className="accent-primary w-36 max-w-[42vw]"/>
-            <Btn title="الحجم الأصلي" onClick={() => m.setMediaWidth(null)}><Minimize2 className="h-4 w-4"/></Btn>
+            <Btn title="الحجم الأصلي" onClick={() => { setSize(100); m.setMediaWidth(null); }}><Minimize2 className="h-4 w-4"/></Btn>
           </>
         ) : (
           <>

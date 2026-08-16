@@ -8,7 +8,6 @@ import { RichEditor, RichContent } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
 import { PostAIButton } from "@/components/PostAIChat";
 import { RelatedPosts } from "@/components/RelatedPosts";
-import { FlipBook, countImages } from "@/components/FlipBook";
 import { thumb } from "@/lib/img";
 
 export const Route = createFileRoute("/_app/post/$id")({
@@ -193,13 +192,9 @@ function PostPage() {
               onError={(e) => { const img = e.currentTarget; if (img.src !== p.cover_image_url) img.src = p.cover_image_url; }}
               className="w-full max-h-96 object-cover rounded-3xl bg-white/5"/>
           )}
-          {countImages(p.content) > 1 ? (
-            <FlipBook html={p.content} title={p.title}/>
-          ) : (
-            <div className="glass rounded-3xl p-5 sm:p-7">
-              <RichContent html={p.content}/>
-            </div>
-          )}
+          <div className="glass rounded-3xl p-5 sm:p-7">
+            <RichContent html={p.content}/>
+          </div>
           <RelatedPosts postId={p.id} category={p.category} title={p.title} />
         </>
       )}
