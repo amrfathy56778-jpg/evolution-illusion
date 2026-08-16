@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Palette, X, Check, Trash2, Eye, EyeOff, Layers } from "lucide-react";
 import {
   PRESETS, STYLES, setThemePreset, setCustomTheme, getThemeId, getFxOff, setFxOff,
-  applyVariant, setDesignStyle, getDesignStyle, type ThemeVariant, type ThemeTokens,
+  setDesignStyle, getDesignStyle, type ThemeVariant, type ThemeTokens,
 } from "@/lib/appearance";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
