@@ -122,6 +122,15 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
+    id: "bayan-cream", name: "بيان كريمي",
+    ...mkTokens(
+      "oklch(0.19 0.015 60)", "oklch(0.95 0.015 80)", "oklch(0.24 0.02 60)", "oklch(0.72 0.08 65)", "oklch(0.3 0.03 60)", "oklch(0.26 0.02 60)",
+      "radial-gradient(ellipse 900px 650px at 15% 8%, oklch(0.5 0.07 65 / 0.22), transparent 58%), linear-gradient(165deg, oklch(0.19 0.015 60), oklch(0.15 0.015 55))",
+      "oklch(0.975 0.012 85)", "oklch(0.25 0.02 55)", "oklch(0.99 0.008 85)", "oklch(0.6 0.08 65)", "oklch(0.93 0.02 80)", "oklch(0.95 0.012 80)",
+      "radial-gradient(ellipse 900px 650px at 12% 6%, oklch(0.9 0.04 70 / 0.5), transparent 60%), linear-gradient(165deg, oklch(0.975 0.012 85), oklch(0.95 0.016 75))",
+    ),
+  },
+  {
     id: "sand", name: "رمل الصحراء",
     ...mkTokens(
       "oklch(0.18 0.03 60)", "oklch(0.97 0.02 70)", "oklch(0.24 0.05 55)", "oklch(0.78 0.16 65)", "oklch(0.32 0.08 55)", "oklch(0.26 0.04 60)",
