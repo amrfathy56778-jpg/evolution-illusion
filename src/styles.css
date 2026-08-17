@@ -752,11 +752,44 @@ body > .skiptranslate { display: none !important; }
 }
 .style-d6 a:hover, .style-d6 button:hover { text-shadow: 0 0 10px oklch(0.7 0.25 305); }
 
+/* --- Bayan · warm cream editorial with gold pills --- */
+.style-bayan { font-family: "Amiri", "Cairo", Georgia, serif; }
+.style-bayan body::before {
+  background:
+    radial-gradient(ellipse 70% 40% at 85% 5%, oklch(0.88 0.05 70 / 0.45), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 10% 95%, oklch(0.9 0.035 60 / 0.4), transparent 60%);
+}
+.style-bayan .liquid-glass, .style-bayan .glass, .style-bayan .glass-strong {
+  backdrop-filter: none !important;
+  background: color-mix(in oklab, var(--card) 97%, transparent) !important;
+  border: 1px solid color-mix(in oklab, var(--primary) 32%, transparent) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 10px oklch(0.5 0.05 65 / 0.1) !important;
+}
+.style-bayan .site-header {
+  backdrop-filter: blur(10px) !important;
+  background: color-mix(in oklab, var(--background) 88%, transparent) !important;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 28%, transparent) !important;
+  box-shadow: none !important;
+}
+.style-bayan h1, .style-bayan h2, .style-bayan h3 { font-weight: 800; letter-spacing: 0; }
+.style-bayan .rounded-2xl, .style-bayan .rounded-3xl { border-radius: 20px !important; }
+.style-bayan .rounded-full { border-radius: 9999px !important; }
+.style-bayan input, .style-bayan textarea, .style-bayan select {
+  border-radius: 9999px !important;
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent) !important;
+  background: color-mix(in oklab, var(--card) 96%, transparent) !important;
+}
+.style-bayan textarea { border-radius: 18px !important; }
+.style-bayan button { letter-spacing: 0; }
+.style-bayan .glow-emerald { box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 30%, transparent) !important; }
+
 /* Ensure decorative overlays never trap clicks and stay behind content */
 .style-d1 body, .style-d2 body, .style-d3 body,
-.style-d4 body, .style-d5 body, .style-d6 body { position: relative; }
+.style-d4 body, .style-d5 body, .style-d6 body, .style-bayan body { position: relative; }
 .style-d1 body > .ambient-orbs, .style-d2 body > .ambient-orbs, .style-d3 body > .ambient-orbs,
-.style-d4 body > .ambient-orbs, .style-d5 body > .ambient-orbs, .style-d6 body > .ambient-orbs { position: relative; z-index: 1; }
+.style-d4 body > .ambient-orbs, .style-d5 body > .ambient-orbs, .style-d6 body > .ambient-orbs,
+.style-bayan body > .ambient-orbs { position: relative; z-index: 1; }
 
 /* ================================================================
    Pagination active state — ensure the current page is unmistakable
