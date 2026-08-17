@@ -28,6 +28,7 @@ export const STYLES: DesignStyle[] = [
   { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
   { id: "d5",        name: "نعناع مجلة",            description: "مجلة نعناعية أنيقة",                  preset: "d5-mint-light" },
   { id: "d6",        name: "نيون بنفسجي",           description: "إضاءة نيون بنفسجية سايبر",           preset: "d6-violet-dark" },
+  { id: "bayan",     name: "بيان الكريمي",          description: "كريمي دافئ بلمسات ذهبية وحدود دائرية", preset: "bayan-cream" },
 ];
 
 const mkTokens = (
