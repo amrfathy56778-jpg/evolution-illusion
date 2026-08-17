@@ -35,7 +35,7 @@ const antiFouc = `(function(){try{
   else if(mode==='dark'){d.classList.add('dark');d.classList.remove('light');}
   // Design style
   var style=ls.getItem('site.styleId')||'glass';
-  ['glass','dna','d1','d3','d4','d5','d6'].forEach(function(s){d.classList.remove('style-'+s);});
+  ['glass','dna','d1','d3','d4','d5','d6','bayan'].forEach(function(s){d.classList.remove('style-'+s);});
   d.classList.add('style-'+style);
   // FX toggle
   if(ls.getItem('site.fxOff')==='1') d.classList.add('fx-off');
@@ -50,7 +50,8 @@ const antiFouc = `(function(){try{
     'd3-cyan-dark':{bg:'oklch(0.14 0.04 220)',fg:'oklch(0.98 0.01 220)',pri:'oklch(0.78 0.16 200)',card:'oklch(0.19 0.05 220)'},
     'd4-papyrus':{bg:'oklch(0.22 0.04 55)',fg:'oklch(0.96 0.03 75)',pri:'oklch(0.62 0.14 45)',card:'oklch(0.28 0.05 55)'},
     'd5-mint-light':{bg:'oklch(0.99 0.005 180)',fg:'oklch(0.2 0.03 180)',pri:'oklch(0.52 0.15 175)',card:'oklch(1 0 0)'},
-    'd6-violet-dark':{bg:'oklch(0.14 0.04 305)',fg:'oklch(0.98 0.01 300)',pri:'oklch(0.72 0.19 305)',card:'oklch(0.19 0.06 305)'}
+    'd6-violet-dark':{bg:'oklch(0.14 0.04 305)',fg:'oklch(0.98 0.01 300)',pri:'oklch(0.72 0.19 305)',card:'oklch(0.19 0.06 305)'},
+    'bayan-cream':{bg:'oklch(0.975 0.012 85)',fg:'oklch(0.25 0.02 55)',pri:'oklch(0.6 0.08 65)',card:'oklch(0.99 0.008 85)'}
   };
   var id=ls.getItem('site.themeId');
   var t=null;

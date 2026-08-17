@@ -28,6 +28,7 @@ export const STYLES: DesignStyle[] = [
   { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
   { id: "d5",        name: "نعناع مجلة",            description: "مجلة نعناعية أنيقة",                  preset: "d5-mint-light" },
   { id: "d6",        name: "نيون بنفسجي",           description: "إضاءة نيون بنفسجية سايبر",           preset: "d6-violet-dark" },
+  { id: "bayan",     name: "بيان الكريمي",          description: "كريمي دافئ بلمسات ذهبية وحدود دائرية", preset: "bayan-cream" },
 ];
 
 const mkTokens = (
@@ -118,6 +119,15 @@ export const PRESETS: ThemePreset[] = [
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.42 0.16 145 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.16 0.03 155), oklch(0.12 0.03 170))",
       "oklch(0.97 0.02 130)", "oklch(0.2 0.05 155)", "oklch(0.95 0.03 130)", "oklch(0.5 0.16 145)", "oklch(0.9 0.06 130)", "oklch(0.93 0.03 130)",
       "radial-gradient(ellipse 900px 650px at 15% 10%, oklch(0.85 0.12 145 / 0.28), transparent 58%), linear-gradient(165deg, oklch(0.97 0.02 130), oklch(0.93 0.03 130))",
+    ),
+  },
+  {
+    id: "bayan-cream", name: "بيان كريمي",
+    ...mkTokens(
+      "oklch(0.19 0.015 60)", "oklch(0.95 0.015 80)", "oklch(0.24 0.02 60)", "oklch(0.72 0.08 65)", "oklch(0.3 0.03 60)", "oklch(0.26 0.02 60)",
+      "radial-gradient(ellipse 900px 650px at 15% 8%, oklch(0.5 0.07 65 / 0.22), transparent 58%), linear-gradient(165deg, oklch(0.19 0.015 60), oklch(0.15 0.015 55))",
+      "oklch(0.975 0.012 85)", "oklch(0.25 0.02 55)", "oklch(0.99 0.008 85)", "oklch(0.6 0.08 65)", "oklch(0.93 0.02 80)", "oklch(0.95 0.012 80)",
+      "radial-gradient(ellipse 900px 650px at 12% 6%, oklch(0.9 0.04 70 / 0.5), transparent 60%), linear-gradient(165deg, oklch(0.975 0.012 85), oklch(0.95 0.016 75))",
     ),
   },
   {
