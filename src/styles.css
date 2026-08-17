@@ -653,7 +653,8 @@ body > .skiptranslate { display: none !important; }
 .style-d3 body::before,
 .style-d4 body::before,
 .style-d5 body::before,
-.style-d6 body::before {
+.style-d6 body::before,
+.style-bayan body::before {
   content: "";
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
 }
