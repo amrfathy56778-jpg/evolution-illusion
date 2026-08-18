@@ -28,11 +28,17 @@ export default function Layout() {
   const isReadingFocus = path.startsWith("/post/") || path === "/critic";
   const minimalHeader = isReadingFocus;
 
-  const [theme, setTheme] = useState<"dark" | "light">(() => (typeof window !== "undefined" && localStorage.getItem("theme") === "light") ? "light" : "dark");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setTheme(localStorage.getItem("theme") === "light" ? "light" : "dark");
+    setMounted(true);
+  }, []);
+  useEffect(() => {
+    if (!mounted) return;
     document.documentElement.classList.toggle("light", theme === "light");
     localStorage.setItem("theme", theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   // Load persisted appearance (theme tokens + FX toggle) once on mount.
   useEffect(() => { loadAppearance(); }, []);
