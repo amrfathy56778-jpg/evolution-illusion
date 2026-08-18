@@ -909,3 +909,48 @@ nav [aria-label="pagination"] .liquid-glass:not(.pagination-active):not([aria-cu
   box-shadow: 0 18px 45px -18px rgb(0 0 0 / 0.8);
   max-width: min(92vw, 420px);
 }
+
+/* ================================================================
+   Pagination active ring — applies to EVERY design & both modes
+   (placed last so no style-* preset can override it)
+   ================================================================ */
+html[class] .pagination-active,
+html[class] button[aria-current="page"],
+html[class] .liquid-glass.pagination-active,
+html[class] .liquid-glass[aria-current="page"] {
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 12px color-mix(in oklab, #fff 70%, transparent),
+              0 0 22px color-mix(in oklab, #fff 45%, transparent),
+              inset 0 0 8px color-mix(in oklab, #fff 35%, transparent) !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 16px #fff,
+               0 0 30px color-mix(in oklab, #fff 80%, transparent) !important;
+}
+html.light[class] .pagination-active,
+html.light[class] button[aria-current="page"],
+html.light[class] .liquid-glass.pagination-active,
+html.light[class] .liquid-glass[aria-current="page"] {
+  color: #0f172a !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 0 12px color-mix(in oklab, #0f172a 60%, transparent),
+              0 0 22px color-mix(in oklab, #0f172a 35%, transparent) !important;
+  text-shadow: 0 0 12px color-mix(in oklab, #0f172a 50%, transparent) !important;
+}
+/* Non-active pages keep the site primary color in every design */
+html[class] nav [aria-label="pagination"] .liquid-glass:not(.pagination-active):not([aria-current="page"]),
+html[class] .liquid-glass.page-num:not(.pagination-active):not([aria-current="page"]),
+html[class] .pagination-glow:not(.pagination-active):not([aria-current="page"]) {
+  border-color: color-mix(in oklab, var(--primary) 55%, transparent) !important;
+  box-shadow: none !important;
+}
+/* Visual-effects OFF: keep it clear without glow, in every design */
+html.fx-off[class] .pagination-active,
+html.fx-off[class] button[aria-current="page"] {
+  border: 2px solid var(--primary) !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
