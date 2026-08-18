@@ -799,18 +799,24 @@ body > .skiptranslate { display: none !important; }
 .pagination-active,
 button[aria-current="page"] {
   background: transparent !important;
-  color: var(--primary) !important;
-  border: 1.5px solid color-mix(in oklab, var(--primary) 80%, transparent) !important;
-  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 70%, transparent),
-              0 0 22px color-mix(in oklab, var(--primary) 45%, transparent),
-              inset 0 0 8px color-mix(in oklab, var(--primary) 35%, transparent) !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 12px color-mix(in oklab, #fff 70%, transparent),
+              0 0 22px color-mix(in oklab, #fff 45%, transparent),
+              inset 0 0 8px color-mix(in oklab, #fff 35%, transparent) !important;
   font-weight: 900 !important;
   transform: scale(1.06);
-  text-shadow: 0 0 16px var(--primary), 0 0 30px color-mix(in oklab, var(--primary) 80%, transparent),
-               0 0 5px color-mix(in oklab, var(--primary) 95%, transparent) !important;
+  text-shadow: 0 0 16px #fff, 0 0 30px color-mix(in oklab, #fff 80%, transparent),
+               0 0 5px color-mix(in oklab, #fff 95%, transparent) !important;
 }
 .light .pagination-active,
-.light button[aria-current="page"] { color: var(--primary) !important; }
+.light button[aria-current="page"] {
+  color: #0f172a !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 0 12px color-mix(in oklab, #0f172a 60%, transparent),
+              0 0 22px color-mix(in oklab, #0f172a 35%, transparent) !important;
+  text-shadow: 0 0 12px color-mix(in oklab, #0f172a 50%, transparent) !important;
+}
 
 /* Non-active page buttons: glow so they stay legible on any background */
 .liquid-glass.pagination-active,
