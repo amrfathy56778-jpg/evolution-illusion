@@ -795,17 +795,19 @@ body > .skiptranslate { display: none !important; }
 /* ================================================================
    Pagination active state — ensure the current page is unmistakable
    ================================================================ */
-/* Only the digits glow — the circle itself stays subtle. */
+/* Active page: ring + digit glow brighter than the rest. */
 .pagination-active,
 button[aria-current="page"] {
   background: transparent !important;
   color: var(--primary) !important;
-  border: 1.5px solid color-mix(in oklab, var(--primary) 55%, transparent) !important;
-  box-shadow: none !important;
+  border: 1.5px solid color-mix(in oklab, var(--primary) 80%, transparent) !important;
+  box-shadow: 0 0 12px color-mix(in oklab, var(--primary) 70%, transparent),
+              0 0 22px color-mix(in oklab, var(--primary) 45%, transparent),
+              inset 0 0 8px color-mix(in oklab, var(--primary) 35%, transparent) !important;
   font-weight: 900 !important;
   transform: scale(1.06);
-  text-shadow: 0 0 14px var(--primary), 0 0 26px color-mix(in oklab, var(--primary) 70%, transparent),
-               0 0 3px color-mix(in oklab, var(--primary) 85%, transparent) !important;
+  text-shadow: 0 0 16px var(--primary), 0 0 30px color-mix(in oklab, var(--primary) 80%, transparent),
+               0 0 5px color-mix(in oklab, var(--primary) 95%, transparent) !important;
 }
 .light .pagination-active,
 .light button[aria-current="page"] { color: var(--primary) !important; }
