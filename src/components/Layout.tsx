@@ -77,7 +77,7 @@ export default function Layout() {
                 <LogOut className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <Link to="/auth" title="دخول" aria-label="دخول"
+              <Link to="/auth" search={{}} title="دخول" aria-label="دخول"
                 className="liquid-glass inline-flex items-center justify-center h-9 w-9 rounded-full text-primary">
                 <LogIn className="h-3.5 w-3.5" />
               </Link>

@@ -9,6 +9,9 @@ import { LogIn, UserPlus, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/auth")({
   component: AuthPage,
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" ? { next: s.next } : {},
+
   head: () => ({ meta: [{ title: "تسجيل الدخول · وهم التطور" }] }),
 });
 
@@ -17,6 +20,12 @@ const schema = z.object({
   password: z.string().min(6, "كلمة المرور 6 أحرف على الأقل").max(72),
 });
 
+/** Only same-origin relative paths are accepted as a post-login destination. */
+function safeNext(next?: string): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -24,10 +33,18 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { next } = Route.useSearch();
+  const target = safeNext(next);
+
+  const goNext = () => {
+    if (target) { window.location.href = target; return; }
+    navigate({ to: "/" });
+  };
 
   useEffect(() => {
-    if (user) navigate({ to: "/" });
-  }, [user, navigate]);
+    if (user) goNext();
+  }, [user]);
+
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +56,11 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword(parsed.data);
         if (error) throw error;
         toast.success("أهلاً بعودتك");
-        navigate({ to: "/" });
+        goNext();
       } else {
         const { error } = await supabase.auth.signUp({
           ...parsed.data,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: target ? window.location.origin + target : window.location.origin },
         });
         if (error) throw error;
         toast.success("تم إنشاء الحساب · تحقّق من بريدك الإلكتروني ثم سجّل الدخول");
@@ -61,7 +78,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: target ? window.location.origin + target : window.location.origin,
         extraParams: { prompt: "select_account" },
       });
       if (result.error) {
@@ -70,7 +87,8 @@ function AuthPage() {
       }
       if (result.redirected) return;
       toast.success("أهلاً بعودتك");
-      navigate({ to: "/" });
+      goNext();
+
     } finally {
       setLoading(false);
     }

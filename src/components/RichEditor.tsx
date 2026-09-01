@@ -7,7 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Youtube from "@tiptap/extension-youtube";
-import { BubbleMenu } from "@tiptap/react/menus";
+import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
@@ -259,6 +259,31 @@ function ContextBubble({ editor }: { editor: Editor }) {
   );
 }
 
+/** Menu shown at the start of an empty line: quick media / link insertion. */
+function LineStartMenu({ editor }: { editor: Editor }) {
+  const m = useMedia(editor);
+  const imgRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
+  return (
+    <FloatingMenu editor={editor} options={{ placement: "right", offset: 8 }}>
+      <div dir="rtl" style={{ zIndex: 2147483646, position: "relative" }}
+        className="flex items-center gap-1 p-1 rounded-xl border border-white/20 bg-background/95 backdrop-blur-md shadow-[0_12px_36px_-14px_rgba(0,0,0,0.8)]">
+        <Btn title="رفع صور من الجهاز" onClick={() => imgRef.current?.click()}><Upload className="h-4 w-4"/></Btn>
+        <Btn title="صورة من رابط" onClick={m.addImageUrl}><ImageIcon className="h-4 w-4"/></Btn>
+        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-4 w-4"/></Btn>
+        <Btn title="فيديو من رابط" onClick={m.addVideoUrl}><Video className="h-4 w-4 opacity-60"/></Btn>
+        <Btn title="فيديو يوتيوب" onClick={m.addYoutube}><YtIcon className="h-4 w-4"/></Btn>
+        <Btn title="رابط" onClick={m.setLink}><Link2 className="h-4 w-4"/></Btn>
+        <input ref={imgRef} type="file" accept="image/*" multiple className="hidden"
+          onChange={e => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; if (fs.length) void m.pickImages(fs); }}/>
+        <input ref={vidRef} type="file" accept="video/*" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void m.pickVideo(f); }}/>
+      </div>
+    </FloatingMenu>
+  );
+}
+
+
 export function RichEditor({ value, onChange, placeholder }:
   { value: string; onChange: (html: string) => void; placeholder?: string }) {
   // Plugin: intercept pasted/dropped media so files upload to storage instead of blob: URLs
@@ -352,7 +377,10 @@ export function RichEditor({ value, onChange, placeholder }:
     <div className="rounded-xl overflow-hidden border border-white/10 bg-background/40">
       <Toolbar editor={editor}/>
       <ContextBubble editor={editor}/>
+      <LineStartMenu editor={editor}/>
       <EditorContent editor={editor}/>
+
+
     </div>
   );
 }
