@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
@@ -19,8 +20,15 @@ import { Route as AppCriticRouteImport } from './routes/_app/critic'
 import { Route as AppCreationRouteImport } from './routes/_app/creation'
 import { Route as AppAuthRouteImport } from './routes/_app/auth'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AppPostIdRouteImport } from './routes/_app/post.$id'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -70,14 +78,27 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppPostIdRoute = AppPostIdRouteImport.update({
   id: '/post/$id',
   path: '/post/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AppAdminRoute
   '/auth': typeof AppAuthRoute
   '/creation': typeof AppCreationRoute
@@ -86,9 +107,12 @@ export interface FileRoutesByFullPath {
   '/evolution': typeof AppEvolutionRoute
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesByTo {
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AppAdminRoute
   '/auth': typeof AppAuthRoute
   '/creation': typeof AppCreationRoute
@@ -98,11 +122,14 @@ export interface FileRoutesByTo {
   '/genetics': typeof AppGeneticsRoute
   '/guest-post': typeof AppGuestPostRoute
   '/': typeof AppIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/post/$id': typeof AppPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/mcp': typeof McpRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/auth': typeof AppAuthRoute
   '/_app/creation': typeof AppCreationRoute
@@ -112,12 +139,15 @@ export interface FileRoutesById {
   '/_app/genetics': typeof AppGeneticsRoute
   '/_app/guest-post': typeof AppGuestPostRoute
   '/_app/': typeof AppIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_app/post/$id': typeof AppPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/auth'
     | '/creation'
@@ -126,9 +156,12 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/genetics'
     | '/guest-post'
+    | '/.lovable/oauth/consent'
     | '/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/auth'
     | '/creation'
@@ -138,10 +171,13 @@ export interface FileRouteTypes {
     | '/genetics'
     | '/guest-post'
     | '/'
+    | '/.lovable/oauth/consent'
     | '/post/$id'
   id:
     | '__root__'
     | '/_app'
+    | '/mcp'
+    | '/.well-known/oauth-protected-resource'
     | '/_app/admin'
     | '/_app/auth'
     | '/_app/creation'
@@ -151,15 +187,26 @@ export interface FileRouteTypes {
     | '/_app/genetics'
     | '/_app/guest-post'
     | '/_app/'
+    | '/.lovable/oauth/consent'
     | '/_app/post/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  McpRoute: typeof McpRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -230,12 +277,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/post/$id': {
       id: '/_app/post/$id'
       path: '/post/$id'
       fullPath: '/post/$id'
       preLoaderRoute: typeof AppPostIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -270,6 +331,10 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  McpRoute: McpRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

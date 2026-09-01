@@ -41,7 +41,7 @@ function Admin() {
   useEffect(() => { load(); }, [isStaff, isOwner]);
 
   if (loading) return <div className="glass rounded-2xl p-8 text-center text-muted-foreground">جارٍ التحميل…</div>;
-  if (!user) return <div className="glass rounded-2xl p-8 text-center"><p>يجب تسجيل الدخول.</p><Link to="/auth" className="inline-block mt-3 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-bold">دخول</Link></div>;
+  if (!user) return <div className="glass rounded-2xl p-8 text-center"><p>يجب تسجيل الدخول.</p><Link to="/auth" search={{}} className="inline-block mt-3 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-bold">دخول</Link></div>;
   if (!isStaff) return <div className="glass rounded-2xl p-8 text-center text-muted-foreground">لا تملك صلاحيات إدارية.</div>;
 
   const review = async (id: string, approve: boolean) => {
