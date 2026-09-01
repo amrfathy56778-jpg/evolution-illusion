@@ -26,6 +26,7 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "query": {
@@ -34,21 +35,19 @@
               "description": "Keyword to search in article titles and content."
             },
             "category": {
-              "type": "string",
-              "description": "Optional category slug to filter by."
+              "description": "Optional category slug to filter by.",
+              "type": "string"
             },
             "limit": {
+              "description": "Max results (default 10).",
               "type": "integer",
               "minimum": 1,
-              "maximum": 25,
-              "description": "Max results (default 10)."
+              "maximum": 25
             }
           },
           "required": [
             "query"
-          ],
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          ]
         },
         "outputSchema": null
       },
@@ -62,21 +61,20 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "limit": {
+              "description": "Number of articles (default 10).",
               "type": "integer",
               "minimum": 1,
-              "maximum": 50,
-              "description": "Number of articles (default 10)."
+              "maximum": 50
             },
             "category": {
-              "type": "string",
-              "description": "Optional category slug to filter by."
+              "description": "Optional category slug to filter by.",
+              "type": "string"
             }
-          },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          }
         },
         "outputSchema": null
       },
@@ -90,19 +88,19 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
               "type": "string",
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "description": "Article id."
             }
           },
           "required": [
             "id"
-          ],
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          ]
         },
         "outputSchema": null
       },
@@ -116,6 +114,7 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "title": {
@@ -133,18 +132,16 @@
               "description": "Category slug, e.g. one used elsewhere on the site."
             },
             "cover_image_url": {
+              "description": "Optional cover image URL.",
               "type": "string",
-              "format": "uri",
-              "description": "Optional cover image URL."
+              "format": "uri"
             }
           },
           "required": [
             "title",
             "content",
             "category"
-          ],
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          ]
         },
         "outputSchema": null
       }
