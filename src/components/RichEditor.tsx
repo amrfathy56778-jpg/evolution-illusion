@@ -11,9 +11,9 @@ import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import { Plugin } from "@tiptap/pm/state";
 import {
   Bold, Italic, Underline as UnderIcon, Strikethrough, Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Link2, Link2Off, Image as ImageIcon, Youtube as YtIcon,
+  List, ListOrdered, Quote, Link2, Image as ImageIcon, Youtube as YtIcon,
   AlignRight, AlignCenter, AlignLeft, Undo2, Redo2, Minus, Palette,
-  Video, Upload, Minimize2, Type, PlusCircle, ChevronDown,
+  Video, Upload, Minimize2, Type, ChevronDown,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { uploadToBucket } from "@/lib/upload";
@@ -138,10 +138,7 @@ function useMedia(editor: Editor) {
 
 /** Single compact toolbar: essentials inline + two grouped dropdowns. */
 function Toolbar({ editor }: { editor: Editor }) {
-  const m = useMedia(editor);
-  const [open, setOpen] = useState<null | "text" | "insert">(null);
-  const imgRef = useRef<HTMLInputElement>(null);
-  const vidRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState<null | "text">(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -153,7 +150,7 @@ function Toolbar({ editor }: { editor: Editor }) {
     return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
-  const toggle = (k: "text" | "insert") => setOpen(prev => (prev === k ? null : k));
+  const toggle = () => setOpen(prev => (prev === "text" ? null : "text"));
 
   return (
     <div ref={wrapRef} dir="rtl"
@@ -162,7 +159,7 @@ function Toolbar({ editor }: { editor: Editor }) {
       <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4"/></Btn>
       <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-4 w-4"/></Btn>
 
-      <Group label="نص" icon={<Type className="h-3.5 w-3.5"/>} open={open === "text"} onToggle={() => toggle("text")}>
+      <Group label="نص" icon={<Type className="h-3.5 w-3.5"/>} open={open === "text"} onToggle={toggle}>
         <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-4 w-4"/></Btn>
         <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-4 w-4"/></Btn>
         <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-4 w-4"/></Btn>
@@ -185,25 +182,13 @@ function Toolbar({ editor }: { editor: Editor }) {
         </div>
       </Group>
 
-      <Group label="إدراج" icon={<PlusCircle className="h-3.5 w-3.5"/>} open={open === "insert"} onToggle={() => toggle("insert")}>
-        <Btn title="رفع صور من الجهاز" onClick={() => imgRef.current?.click()}><Upload className="h-4 w-4"/></Btn>
-        <Btn title="صورة من رابط" onClick={m.addImageUrl}><ImageIcon className="h-4 w-4"/></Btn>
-        <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-4 w-4"/></Btn>
-        <Btn title="فيديو من رابط" onClick={m.addVideoUrl}><Video className="h-4 w-4 opacity-60"/></Btn>
-        <Btn title="فيديو يوتيوب" onClick={m.addYoutube}><YtIcon className="h-4 w-4"/></Btn>
-        <Btn title="رابط" active={editor.isActive("link")} onClick={m.setLink}><Link2 className="h-4 w-4"/></Btn>
-        <Btn title="إزالة الرابط" disabled={!editor.isActive("link")} onClick={() => editor.chain().focus().unsetLink().run()}><Link2Off className="h-4 w-4"/></Btn>
-      </Group>
+
 
       <div className="ms-auto flex items-center gap-1">
         <Btn title="تراجع" onClick={() => editor.chain().focus().undo().run()}><Undo2 className="h-4 w-4"/></Btn>
         <Btn title="إعادة" onClick={() => editor.chain().focus().redo().run()}><Redo2 className="h-4 w-4"/></Btn>
       </div>
 
-      <input ref={imgRef} type="file" accept="image/*" multiple className="hidden"
-        onChange={e => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; if (fs.length) void m.pickImages(fs); }}/>
-      <input ref={vidRef} type="file" accept="video/*" className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void m.pickVideo(f); }}/>
     </div>
   );
 }
