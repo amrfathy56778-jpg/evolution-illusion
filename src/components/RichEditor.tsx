@@ -136,7 +136,7 @@ function useMedia(editor: Editor) {
   return { pickImages, pickVideo, setLink, addImageUrl, addVideoUrl, addYoutube, setMediaWidth };
 }
 
-/** Single compact toolbar: essentials inline + two grouped dropdowns. */
+/** Single compact toolbar: essentials inline + one text-formatting dropdown. */
 function Toolbar({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState<null | "text">(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -181,7 +181,6 @@ function Toolbar({ editor }: { editor: Editor }) {
             className="text-[10px] px-1 text-muted-foreground hover:text-foreground">×</button>
         </div>
       </Group>
-
 
 
       <div className="ms-auto flex items-center gap-1">
