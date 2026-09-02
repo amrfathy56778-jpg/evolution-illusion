@@ -210,15 +210,17 @@ function ContextBubble({ editor }: { editor: Editor }) {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => { rafRef.current = null; m.setMediaWidth(`${v}%`); });
   };
+  const imgRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
   return (
     <BubbleMenu
       editor={editor}
-      options={{ placement: "top", offset: 44 }}
+      options={{ placement: "top", offset: 76 }}
       shouldShow={({ editor, from, to }) =>
         editor.isEditable && (editor.isActive("image") || editor.isActive("video") || from !== to)}
     >
       <div dir="rtl" style={{ zIndex: 2147483647, position: "relative" }}
-        className="flex items-center gap-1 p-1.5 rounded-2xl border border-white/20 bg-background/95 backdrop-blur-md shadow-[0_18px_50px_-18px_rgba(0,0,0,0.9)] max-w-[92vw]">
+        className="flex flex-wrap items-center gap-1 p-1.5 rounded-2xl border border-white/20 bg-background/95 backdrop-blur-md shadow-[0_18px_50px_-18px_rgba(0,0,0,0.9)] max-w-[92vw]">
         {isMedia ? (
           <>
             <span className="text-[10px] text-muted-foreground px-1 shrink-0">الحجم</span>
@@ -233,9 +235,37 @@ function ContextBubble({ editor }: { editor: Editor }) {
             <Btn title="عريض" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4"/></Btn>
             <Btn title="مائل" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4"/></Btn>
             <Btn title="تحته خط" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderIcon className="h-4 w-4"/></Btn>
-            <Btn title="عنوان" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-4 w-4"/></Btn>
+            <Btn title="مشطوب" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-4 w-4"/></Btn>
+            <span className="w-px h-4 bg-white/15 mx-0.5"/>
+            <Btn title="عنوان كبير" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-4 w-4"/></Btn>
+            <Btn title="عنوان متوسط" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-4 w-4"/></Btn>
+            <Btn title="عنوان صغير" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="h-4 w-4"/></Btn>
+            <Btn title="قائمة نقطية" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-4 w-4"/></Btn>
+            <Btn title="قائمة مرقمة" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-4 w-4"/></Btn>
             <Btn title="اقتباس" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-4 w-4"/></Btn>
+            <span className="w-px h-4 bg-white/15 mx-0.5"/>
+            <Btn title="محاذاة يمين" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-4 w-4"/></Btn>
+            <Btn title="توسيط" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="h-4 w-4"/></Btn>
+            <Btn title="محاذاة يسار" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="h-4 w-4"/></Btn>
+            <span className="w-px h-4 bg-white/15 mx-0.5"/>
             <Btn title="رابط" active={editor.isActive("link")} onClick={m.setLink}><Link2 className="h-4 w-4"/></Btn>
+            <Btn title="رفع صور" onClick={() => imgRef.current?.click()}><Upload className="h-4 w-4"/></Btn>
+            <Btn title="صورة من رابط" onClick={m.addImageUrl}><ImageIcon className="h-4 w-4"/></Btn>
+            <Btn title="رفع فيديو" onClick={() => vidRef.current?.click()}><Video className="h-4 w-4"/></Btn>
+            <Btn title="فيديو يوتيوب" onClick={m.addYoutube}><YtIcon className="h-4 w-4"/></Btn>
+            <Btn title="فاصل أفقي" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="h-4 w-4"/></Btn>
+            <span className="w-px h-4 bg-white/15 mx-0.5"/>
+            <Palette className="h-3.5 w-3.5 text-muted-foreground"/>
+            {COLORS.map(c => (
+              <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
+                className="w-4 h-4 rounded-full border border-white/20 hover:scale-125 transition" style={{ background: c }}/>
+            ))}
+            <button type="button" title="إزالة اللون" onClick={() => editor.chain().focus().unsetColor().run()}
+              className="text-[10px] px-1 text-muted-foreground hover:text-foreground">×</button>
+            <input ref={imgRef} type="file" accept="image/*" multiple className="hidden"
+              onChange={e => { const fs = Array.from(e.target.files ?? []); e.target.value = ""; if (fs.length) void m.pickImages(fs); }}/>
+            <input ref={vidRef} type="file" accept="video/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void m.pickVideo(f); }}/>
           </>
         )}
       </div>
