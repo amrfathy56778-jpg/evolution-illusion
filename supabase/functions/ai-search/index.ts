@@ -1,4 +1,6 @@
-// Edge function: بحث ذكي في المقالات باستخدام Lovable AI
+// Edge function: بحث ذكي في المقالات — سلسلة مزوّدين مرنة
+// (كل مفاتيح Google × نماذج، ثم Groq، ثم بوابة Lovable) مع محاولة كل مفتاح ونموذج
+// بالتتابع عند أي فشل أو رد فارغ، وخطأ عربي واضح 503 إذا فشل الجميع.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -19,6 +21,104 @@ const SYSTEM = `أنت "ناقد التطور الذكي" في موقع "وهم 
 7. أعد JSON فقط بهذا الشكل، بدون أي نص خارجه:
 {"answer":"...","results":[{"id":"...","title":"...","reason":"..."}]}`;
 
+type Msg = { role: "system" | "user" | "assistant"; content: string };
+
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+const LOVABLE_MODELS = ["google/gemini-2.5-flash"];
+const SAFETY = [
+  "HARM_CATEGORY_HARASSMENT",
+  "HARM_CATEGORY_HATE_SPEECH",
+  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+  "HARM_CATEGORY_DANGEROUS_CONTENT",
+].map((category) => ({ category, threshold: "BLOCK_NONE" }));
+
+function aiKeys() {
+  return {
+    gemini: [
+      Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
+      Deno.env.get("GEMINI_API_KEY"),
+    ].filter(Boolean) as string[],
+    groq: Deno.env.get("GROQ_API_KEY") ?? "",
+    lovable: Deno.env.get("LOVABLE_API_KEY") ?? "",
+  };
+}
+
+async function fetchOpen(url: string, init: RequestInit, ms = 45000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** إكمال غير متدفق عبر سلسلة المزوّدين. */
+async function completeAI(messages: Msg[], json = true): Promise<string> {
+  const keys = aiKeys();
+  const errors: string[] = [];
+  const sys = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const contents = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+
+  for (const model of GEMINI_MODELS) {
+    for (const key of keys.gemini) {
+      try {
+        const r = await fetchOpen(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents,
+              systemInstruction: sys ? { parts: [{ text: sys }] } : undefined,
+              safetySettings: SAFETY,
+              generationConfig: json ? { responseMimeType: "application/json" } : undefined,
+            }),
+          },
+        );
+        if (!r.ok) throw new Error(`${r.status} ${(await r.text().catch(() => "")).slice(0, 180)}`);
+        const j = await r.json();
+        const text = j?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("") ?? "";
+        if (!text) throw new Error("empty");
+        return text;
+      } catch (e) {
+        errors.push(`gemini:${model}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+
+  const targets: { label: string; url: string; key: string; model: string }[] = [];
+  if (keys.groq) for (const m of GROQ_MODELS) targets.push({ label: `groq:${m}`, url: "https://api.groq.com/openai/v1/chat/completions", key: keys.groq, model: m });
+  if (keys.lovable) for (const m of LOVABLE_MODELS) targets.push({ label: `lovable:${m}`, url: "https://ai.gateway.lovable.dev/v1/chat/completions", key: keys.lovable, model: m });
+
+  for (const t of targets) {
+    try {
+      const r = await fetchOpen(t.url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${t.key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: t.model,
+          messages,
+          ...(json ? { response_format: { type: "json_object" } } : {}),
+        }),
+      });
+      if (!r.ok) throw new Error(`${r.status} ${(await r.text().catch(() => "")).slice(0, 180)}`);
+      const j = await r.json();
+      const text = j?.choices?.[0]?.message?.content ?? "";
+      if (!text) throw new Error("empty");
+      return text;
+    } catch (e) {
+      errors.push(`${t.label}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  console.error("all AI providers failed", errors);
+  throw new Error(`__CHAIN_FAILED__${errors.join(" | ")}`);
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -26,27 +126,9 @@ Deno.serve(async (req: Request) => {
     const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
     const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
     const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site language is ${langName}. Write the "answer" field ENTIRELY in ${langName}, regardless of the language of the user's query.` + `\n\nFORMAT RULE: Never use the characters * or ** anywhere inside "answer". Do not use asterisks for emphasis or bullets; write plain prose, and use "-" if a list is truly needed.` + `\n\nSOURCES RULE: لا تكتب قائمة مصادر في نهاية "answer". استشهد داخل النص بصيغة [مقال: العنوان الحرفي] فقط.`;
-    const GEMINI_KEYS = [
-      Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
-      Deno.env.get("GEMINI_API_KEY"),
-    ].filter(Boolean) as string[];
-    const GEMINI_KEY = GEMINI_KEYS[0];
-    const fetch = async (input: any, init?: any): Promise<Response> => {
-      const u = String(input);
-      if (u.includes("generativelanguage.googleapis.com") && GEMINI_KEYS.length > 1) {
-        let last: Response | null = null;
-        for (const k of GEMINI_KEYS) {
-          const r = await globalThis.fetch(u.replace(/key=[^&]*/, `key=${k}`), init);
-          if (r.ok) return r;
-          last = r;
-        }
-        return last as Response;
-      }
-      return globalThis.fetch(input as any, init);
-    };
-    const GROQ_KEY = Deno.env.get("GROQ_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!GEMINI_KEY && !GROQ_KEY && !LOVABLE_API_KEY) throw new Error("No AI key configured");
+
+    const keys = aiKeys();
+    if (!keys.gemini.length && !keys.groq && !keys.lovable) throw new Error("No AI key configured");
     if (!query || typeof query !== "string") throw new Error("query required");
 
     const corpus = (posts ?? []).slice(0, 1000).map((p: any) => ({
@@ -56,75 +138,26 @@ Deno.serve(async (req: Request) => {
       snippet: String(p.content ?? "").replace(/<[^>]+>/g, " ").slice(0, 600),
     }));
 
-    const callGroq = async (): Promise<any> => {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: SYS_USE },
-            { role: "user", content: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` },
-          ],
-        }),
-      });
-      if (!r.ok) throw new Error(`Groq ${r.status}: ${await r.text()}`);
-      const j = await r.json();
-      const c = j?.choices?.[0]?.message?.content ?? "{}";
-      try { return JSON.parse(c); } catch { return { answer: c, results: [] }; }
-    };
-
-    if (GEMINI_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-      const gr = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYS_USE }] },
-          contents: [{ role: "user", parts: [{ text: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` }] }],
-          generationConfig: { responseMimeType: "application/json" },
-        }),
-      });
-      if (!gr.ok) {
-        if (GROQ_KEY) {
-          try { const parsed = await callGroq(); return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } }); } catch (_e) { /* fall through */ }
-        }
-        const t = await gr.text();
-        return new Response(JSON.stringify({ error: t }), { status: gr.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    let content: string;
+    try {
+      content = await completeAI([
+        { role: "system", content: SYS_USE },
+        { role: "user", content: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` },
+      ]);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.startsWith("__CHAIN_FAILED__")) {
+        return new Response(
+          JSON.stringify({
+            error: "تعذّر الاتصال بالذكاء الاصطناعي بعد تجربة كل النماذج والمفاتيح. حاول بعد قليل.",
+            detail: msg.replace("__CHAIN_FAILED__", ""),
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
-      const gj = await gr.json();
-      const content = gj?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join("") ?? "{}";
-      let parsed: any = {};
-      try { parsed = JSON.parse(content); } catch { parsed = { answer: content, results: [] }; }
-      return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      throw e;
     }
 
-    if (GROQ_KEY) {
-      try { const parsed = await callGroq(); return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } }); } catch (_e) { /* fall through */ }
-    }
-
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: SYS_USE },
-          { role: "user", content: `السؤال: ${query}\n\nالمنشورات:\n${JSON.stringify(corpus)}` },
-        ],
-      }),
-    });
-    if (!res.ok) {
-      const t = await res.text();
-      return new Response(JSON.stringify({ error: t }), {
-        status: res.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content ?? "{}";
     let parsed: any = {};
     try { parsed = JSON.parse(content); } catch { parsed = { answer: content, results: [] }; }
     return new Response(JSON.stringify(parsed), {
