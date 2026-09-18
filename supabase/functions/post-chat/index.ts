@@ -206,26 +206,14 @@ Deno.serve(async (req) => {
     const plain = String(article.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 8000);
     const articleContext = `عنوان المقال: ${article.title}\n\nنص المقال:\n${plain}`;
 
-    // مقالات الموقع ذات الصلة (للنقاش فقط، لا للتلخيص)
+    // كل مقالات الموقع (فهرس كامل + أكثرها صلة) — للنقاش فقط، لا للتلخيص
     let relatedContext = "";
-    if (mode !== "summarize") try {
-      const sb = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      );
-      const { data: related } = await sb
-        .from("posts")
-        .select("title, content")
-        .neq("id", article.id ?? "")
-        .order("created_at", { ascending: false })
-        .limit(40);
-      if (related && related.length) {
-        const snippets = related.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
-        ).join("\n\n");
-        relatedContext = `\n\n--- مقالات الموقع ذات الصلة (استخدمها كمصادر واستشهد منها) ---\n${snippets}`;
-      }
-    } catch (_e) { /* غير حاسم */ }
+    if (mode !== "summarize") {
+      const lastUser = [...(Array.isArray(messages) ? messages : [])]
+        .reverse().find((m: any) => m?.role === "user")?.content ?? "";
+      const q = `${article.title} ${String(lastUser)}`;
+      relatedContext = await siteKnowledge(q, article.id) + CITATION_RULES;
+    }
 
     const baseMessages: Msg[] = [
       { role: "system", content: SYS_USE },
