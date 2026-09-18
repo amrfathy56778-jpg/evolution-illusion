@@ -192,6 +192,103 @@ async function streamAI(messages: Msg[]): Promise<Response> {
   );
 }
 
+// ------------------------------------------------- site knowledge (RAG)
+const CITATION_RULES = `
+
+قواعد الاعتماد على مقالات الموقع (إلزامية):
+- "فهرس مقالات الموقع" أدناه يحتوي عناوين كل مقالات الموقع، و"مقاطع المقالات الأكثر صلة" تحتوي نصوصاً منها.
+- ابنِ إجابتك على هذه المقالات أولاً، واذكر داخل النص إحالة لكل فكرة مأخوذة منها بالصيغة الحرفية: [مقال: العنوان]
+- انسخ العنوان حرفياً كما ورد في الفهرس، بدون تغيير أو ترجمة أو اختصار، وإلا لن يتحوّل إلى رابط.
+- استشهد بمقالين على الأقل إذا وُجد في الفهرس ما يمسّ الموضوع، ولو كانت الصلة جزئية.
+- لا تختلق عنواناً غير موجود في الفهرس.
+- إذا لم يغطِّ الفهرس الموضوع إطلاقاً، قل ذلك صراحةً ثم أجب من معرفتك العامة.
+- لا تكتب قائمة مصادر في النهاية — الإحالات داخل النص فقط.`;
+
+const normAr = (s: string) =>
+  s.replace(/[\u064B-\u065F\u0640]/g, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/[ىي]/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .toLowerCase();
+
+const plainText = (html: unknown) =>
+  String(html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+/**
+ * يبني سياق المعرفة من *كل* مقالات الموقع:
+ * فهرس كامل بالعناوين (يتحدّث تلقائياً مع كل مقال جديد) + نصوص المقالات
+ * الأكثر صلة بالسؤال (مطابقة العناوين + بحث داخل المحتوى).
+ */
+async function siteKnowledge(query: string, excludeId?: string): Promise<string> {
+  try {
+    const sb = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
+    const { data: all } = await sb
+      .from("posts")
+      .select("id, title, category")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    const posts = (all ?? []).filter((p: any) => p.id !== excludeId);
+    if (!posts.length) return "";
+
+    const tokens = Array.from(new Set(normAr(query).split(" ").filter((w) => w.length > 2))).slice(0, 8);
+
+    const picked = new Map<string, any>();
+    // 1) مطابقة العناوين
+    const scored = posts
+      .map((p: any) => {
+        const t = normAr(p.title ?? "");
+        let s = 0;
+        for (const w of tokens) if (t.includes(w)) s += 3;
+        return { p, s };
+      })
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s);
+    for (const x of scored.slice(0, 12)) picked.set(x.p.id, x.p);
+
+    // 2) بحث داخل نصوص كل المقالات (يشمل ما لا يظهر في العنوان)
+    for (const w of tokens.slice(0, 4)) {
+      if (picked.size >= 18) break;
+      const { data: hits } = await sb
+        .from("posts")
+        .select("id, title")
+        .ilike("content", `%${w}%`)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      for (const h of hits ?? []) if (h.id !== excludeId) picked.set(h.id, h);
+    }
+
+    // 3) استكمال بأحدث المقالات إن كانت النتائج قليلة
+    for (const p of posts) {
+      if (picked.size >= 10) break;
+      picked.set(p.id, p);
+    }
+
+    const ids = Array.from(picked.keys()).slice(0, 18);
+    const { data: full } = await sb.from("posts").select("id, title, content").in("id", ids);
+
+    const excerpts = (full ?? [])
+      .map((p: any) => `### ${p.title}\n${plainText(p.content).slice(0, 1400)}`)
+      .join("\n\n");
+
+    const catalogue = posts
+      .slice(0, 800)
+      .map((p: any) => `- ${p.title}${p.category ? ` (${p.category})` : ""}`)
+      .join("\n");
+
+    return `\n\n--- فهرس مقالات الموقع "وهم التطور" (كل المقالات: ${posts.length}) ---\n${catalogue}` +
+      `\n\n--- مقاطع المقالات الأكثر صلة بالسؤال ---\n${excerpts}`;
+  } catch (e) {
+    console.error("siteKnowledge failed", e);
+    return "";
+  }
+}
+
 // ---------------------------------------------------------------- handler
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -210,28 +307,12 @@ Deno.serve(async (req: Request) => {
     const keys = aiKeys();
     if (!keys.gemini.length && !keys.groq && !keys.lovable) throw new Error("No AI key configured");
 
-    // مقالات الموقع كمصادر داخلية
-    let siteContext = "";
-    try {
-      const sb = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      );
-      const { data: posts } = await sb
-        .from("posts")
-        .select("title, content")
-        .order("created_at", { ascending: false })
-        .limit(40);
-      if (posts && posts.length) {
-        const snippets = posts.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
-        ).join("\n\n");
-        siteContext = `\n\n--- مقالات موقع "وهم التطور" (مصادرك الداخلية — استشهد منها بصيغة [مقال: العنوان]) ---\n${snippets}`;
-      }
-    } catch (_e) { /* غير حاسم */ }
+    // كل مقالات الموقع (الماضية والمستقبلية) + المقاطع الأكثر صلة بالسؤال
+    const lastUser = [...(Array.isArray(messages) ? messages : [])]
+      .reverse().find((m: any) => m?.role === "user")?.content ?? "";
+    const siteContext = await siteKnowledge(String(lastUser));
 
-    const sys = SYSTEM_PROMPT + langDirective + NO_STARS + siteContext +
-      "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+    const sys = SYSTEM_PROMPT + langDirective + NO_STARS + siteContext + CITATION_RULES;
 
     const convo: Msg[] = [{ role: "system", content: sys }];
     for (const m of Array.isArray(messages) ? messages : []) {
