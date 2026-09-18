@@ -210,28 +210,12 @@ Deno.serve(async (req: Request) => {
     const keys = aiKeys();
     if (!keys.gemini.length && !keys.groq && !keys.lovable) throw new Error("No AI key configured");
 
-    // مقالات الموقع كمصادر داخلية
-    let siteContext = "";
-    try {
-      const sb = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      );
-      const { data: posts } = await sb
-        .from("posts")
-        .select("title, content")
-        .order("created_at", { ascending: false })
-        .limit(40);
-      if (posts && posts.length) {
-        const snippets = posts.map((p: any) =>
-          `### ${p.title}\n${String(p.content).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}`
-        ).join("\n\n");
-        siteContext = `\n\n--- مقالات موقع "وهم التطور" (مصادرك الداخلية — استشهد منها بصيغة [مقال: العنوان]) ---\n${snippets}`;
-      }
-    } catch (_e) { /* غير حاسم */ }
+    // كل مقالات الموقع (الماضية والمستقبلية) + المقاطع الأكثر صلة بالسؤال
+    const lastUser = [...(Array.isArray(messages) ? messages : [])]
+      .reverse().find((m: any) => m?.role === "user")?.content ?? "";
+    const siteContext = await siteKnowledge(String(lastUser));
 
-    const sys = SYSTEM_PROMPT + langDirective + NO_STARS + siteContext +
-      "\n\n**اعتمد بشكل أساسي على مقالات الموقع المرفقة. إذا لم تجد الإجابة فيها، اذكر ذلك صراحة قبل اللجوء لمعرفتك العامة.**";
+    const sys = SYSTEM_PROMPT + langDirective + NO_STARS + siteContext + CITATION_RULES;
 
     const convo: Msg[] = [{ role: "system", content: sys }];
     for (const m of Array.isArray(messages) ? messages : []) {
