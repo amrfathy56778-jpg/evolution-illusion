@@ -188,6 +188,96 @@ async function streamAI(messages: Msg[]): Promise<Response> {
   );
 }
 
+// ------------------------------------------------- site knowledge (RAG)
+const CITATION_RULES = `
+
+قواعد الاعتماد على مقالات الموقع (إلزامية):
+- "فهرس مقالات الموقع" أدناه يحتوي عناوين كل مقالات الموقع، و"مقاطع المقالات الأكثر صلة" تحتوي نصوصاً منها.
+- ابنِ إجابتك على هذه المقالات أولاً، واذكر داخل النص إحالة لكل فكرة مأخوذة منها بالصيغة الحرفية: [مقال: العنوان]
+- انسخ العنوان حرفياً كما ورد في الفهرس، بدون تغيير أو ترجمة أو اختصار، وإلا لن يتحوّل إلى رابط.
+- استشهد بمقالين على الأقل إذا وُجد في الفهرس ما يمسّ الموضوع، ولو كانت الصلة جزئية.
+- لا تختلق عنواناً غير موجود في الفهرس.
+- إذا لم يغطِّ الفهرس الموضوع إطلاقاً، قل ذلك صراحةً ثم أجب من معرفتك العامة.
+- لا تكتب قائمة مصادر في النهاية — الإحالات داخل النص فقط.`;
+
+const normAr = (s: string) =>
+  s.replace(/[\u064B-\u065F\u0640]/g, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/[ىي]/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .toLowerCase();
+
+const plainText = (html: unknown) =>
+  String(html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+/** فهرس كامل بعناوين كل المقالات + نصوص الأكثر صلة بالسؤال. */
+async function siteKnowledge(query: string, excludeId?: string): Promise<string> {
+  try {
+    const sb = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
+    const { data: all } = await sb
+      .from("posts")
+      .select("id, title, category")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    const posts = (all ?? []).filter((p: any) => p.id !== excludeId);
+    if (!posts.length) return "";
+
+    const tokens = Array.from(new Set(normAr(query).split(" ").filter((w) => w.length > 2))).slice(0, 8);
+
+    const picked = new Map<string, any>();
+    const scored = posts
+      .map((p: any) => {
+        const t = normAr(p.title ?? "");
+        let s = 0;
+        for (const w of tokens) if (t.includes(w)) s += 3;
+        return { p, s };
+      })
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s);
+    for (const x of scored.slice(0, 12)) picked.set(x.p.id, x.p);
+
+    for (const w of tokens.slice(0, 4)) {
+      if (picked.size >= 18) break;
+      const { data: hits } = await sb
+        .from("posts")
+        .select("id, title")
+        .ilike("content", `%${w}%`)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      for (const h of hits ?? []) if (h.id !== excludeId) picked.set(h.id, h);
+    }
+
+    for (const p of posts) {
+      if (picked.size >= 10) break;
+      picked.set(p.id, p);
+    }
+
+    const ids = Array.from(picked.keys()).slice(0, 18);
+    const { data: full } = await sb.from("posts").select("id, title, content").in("id", ids);
+
+    const excerpts = (full ?? [])
+      .map((p: any) => `### ${p.title}\n${plainText(p.content).slice(0, 1400)}`)
+      .join("\n\n");
+
+    const catalogue = posts
+      .slice(0, 800)
+      .map((p: any) => `- ${p.title}${p.category ? ` (${p.category})` : ""}`)
+      .join("\n");
+
+    return `\n\n--- فهرس مقالات الموقع "وهم التطور" (كل المقالات: ${posts.length}) ---\n${catalogue}` +
+      `\n\n--- مقاطع المقالات الأكثر صلة بالسؤال ---\n${excerpts}`;
+  } catch (e) {
+    console.error("siteKnowledge failed", e);
+    return "";
+  }
+}
+
 // ---------------------------------------------------------------- handler
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
