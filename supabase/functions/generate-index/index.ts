@@ -7,7 +7,7 @@ const cors = {
 
 type Msg = { role: "system" | "user" | "assistant"; content: string };
 
-const GEMINI_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
+const GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-flash"];
 const GROQ_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
 const LOVABLE_MODELS = ["google/gemini-2.5-flash"];
 const SAFETY = [
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     }
 
     const list = posts.map((p) => {
-      const plain = String(p.content ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 700);
+      const plain = String(p.content ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
       return `- [${p.id}] (${p.category}) العنوان: ${p.title}\n  المحتوى: ${plain}`;
     }).join("\n");
 
