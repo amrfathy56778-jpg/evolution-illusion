@@ -1,0 +1,15 @@
+---
+name: AI provider/model chain
+description: Working model names and fallback order for all AI edge functions (Gemini, Groq, Lovable)
+type: feature
+---
+سلسلة المزوّدين في كل دوال الذكاء الاصطناعي (evolution-critic, post-chat, ai-search, generate-index):
+
+- Gemini: `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-2.5-flash` (في generate-index يُقدَّم flash-lite للسرعة).
+  النماذج القديمة `gemini-2.5-flash-lite` تعيد 404 "no longer available to new users".
+- Groq: `openai/gpt-oss-120b`, `openai/gpt-oss-20b`. نماذج llama-3.x لم تبقَ متاحة (404).
+- Lovable gateway: آخِر خيار، وحالياً يعيد 402 "Not enough credits" — لا يُعتمد عليه.
+
+**How to apply:** إذا ظهر خطأ في أي ميزة ذكاء اصطناعي، افحص logs الدالة أولاً؛ أخطاء 404 على اسم نموذج تعني تحديث القوائم أعلاه (تُجلب الأسماء الحديثة من `/v1beta/models` و`api.groq.com/openai/v1/models`).
+
+**generate-index:** prompt كبير (307 مقالاً) — يُقتصر مقتطف كل مقال على 300 حرف حتى لا يتجاوز حدّ 150 ثانية للدالة.
