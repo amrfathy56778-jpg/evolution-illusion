@@ -106,6 +106,22 @@ async function completeAI(messages: Msg[], json = true): Promise<string> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
+    if (new URL(req.url).searchParams.get("models") === "1") {
+      const k = aiKeys();
+      const out: Record<string, unknown> = {};
+      try {
+        const r = await fetchOpen(`https://generativelanguage.googleapis.com/v1beta/models?key=${k.gemini[0]}&pageSize=200`, { method: "GET" }, 20000);
+        const j = await r.json();
+        out.gemini = (j?.models ?? []).map((m: any) => m?.name).filter(Boolean);
+      } catch (e) { out.gemini = String(e); }
+      try {
+        const r = await fetchOpen("https://api.groq.com/openai/v1/models", { headers: { Authorization: `Bearer ${k.groq}` } }, 20000);
+        const j = await r.json();
+        out.groq = (j?.data ?? []).map((m: any) => m?.id);
+      } catch (e) { out.groq = String(e); }
+      return new Response(JSON.stringify(out), { headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const auth = req.headers.get("Authorization") ?? "";
