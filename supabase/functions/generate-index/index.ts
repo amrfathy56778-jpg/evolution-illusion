@@ -5,6 +5,104 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+type Msg = { role: "system" | "user" | "assistant"; content: string };
+
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+const LOVABLE_MODELS = ["google/gemini-2.5-flash"];
+const SAFETY = [
+  "HARM_CATEGORY_HARASSMENT",
+  "HARM_CATEGORY_HATE_SPEECH",
+  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+  "HARM_CATEGORY_DANGEROUS_CONTENT",
+].map((category) => ({ category, threshold: "BLOCK_NONE" }));
+
+function aiKeys() {
+  return {
+    gemini: [
+      Deno.env.get("GOOGLE_AI_PRIMARY_KEY"),
+      Deno.env.get("GEMINI_API_KEY"),
+    ].filter(Boolean) as string[],
+    groq: Deno.env.get("GROQ_API_KEY") ?? "",
+    lovable: Deno.env.get("LOVABLE_API_KEY") ?? "",
+  };
+}
+
+async function fetchOpen(url: string, init: RequestInit, ms = 60000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** إكمال غير متدفق عبر سلسلة المزوّدين: Google ثم Groq ثم بوابة Lovable. */
+async function completeAI(messages: Msg[], json = true): Promise<string> {
+  const keys = aiKeys();
+  const errors: string[] = [];
+  const sys = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const contents = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+
+  for (const model of GEMINI_MODELS) {
+    for (const key of keys.gemini) {
+      try {
+        const r = await fetchOpen(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents,
+              systemInstruction: sys ? { parts: [{ text: sys }] } : undefined,
+              safetySettings: SAFETY,
+              generationConfig: json ? { responseMimeType: "application/json" } : undefined,
+            }),
+          },
+        );
+        if (!r.ok) throw new Error(`${r.status} ${(await r.text().catch(() => "")).slice(0, 180)}`);
+        const j = await r.json();
+        const text = j?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("") ?? "";
+        if (!text) throw new Error("empty");
+        return text;
+      } catch (e) {
+        errors.push(`gemini:${model}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+
+  const targets: { label: string; url: string; key: string; model: string }[] = [];
+  if (keys.groq) for (const m of GROQ_MODELS) targets.push({ label: `groq:${m}`, url: "https://api.groq.com/openai/v1/chat/completions", key: keys.groq, model: m });
+  if (keys.lovable) for (const m of LOVABLE_MODELS) targets.push({ label: `lovable:${m}`, url: "https://ai.gateway.lovable.dev/v1/chat/completions", key: keys.lovable, model: m });
+
+  for (const t of targets) {
+    try {
+      const r = await fetchOpen(t.url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${t.key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: t.model,
+          messages,
+          ...(json ? { response_format: { type: "json_object" } } : {}),
+        }),
+      });
+      if (!r.ok) throw new Error(`${r.status} ${(await r.text().catch(() => "")).slice(0, 180)}`);
+      const j = await r.json();
+      const text = j?.choices?.[0]?.message?.content ?? "";
+      if (!text) throw new Error("empty");
+      return text;
+    } catch (e) {
+      errors.push(`${t.label}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  console.error("all AI providers failed", errors);
+  throw new Error("__CHAIN_FAILED__");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
