@@ -162,29 +162,22 @@ ${list}
 
 صنّف هذه المقالات اعتماداً على محتواها وعناوينها معاً، وأعد JSON فقط.`;
 
-    const KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!KEY) throw new Error("Missing LOVABLE_API_KEY");
+    const k = aiKeys();
+    if (!k.gemini.length && !k.groq && !k.lovable) throw new Error("No AI key configured");
 
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: userText },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (!r.ok) {
-      if (r.status === 429) return new Response(JSON.stringify({ error: "تم تجاوز الحد، حاول لاحقاً." }), { status: 429, headers: { ...cors, "Content-Type": "application/json" } });
-      if (r.status === 402) return new Response(JSON.stringify({ error: "نفد الرصيد." }), { status: 402, headers: { ...cors, "Content-Type": "application/json" } });
-      const t = await r.text();
-      throw new Error(`AI gateway ${r.status}: ${t}`);
+    let txt = "{}";
+    try {
+      txt = await completeAI([
+        { role: "system", content: sys },
+        { role: "user", content: userText },
+      ], true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("__CHAIN_FAILED__")) {
+        return new Response(JSON.stringify({ error: "خدمات الذكاء الاصطناعي غير متاحة حالياً، حاول بعد قليل." }), { status: 503, headers: { ...cors, "Content-Type": "application/json" } });
+      }
+      throw e;
     }
-    const j = await r.json();
-    const txt = j?.choices?.[0]?.message?.content ?? "{}";
     let parsed: any;
     try { parsed = JSON.parse(txt); } catch {
       const m = txt.match(/\{[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : { categories: [] };
