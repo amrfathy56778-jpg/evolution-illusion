@@ -30,8 +30,8 @@ const SYSTEM_PROMPT = `أنت "ناقد التطور الذكي"، عالم مو
 type Msg = { role: "system" | "user" | "assistant"; content: string };
 
 const enc = new TextEncoder();
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
-const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+const GEMINI_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
+const GROQ_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
 const LOVABLE_MODELS = ["google/gemini-2.5-flash"];
 const SAFETY = [
   "HARM_CATEGORY_HARASSMENT",
