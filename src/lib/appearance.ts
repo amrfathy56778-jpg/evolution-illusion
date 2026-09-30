@@ -21,14 +21,14 @@ export type DesignStyle = { id: string; name: string; description: string; prese
 // distinctive style class (fonts, surfaces, decorative accents, layout tweaks)
 // with a matching color preset that is auto-applied when the design is picked.
 export const STYLES: DesignStyle[] = [
-  { id: "glass",     name: "زجاجي (الأصلي)",        description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
+  { id: "d3",        name: "مجرّة سماوية (الأصلي)", description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
+  { id: "glass",     name: "زجاجي",                 description: "تمويه ولمعان زجاجي أخضر",           preset: "default" },
   { id: "dna",       name: "حمض نووي",              description: "خلفية DNA سماوية خلف البطاقات",      preset: "d3-cyan-dark" },
   { id: "d1",        name: "مختبر داكن",            description: "شبكات علمية وإضاءة زمرّدية",         preset: "d1-scientific-dark" },
-  { id: "d3",        name: "مجرّة سماوية",          description: "توهّج سماوي ونمط تقني",              preset: "d3-cyan-dark" },
   { id: "d4",        name: "بردية أثرية",           description: "بردي دافئ وخطوط عريقة",              preset: "d4-papyrus" },
   { id: "d5",        name: "نعناع مجلة",            description: "مجلة نعناعية أنيقة",                  preset: "d5-mint-light" },
   { id: "d6",        name: "نيون بنفسجي",           description: "إضاءة نيون بنفسجية سايبر",           preset: "d6-violet-dark" },
-  { id: "bayan",     name: "بيان الكريمي",          description: "كريمي دافئ بلمسات ذهبية وحدود دائرية", preset: "bayan-cream" },
+  { id: "bayan",     name: "ديوان ذهبي",            description: "كريمي دافئ بلمسات ذهبية وحدود دائرية", preset: "bayan-cream" },
 ];
 
 const mkTokens = (
@@ -122,7 +122,7 @@ export const PRESETS: ThemePreset[] = [
     ),
   },
   {
-    id: "bayan-cream", name: "بيان كريمي",
+    id: "bayan-cream", name: "ذهبي كريمي",
     ...mkTokens(
       "oklch(0.19 0.015 60)", "oklch(0.95 0.015 80)", "oklch(0.24 0.02 60)", "oklch(0.72 0.08 65)", "oklch(0.3 0.03 60)", "oklch(0.26 0.02 60)",
       "radial-gradient(ellipse 900px 650px at 15% 8%, oklch(0.5 0.07 65 / 0.22), transparent 58%), linear-gradient(165deg, oklch(0.19 0.015 60), oklch(0.15 0.015 55))",
@@ -181,7 +181,8 @@ const CUSTOM_KEY = "site.customTheme.v2"; // stores { dark, light }
 const THEME_KEY = "site.themeId";
 const STYLE_KEY = "site.styleId";
 const FX_KEY = "site.fxOff";
-const DEFAULT_STYLE = "glass";
+const DEFAULT_STYLE = "d3";
+const DEFAULT_THEME = "d3-cyan-dark";
 
 function isLight(): boolean {
   return typeof document !== "undefined" && document.documentElement.classList.contains("light");
@@ -292,8 +293,8 @@ export function setFxOff(off: boolean) {
   applyFx(off);
 }
 export function getThemeId(): string {
-  if (typeof window === "undefined") return "default";
-  return localStorage.getItem(THEME_KEY) ?? "default";
+  if (typeof window === "undefined") return DEFAULT_THEME;
+  return localStorage.getItem(THEME_KEY) ?? DEFAULT_THEME;
 }
 
 // Backward compatibility for legacy calls

@@ -34,7 +34,7 @@ const antiFouc = `(function(){try{
   if(mode==='light'){d.classList.add('light');d.classList.remove('dark');}
   else if(mode==='dark'){d.classList.add('dark');d.classList.remove('light');}
   // Design style
-  var style=ls.getItem('site.styleId')||'glass';
+  var style=ls.getItem('site.styleId')||'d3';
   ['glass','dna','d1','d3','d4','d5','d6','bayan'].forEach(function(s){d.classList.remove('style-'+s);});
   d.classList.add('style-'+style);
   // FX toggle
@@ -53,7 +53,7 @@ const antiFouc = `(function(){try{
     'd6-violet-dark':{bg:'oklch(0.14 0.04 305)',fg:'oklch(0.98 0.01 300)',pri:'oklch(0.72 0.19 305)',card:'oklch(0.19 0.06 305)'},
     'bayan-cream':{bg:'oklch(0.975 0.012 85)',fg:'oklch(0.25 0.02 55)',pri:'oklch(0.6 0.08 65)',card:'oklch(0.99 0.008 85)'}
   };
-  var id=ls.getItem('site.themeId');
+  var id=ls.getItem('site.themeId')||'d3-cyan-dark';
   var t=null;
   if(id==='custom'){try{var raw=ls.getItem('site.customTheme.v2');if(raw){var v=JSON.parse(raw);var isL=d.classList.contains('light');var tk=isL?v.light:v.dark;if(tk)t={bg:tk.background,fg:tk.foreground,pri:tk.primary,card:tk.card};}}catch(e){}}
   else if(id&&P[id]) t=P[id];

@@ -58,27 +58,27 @@
   --radius: 1rem;
 
   /* Dark glass base with richer contrast */
-  --background: oklch(0.14 0.03 246);
-  --foreground: oklch(0.98 0.01 255);
-  --card: oklch(0.2 0.04 248);
-  --card-foreground: oklch(0.98 0.01 255);
-  --popover: oklch(0.18 0.04 248);
-  --popover-foreground: oklch(0.98 0.01 255);
+  --background: oklch(0.14 0.04 220);
+  --foreground: oklch(0.98 0.01 220);
+  --card: oklch(0.19 0.05 220);
+  --card-foreground: oklch(0.98 0.01 220);
+  --popover: oklch(0.19 0.05 220);
+  --popover-foreground: oklch(0.98 0.01 220);
 
-  --primary: oklch(0.8 0.16 185);
-  --primary-foreground: oklch(0.14 0.03 246);
+  --primary: oklch(0.78 0.16 200);
+  --primary-foreground: oklch(0.14 0.04 220);
 
-  --secondary: oklch(0.24 0.04 248);
-  --secondary-foreground: oklch(0.98 0.01 255);
-  --muted: oklch(0.24 0.03 248);
-  --muted-foreground: oklch(0.79 0.02 250);
-  --accent: oklch(0.3 0.06 215);
+  --secondary: oklch(0.22 0.04 220);
+  --secondary-foreground: oklch(0.98 0.01 220);
+  --muted: oklch(0.22 0.04 220);
+  --muted-foreground: oklch(0.8 0.02 220);
+  --accent: oklch(0.32 0.08 210);
   --accent-foreground: oklch(0.97 0.01 280);
   --destructive: oklch(0.68 0.22 20);
   --destructive-foreground: oklch(0.98 0.01 280);
   --border: oklch(1 0 0 / 18%);
   --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.8 0.16 185);
+  --ring: oklch(0.78 0.16 200);
 
   --c-home: oklch(0.82 0.12 190);
   --c-critic: oklch(0.84 0.17 150);
@@ -94,10 +94,8 @@
   --shadow-glow: 0 12px 44px -14px oklch(0.8 0.16 185 / 0.4);
   --shadow-glow-warm: 0 12px 44px -14px oklch(0.84 0.14 85 / 0.38);
   --gradient-bg:
-    radial-gradient(ellipse 900px 650px at 12% 8%, oklch(0.42 0.14 185 / 0.26), transparent 58%),
-    radial-gradient(ellipse 760px 580px at 84% 18%, oklch(0.44 0.11 220 / 0.2), transparent 56%),
-    radial-gradient(ellipse 720px 560px at 70% 92%, oklch(0.42 0.14 285 / 0.2), transparent 58%),
-    linear-gradient(165deg, oklch(0.15 0.03 246), oklch(0.11 0.025 255));
+    radial-gradient(ellipse 900px 650px at 20% 10%, oklch(0.45 0.16 200 / 0.32), transparent 58%),
+    linear-gradient(165deg, oklch(0.14 0.04 220), oklch(0.1 0.04 210));
 
   --chart-1: oklch(0.78 0.15 195);
   --chart-2: oklch(0.74 0.18 295);
@@ -646,6 +644,25 @@ body > .skiptranslate { display: none !important; }
     linear-gradient(135deg, oklch(0.12 0.04 305), oklch(0.08 0.04 290));
   box-shadow: inset 0 0 14px oklch(0.6 0.25 305 / 0.5);
 }
+.style-preview-bayan {
+  position: relative;
+  background:
+    radial-gradient(circle at 75% 20%, oklch(0.98 0.035 85 / 0.9), transparent 48%),
+    linear-gradient(135deg, oklch(0.97 0.018 82), oklch(0.84 0.07 67));
+  border: 1px solid oklch(0.62 0.1 65 / 0.45);
+  box-shadow: inset 0 0 12px oklch(0.62 0.1 65 / 0.18);
+}
+.style-preview-bayan::after {
+  content: "وهم التطور";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: oklch(0.48 0.1 60);
+  font-family: "Amiri", "Tajawal", serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
 
 /* --- shared: decorative body overlay slot --- */
 .style-d1 body::before,
@@ -772,6 +789,10 @@ body > .skiptranslate { display: none !important; }
   background: color-mix(in oklab, var(--background) 88%, transparent) !important;
   border-bottom: 1px solid color-mix(in oklab, var(--primary) 28%, transparent) !important;
   box-shadow: none !important;
+}
+.site-logo { filter: drop-shadow(0 0 12px oklch(0.8 0.16 75 / 0.45)); }
+.style-bayan .site-logo {
+  filter: drop-shadow(0 1px 1px oklch(0.25 0.04 55 / 0.65)) drop-shadow(0 0 9px oklch(0.7 0.1 65 / 0.38));
 }
 .style-bayan h1, .style-bayan h2, .style-bayan h3 { font-weight: 800; letter-spacing: 0; }
 .style-bayan .rounded-2xl, .style-bayan .rounded-3xl { border-radius: 20px !important; }
