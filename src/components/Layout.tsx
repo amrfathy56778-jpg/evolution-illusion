@@ -52,7 +52,7 @@ export default function Layout() {
       <header className="site-header relative z-20">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <img src={logo} alt="وهم التطور" className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(250,200,80,0.45)]" />
+            <img src={logo} alt="وهم التطور" className="site-logo h-10 w-auto object-contain" />
           </Link>
 
           <div className="flex-1 flex items-center justify-end gap-2 flex-wrap">
