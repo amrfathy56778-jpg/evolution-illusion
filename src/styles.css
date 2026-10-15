@@ -975,3 +975,29 @@ html.fx-off[class] button[aria-current="page"] {
   box-shadow: none !important;
   text-shadow: none !important;
 }
+
+/* ============== Elegant, truly centered toasts ============== */
+[data-sonner-toaster][data-y-position="top"][data-x-position="center"] {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  width: min(92vw, 380px) !important;
+}
+[data-sonner-toaster] [data-sonner-toast].app-toast {
+  background: color-mix(in oklab, var(--card) 82%, transparent) !important;
+  color: var(--foreground) !important;
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent) !important;
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-radius: 18px !important;
+  box-shadow: 0 12px 40px -12px color-mix(in oklab, var(--primary) 45%, transparent), 0 2px 8px rgb(0 0 0 / 0.25) !important;
+  padding: 14px 18px !important;
+  font-weight: 700;
+  font-size: 0.875rem;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+}
+[data-sonner-toast].app-toast [data-icon] { color: var(--primary); }
+[data-sonner-toast].app-toast[data-type="error"] { border-color: color-mix(in oklab, var(--destructive) 55%, transparent) !important; }
+[data-sonner-toast].app-toast[data-type="error"] [data-icon] { color: var(--destructive); }
