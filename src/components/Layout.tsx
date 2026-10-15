@@ -380,6 +380,22 @@ function TranslateButton() {
         // Extra polling for the first few seconds in case mutations fire before observer is ready
         let count = 0;
         const iv = setInterval(() => { strip(); if (++count > 20) clearInterval(iv); }, 250);
+        // Fallback: if the cookie wasn't honoured (e.g. blocked domain cookie), drive Google's own selector.
+        let want = "ar";
+        try { want = localStorage.getItem("siteLang") || getCurrentLang(); } catch { want = getCurrentLang(); }
+        if (want && want !== "ar") {
+          let tries = 0;
+          const apply = setInterval(() => {
+            tries++;
+            const translated = /translated-(ltr|rtl)/.test(document.documentElement.className);
+            const sel = document.querySelector<HTMLSelectElement>("select.goog-te-combo");
+            if (translated || tries > 40) { clearInterval(apply); return; }
+            if (sel && sel.options.length > 1) {
+              sel.value = want;
+              sel.dispatchEvent(new Event("change"));
+            }
+          }, 300);
+        }
       };
       const s = document.createElement("script");
       s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";

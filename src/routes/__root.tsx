@@ -119,7 +119,7 @@ function RootComponent() {
   return (
     <AuthProvider>
       <Outlet />
-      <Toaster richColors position="top-center" />
+      <Toaster position="top-center" dir="rtl" offset={20} toastOptions={{ className: "app-toast" }} />
     </AuthProvider>
   );
 }
