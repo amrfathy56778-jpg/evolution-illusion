@@ -7,13 +7,16 @@ import { Sparkles, BookOpen, Users, MessageCircle, ArrowLeft, ChevronRight, Chev
 import { AISearchButton } from "@/components/AISearchDialog";
 
 export const Route = createFileRoute("/_app/")({
+  staticData: { sitemap: true },
   component: Home,
   validateSearch: z.object({ page: z.coerce.number().int().min(1).optional() }),
   head: () => ({
     meta: [
       { title: "وهم التطور — الرئيسية" },
       { name: "description", content: "منصة علمية للنقد المنهجي لنظرية التطور." },
+      { property: "og:url", content: "https://evolution-illusion.lovable.app" },
     ],
+    links: [{ rel: "canonical", href: "https://evolution-illusion.lovable.app" }],
   }),
 });
 

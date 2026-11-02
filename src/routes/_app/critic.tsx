@@ -8,6 +8,7 @@ import { cleanAiText } from "@/lib/aiText";
 import { usePostIndex, toMarkdownLinks } from "@/lib/aiLinks";
 
 export const Route = createFileRoute("/_app/critic")({
+  staticData: { sitemap: true },
   component: CriticPage,
   head: () => ({
     meta: [

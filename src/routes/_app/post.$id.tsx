@@ -10,8 +10,87 @@ import { PostAIButton } from "@/components/PostAIChat";
 import { RelatedPosts } from "@/components/RelatedPosts";
 import { thumb } from "@/lib/img";
 
+const SITE_URL = "https://evolution-illusion.lovable.app";
+
+function plainText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export const Route = createFileRoute("/_app/post/$id")({
+  staticData: { sitemap: true },
   component: PostPage,
+  // Server-rendered fetch so crawlers (Google, social previews) get the
+  // article's own title/description in the HTML instead of the site-wide default.
+  loader: async ({ params }) => {
+    try {
+      const { data } = await supabase
+        .from("posts")
+        .select("id, title, content, category, author_name, cover_image_url, created_at, updated_at")
+        .eq("id", params.id)
+        .maybeSingle();
+      return { post: data ?? null };
+    } catch {
+      return { post: null };
+    }
+  },
+  head: ({ loaderData }) => {
+    const p = loaderData?.post;
+    if (!p) {
+      return {
+        meta: [
+          { title: "المقال غير موجود · وهم التطور" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const desc = plainText(String(p.content ?? "")).slice(0, 160);
+    const url = `${SITE_URL}/post/${p.id}`;
+    const img = p.cover_image_url ? thumb(p.cover_image_url, 1200, 75) : "";
+    const meta: Array<Record<string, string>> = [
+      { title: `${p.title} · وهم التطور` },
+      { name: "description", content: desc },
+      { property: "og:type", content: "article" },
+      { property: "og:title", content: p.title },
+      { property: "og:description", content: desc },
+      { property: "og:url", content: url },
+      { name: "twitter:card", content: img ? "summary_large_image" : "summary" },
+      { name: "twitter:title", content: p.title },
+      { name: "twitter:description", content: desc },
+    ];
+    if (img) {
+      meta.push({ property: "og:image", content: img });
+      meta.push({ name: "twitter:image", content: img });
+    }
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: p.title,
+            description: desc,
+            datePublished: p.created_at,
+            dateModified: p.updated_at ?? p.created_at,
+            author: { "@type": "Person", name: p.author_name ?? "وهم التطور" },
+            image: img || undefined,
+            mainEntityOfPage: url,
+          }),
+        },
+      ],
+    };
+  },
 });
 
 const CAT: Record<string, { l: string; c: string }> = {
