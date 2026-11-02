@@ -9,6 +9,7 @@ import { RichContent } from "@/components/RichEditor";
 import { AiReport } from "@/components/AiReport";
 
 export const Route = createFileRoute("/_app/admin")({
+  staticData: { sitemap: false },
   component: Admin,
   head: () => ({ meta: [{ title: "لوحة الإدارة · وهم التطور" }] }),
 });

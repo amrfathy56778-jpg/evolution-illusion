@@ -10,6 +10,7 @@ import { AiReport } from "@/components/AiReport";
 import { RephraseButton } from "@/components/RephraseButton";
 
 export const Route = createFileRoute("/_app/guest-post")({
+  staticData: { sitemap: true },
   component: GuestPost,
   head: () => ({ meta: [{ title: "النشر كضيف · وهم التطور" }] }),
 });

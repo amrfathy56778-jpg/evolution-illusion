@@ -61,6 +61,7 @@ const antiFouc = `(function(){try{
 }catch(e){}})();`;
 
 export const Route = createRootRoute({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
