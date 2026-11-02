@@ -133,10 +133,10 @@ function Home() {
 
       {/* Stats */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard value={stats.posts} label="منشورات" icon={BookOpen} color="var(--c-evolution)" />
-        <StatCard value={stats.supervisors} label="مشرفون" icon={Users} color="var(--c-genetics)" />
+        <StatCard value={stats.posts} label="منشور" icon={BookOpen} color="var(--c-evolution)" />
+        <StatCard value={stats.supervisors} label="مشرفين مختصين" icon={Users} color="var(--c-genetics)" />
         <StatCard value={stats.categories} label="أقسام" icon={Sparkles} color="var(--c-creation)" />
-        <StatCard value="AI" label="نقاشات الذكاء" icon={MessageCircle} color="var(--c-critic)" />
+        <StatCard value="AI" label="نقاشات  ذكية" icon={MessageCircle} color="var(--c-critic)" />
       </section>
 
       {/* Two main CTAs side by side */}
@@ -179,7 +179,7 @@ function Home() {
               {isStaff ? "إضافة منشور" : "النشر كضيف"}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {isStaff ? "انطلق إلى الأقسام وأضف منشوراً مباشراً" : "شارك طرحك · يُعرض للمراجعة"}
+              {isStaff ? "انطلق إلى الأقسام وأضف منشوراً مباشراً" : "أرسل طرحك للمراجعة"}
             </p>
             <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: "var(--c-guest)" }}>
               {isStaff ? "افتح قسم النشر" : "أرسل منشورك"} <ArrowLeft className="h-3 w-3" />
