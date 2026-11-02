@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/auth")({
+  staticData: { sitemap: false },
   component: AuthPage,
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
     typeof s.next === "string" ? { next: s.next } : {},
