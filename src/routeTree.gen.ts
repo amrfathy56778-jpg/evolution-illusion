@@ -9,25 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
-import { Route as AppGeneticsRouteImport } from './routes/_app/genetics'
-import { Route as AppEvolutionRouteImport } from './routes/_app/evolution'
-import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
-import { Route as AppCriticRouteImport } from './routes/_app/critic'
-import { Route as AppCreationRouteImport } from './routes/_app/creation'
-import { Route as AppAuthRouteImport } from './routes/_app/auth'
-import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as AppPostIdRouteImport } from './routes/_app/post.$id'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppAuthRouteImport } from './routes/_app/auth'
+import { Route as AppCreationRouteImport } from './routes/_app/creation'
+import { Route as AppCriticRouteImport } from './routes/_app/critic'
+import { Route as AppCritiqueRouteImport } from './routes/_app/critique'
+import { Route as AppEvolutionRouteImport } from './routes/_app/evolution'
+import { Route as AppGeneticsRouteImport } from './routes/_app/genetics'
+import { Route as AppGuestPostRouteImport } from './routes/_app/guest-post'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AppPostIdRouteImport } from './routes/_app/post.$id'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -35,54 +34,10 @@ const McpRoute = McpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGuestPostRoute = AppGuestPostRouteImport.update({
-  id: '/guest-post',
-  path: '/guest-post',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGeneticsRoute = AppGeneticsRouteImport.update({
-  id: '/genetics',
-  path: '/genetics',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEvolutionRoute = AppEvolutionRouteImport.update({
-  id: '/evolution',
-  path: '/evolution',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCritiqueRoute = AppCritiqueRouteImport.update({
-  id: '/critique',
-  path: '/critique',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCriticRoute = AppCriticRouteImport.update({
-  id: '/critic',
-  path: '/critic',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCreationRoute = AppCreationRouteImport.update({
-  id: '/creation',
-  path: '/creation',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAuthRoute = AppAuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AppRoute,
 } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
@@ -90,15 +45,60 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AppPostIdRoute = AppPostIdRouteImport.update({
-  id: '/post/$id',
-  path: '/post/$id',
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuthRoute = AppAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCreationRoute = AppCreationRouteImport.update({
+  id: '/creation',
+  path: '/creation',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCriticRoute = AppCriticRouteImport.update({
+  id: '/critic',
+  path: '/critic',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCritiqueRoute = AppCritiqueRouteImport.update({
+  id: '/critique',
+  path: '/critique',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEvolutionRoute = AppEvolutionRouteImport.update({
+  id: '/evolution',
+  path: '/evolution',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGeneticsRoute = AppGeneticsRouteImport.update({
+  id: '/genetics',
+  path: '/genetics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGuestPostRoute = AppGuestPostRouteImport.update({
+  id: '/guest-post',
+  path: '/guest-post',
   getParentRoute: () => AppRoute,
 } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppPostIdRoute = AppPostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -213,11 +213,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -227,11 +227,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -241,46 +248,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/guest-post': {
-      id: '/_app/guest-post'
-      path: '/guest-post'
-      fullPath: '/guest-post'
-      preLoaderRoute: typeof AppGuestPostRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/genetics': {
-      id: '/_app/genetics'
-      path: '/genetics'
-      fullPath: '/genetics'
-      preLoaderRoute: typeof AppGeneticsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/evolution': {
-      id: '/_app/evolution'
-      path: '/evolution'
-      fullPath: '/evolution'
-      preLoaderRoute: typeof AppEvolutionRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/critique': {
-      id: '/_app/critique'
-      path: '/critique'
-      fullPath: '/critique'
-      preLoaderRoute: typeof AppCritiqueRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/critic': {
-      id: '/_app/critic'
-      path: '/critic'
-      fullPath: '/critic'
-      preLoaderRoute: typeof AppCriticRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/creation': {
-      id: '/_app/creation'
-      path: '/creation'
-      fullPath: '/creation'
-      preLoaderRoute: typeof AppCreationRouteImport
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/auth': {
@@ -290,25 +262,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/admin': {
-      id: '/_app/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
+    '/_app/creation': {
+      id: '/_app/creation'
+      path: '/creation'
+      fullPath: '/creation'
+      preLoaderRoute: typeof AppCreationRouteImport
       parentRoute: typeof AppRoute
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/critic': {
+      id: '/_app/critic'
+      path: '/critic'
+      fullPath: '/critic'
+      preLoaderRoute: typeof AppCriticRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_app/post/$id': {
-      id: '/_app/post/$id'
-      path: '/post/$id'
-      fullPath: '/post/$id'
-      preLoaderRoute: typeof AppPostIdRouteImport
+    '/_app/critique': {
+      id: '/_app/critique'
+      path: '/critique'
+      fullPath: '/critique'
+      preLoaderRoute: typeof AppCritiqueRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/evolution': {
+      id: '/_app/evolution'
+      path: '/evolution'
+      fullPath: '/evolution'
+      preLoaderRoute: typeof AppEvolutionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/genetics': {
+      id: '/_app/genetics'
+      path: '/genetics'
+      fullPath: '/genetics'
+      preLoaderRoute: typeof AppGeneticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/guest-post': {
+      id: '/_app/guest-post'
+      path: '/guest-post'
+      fullPath: '/guest-post'
+      preLoaderRoute: typeof AppGuestPostRouteImport
       parentRoute: typeof AppRoute
     }
     '/.lovable/oauth/consent': {
@@ -317,6 +310,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/post/$id': {
+      id: '/_app/post/$id'
+      path: '/post/$id'
+      fullPath: '/post/$id'
+      preLoaderRoute: typeof AppPostIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
