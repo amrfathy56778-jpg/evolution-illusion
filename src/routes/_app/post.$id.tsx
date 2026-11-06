@@ -102,9 +102,10 @@ const CAT: Record<string, { l: string; c: string }> = {
 
 function PostPage() {
   const { id } = useParams({ from: "/_app/post/$id" });
+  const { post: initialPost } = Route.useLoaderData();
   const router = useRouter();
   const { isStaff } = useAuth();
-  const [p, setP] = useState<any>(null);
+  const [p, setP] = useState<any>(initialPost);
   const [nf, setNf] = useState(false);
   const [edit, setEdit] = useState(false);
   const [eTitle, setETitle] = useState("");
