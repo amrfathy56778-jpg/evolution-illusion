@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Plus, X, ImagePlus, ImageOff, Sparkles, Loader2 } from "lucide-react";
-import { RichEditor } from "@/components/RichEditor";
+import { RichEditor, RichContent } from "@/components/RichEditor";
 import { RephraseButton } from "@/components/RephraseButton";
 import { Pagination } from "@/components/Pagination";
 import { uploadCoverImage } from "@/lib/upload";
@@ -13,8 +13,8 @@ import { thumb } from "@/lib/img";
 type Cat = "critique" | "evolution_basics" | "genetics" | "creation_marvels";
 const PAGE_SIZE = 10;
 
-export default function CategoryPage({ category, title, color, emoji, description }:
-  { category: Cat; title: string; color: string; emoji: string; description: string }) {
+export default function CategoryPage({ category, title, color, emoji, description, showFullContent = false }:
+  { category: Cat; title: string; color: string; emoji: string; description: string; showFullContent?: boolean }) {
   const { isStaff, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -195,9 +195,13 @@ export default function CategoryPage({ category, title, color, emoji, descriptio
               <Link to="/post/$id" params={{ id: p.id }} className="block hover:opacity-80 transition">
                 <h3 className="font-bold mb-1.5">{p.title}</h3>
               </Link>
-              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                {p.content.replace(/<[^>]+>/g, " ").slice(0, 200)}…
-              </p>
+              {showFullContent ? (
+                <RichContent html={p.content}/>
+              ) : (
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  {p.content.replace(/<[^>]+>/g, " ").slice(0, 200)}…
+                </p>
+              )}
               <div className="flex items-center justify-between gap-2 mt-3 flex-wrap">
                 <div className="text-[10px] text-muted-foreground">
                   {p.author_name ?? "—"} · {new Date(p.created_at).toLocaleDateString("ar")}
