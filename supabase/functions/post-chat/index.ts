@@ -284,10 +284,16 @@ async function siteKnowledge(query: string, excludeId?: string): Promise<string>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
-    const { article, mode, messages, lang } = await req.json();
+    const { article, mode, messages, lang, responseLength } = await req.json();
+    const length = responseLength === "short" || responseLength === "detailed" ? responseLength : "medium";
+    const lengthRules: Record<typeof length, string> = {
+      short: "طول الإجابة: مختصرة جداً؛ أجب مباشرة في فقرة إلى فقرتين، واكتفِ بأهم النقاط دون استطراد أو تكرار.",
+      medium: "طول الإجابة: متوسط؛ قدّم شرحاً واضحاً متوازناً في بضع فقرات، مع أهم الأدلة والاستدلالات ذات الصلة، وتجنب الإطالة غير الضرورية.",
+      detailed: "طول الإجابة: مفصلة؛ توسع في التحليل والأدلة والسياق والاعتراضات ذات الصلة، ونظّم الشرح بوضوح، مع تجنب الحشو والتكرار.",
+    };
     const LANG_NAMES: Record<string, string> = { ar:"Arabic", en:"English", fr:"French", es:"Spanish", de:"German", it:"Italian", tr:"Turkish", ru:"Russian", zh:"Chinese", ja:"Japanese", ko:"Korean", pt:"Portuguese", hi:"Hindi", ur:"Urdu", id:"Indonesian", nl:"Dutch", pl:"Polish", fa:"Persian" };
     const langName = LANG_NAMES[String(lang||"ar").toLowerCase()] || "Arabic";
-    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site is currently displayed in ${langName}. Respond ENTIRELY in ${langName}, regardless of the language of the article or user's message.` + `\n\nFORMAT RULE: Never use the characters * or ** anywhere in your reply — not at the start of a line, not for emphasis, not for bullets. Write plain prose, and use "-" if a list is truly needed.` + `\n\nSOURCES RULE: لا تكتب قائمة مصادر ولا قسم "المصادر" في نهاية الرد. استشهد فقط داخل النص بصيغة [مقال: العنوان] بالعنوان الحرفي للمقال كما ورد في المقالات المرفقة.`;
+    const SYS_USE = SYSTEM + `\n\nIMPORTANT: The site is currently displayed in ${langName}. Respond ENTIRELY in ${langName}, regardless of the language of the article or user's message.` + `\n\n${lengthRules[length]}` + `\n\nFORMAT RULE: Never use the characters * or ** anywhere in your reply — not at the start of a line, not for emphasis, not for bullets. Write plain prose, and use "-" if a list is truly needed.` + `\n\nSOURCES RULE: لا تكتب قائمة مصادر ولا قسم "المصادر" في نهاية الرد. استشهد فقط داخل النص بصيغة [مقال: العنوان] بالعنوان الحرفي للمقال كما ورد في المقالات المرفقة.`;
 
     const keys = aiKeys();
     if (!keys.gemini.length && !keys.groq && !keys.lovable) throw new Error("No AI key configured");
@@ -313,7 +319,8 @@ Deno.serve(async (req) => {
     ];
 
     if (mode === "summarize") {
-      baseMessages.push({ role: "user", content: "لخّص المقال السابق فقط، معتمداً على نصّه وحده دون إضافة معلومات من خارجه ولا الاستشهاد بمقالات أخرى، في 5-8 نقاط واضحة، **من منظورك كناقد حادّ لنظرية التطور**: استخرج أبرز أفكار المقال، وأظهر بوضوح كيف تُضعِف التطورَ أو تكشف ثغراته، واختم بخلاصة نقدية ضدّ التطور مستخلَصة من المقال نفسه. لا تُحايد ولا تُدافع عن التطور إطلاقاً." });
+      const summaryPoints = length === "short" ? "3-4" : length === "detailed" ? "7-8" : "5-6";
+      baseMessages.push({ role: "user", content: `لخّص المقال السابق فقط، معتمداً على نصّه وحده دون إضافة معلومات من خارجه ولا الاستشهاد بمقالات أخرى، في ${summaryPoints} نقاط واضحة، من منظورك كناقد حادّ لنظرية التطور: استخرج أبرز أفكار المقال، وأظهر بوضوح كيف تُضعِف التطورَ أو تكشف ثغراته، واختم بخلاصة نقدية ضدّ التطور مستخلَصة من المقال نفسه. لا تُحايد ولا تُدافع عن التطور إطلاقاً.` });
     } else if (Array.isArray(messages)) {
       for (const m of messages) {
         if (m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string") {
