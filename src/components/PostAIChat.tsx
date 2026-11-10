@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, Loader2, BookOpenCheck, Languages } from "lucide-react";
+import { Sparkles, X, Send, Loader2, BookOpenCheck, Languages, CircleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { getSiteLang } from "@/components/AISearchDialog";
 import { stripStars } from "@/lib/aiText";
 import { usePostIndex, linkifyAi } from "@/lib/aiLinks";
 
 type Msg = { role: "user" | "assistant"; content: string };
+type ResponseLength = "short" | "medium" | "detailed";
 
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/post-chat`;
 const ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -31,6 +32,7 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [responseLength, setResponseLength] = useState<ResponseLength>("medium");
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMsgRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +59,7 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
       const resp = await fetch(FN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${ANON}` },
-        body: JSON.stringify({ article: { id: post.id, title: post.title, content: post.content }, mode, messages: history, lang: getSiteLang() }),
+        body: JSON.stringify({ article: { id: post.id, title: post.title, content: post.content }, mode, messages: history, lang: getSiteLang(), responseLength }),
       });
       if (resp.status === 429) { toast.error("الحد الأقصى من الطلبات تم تجاوزه. حاول لاحقاً."); throw new Error("429"); }
       if (resp.status === 402) { toast.error("نفد الرصيد، يرجى إضافة رصيد للمساحة."); throw new Error("402"); }
@@ -120,6 +122,31 @@ function PostAIDialog({ post, onClose }: { post: { id: string; title: string; co
           </div>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10 shrink-0"><X className="h-4 w-4" /></button>
         </header>
+
+        <div className="px-4 pt-3 pb-2 border-b border-white/10">
+          <div role="group" aria-label="طول الرد" className="flex flex-wrap items-center gap-2">
+            {([
+              ["short", "إجابة مختصرة"],
+              ["medium", "متوسطة"],
+              ["detailed", "مفصلة"],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={responseLength === value}
+                onClick={() => setResponseLength(value)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${responseLength === value ? "border-primary bg-primary/20 text-primary" : "border-white/10 text-muted-foreground hover:bg-white/5 hover:text-foreground"}`}
+              >
+                {value === "detailed" && <CircleAlert className="me-1 inline h-3.5 w-3.5 text-destructive" aria-hidden="true" />}
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-destructive">
+            <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>لا تستخدمه إلا إن كنت مضطرا حتى لا يضيع الرصيد اليومي في التجربة.</span>
+          </p>
+        </div>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[280px]">
           {messages.length === 0 ? (
